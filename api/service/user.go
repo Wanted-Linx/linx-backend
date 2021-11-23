@@ -40,10 +40,10 @@ func (s *userService) SignUp(reqSignUp *domain.SignUpRequest) (*domain.UserDto, 
 
 	if newUser.Kind.String() == "student" {
 		// register student table
-		log.Info("회원가입(학생) 성공", newUser)
+		log.Info("회원가입(학생) 성공")
 	} else {
 		// register company table
-		log.Info("회원가입(기업) 성공", newUser)
+		log.Info("회원가입(기업) 성공")
 	}
 
 	return domain.UserToDto(newUser), nil
@@ -61,7 +61,7 @@ func (s *userService) Login(reqUser *domain.LoginRequest) (*domain.UserDto, erro
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
-	log.Info("로그인 성공", u)
+	log.Info("로그인 성공")
 	return domain.UserToDto(u), nil
 }
 

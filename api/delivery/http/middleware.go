@@ -28,7 +28,6 @@ func httpErrorHandler(err error, c echo.Context) {
 		errorType = "not_found_error"
 		msg = "리소스를 찾을 수 없습니다."
 	} else if errors.As(err, &restErr.BadRequestErr) {
-		log.Println("dd")
 		code = 400
 		errorType = "bad_request_error"
 		msg = err.Error()
