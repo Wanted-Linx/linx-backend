@@ -31,6 +31,12 @@ func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	return uc
 }
 
+// SetKind sets the "kind" field.
+func (uc *UserCreate) SetKind(u user.Kind) *UserCreate {
+	uc.mutation.SetKind(u)
+	return uc
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uc *UserCreate) Mutation() *UserMutation {
 	return uc.mutation
@@ -107,6 +113,14 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "password"`)}
 	}
+	if _, ok := uc.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "kind"`)}
+	}
+	if v, ok := uc.mutation.Kind(); ok {
+		if err := user.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "kind": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -149,6 +163,14 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldPassword,
 		})
 		_node.Password = value
+	}
+	if value, ok := uc.mutation.Kind(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: user.FieldKind,
+		})
+		_node.Kind = value
 	}
 	return _node, _spec
 }

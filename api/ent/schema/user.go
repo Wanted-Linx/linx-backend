@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+var kinds = []string{"company", "student"}
+
 // User holds the schema definition for the User entity.
 type User struct {
 	ent.Schema
@@ -15,6 +17,7 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("email").Unique(),
 		field.String("password"),
+		field.Enum("kind").Values(kinds...),
 	}
 }
 
