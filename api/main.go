@@ -18,6 +18,5 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	server := http.NewServer(userHandler)
-
 	server.Logger.Fatal(server.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }

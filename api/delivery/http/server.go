@@ -6,8 +6,10 @@ import (
 	"github.com/wanted-linx/linx-backend/api/delivery/http/handler"
 )
 
+var e *echo.Echo
+
 func NewServer(userHandler *handler.UserHandler) *echo.Echo {
-	e := echo.New()
+	e = echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	//CORS
@@ -16,5 +18,6 @@ func NewServer(userHandler *handler.UserHandler) *echo.Echo {
 		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
 	}))
 
+	initRouter(userHandler)
 	return e
 }
