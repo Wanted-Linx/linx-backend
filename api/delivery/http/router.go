@@ -11,5 +11,6 @@ func initRouter(userHandler *handler.UserHandler) {
 func userRouter(userHandler *handler.UserHandler) {
 	group := e.Group("/users")
 	group.POST("/signup", userHandler.SignUp)
-	group.GET("", userHandler.GetUserByID)
+	group.POST("/login", userHandler.Login)
+	group.GET("/me", userHandler.GetUserByID)
 }

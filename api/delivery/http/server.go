@@ -10,6 +10,7 @@ var e *echo.Echo
 
 func NewServer(userHandler *handler.UserHandler) *echo.Echo {
 	e = echo.New()
+	e.HTTPErrorHandler = httpErrorHandler
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	//CORS
