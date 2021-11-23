@@ -1,9 +1,0 @@
-port: 9090
-db:
-  postgreSql:
-    host: localhost
-    port: 5432
-    databaseName: db
-    user: admin
-    password: admin
-
