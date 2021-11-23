@@ -1,0 +1,4 @@
+api/config/*
+!api/config/local.yaml
+!api/config/config.go
+*.env

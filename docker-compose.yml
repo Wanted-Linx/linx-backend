@@ -1,0 +1,39 @@
+version: "3.7"
+
+services:
+  api: 
+    build:
+      context: ./api
+      dockerfile: Dockerfile.api
+    ports:
+      - 9090:9090
+    environment:
+      LINX_CONFIG: $LINX_CONFIG
+    working_dir: /linx/api
+    command: bash -c "./wait-for-it.sh postgres:5432 -- ./linx-api"
+
+  postgres:
+    image: postgres:13.2
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_DB: $POSTGRES_DB
+      TZ: $TIMEZONE
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports: 
+      - 54380:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:
