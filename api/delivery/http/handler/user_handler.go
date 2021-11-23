@@ -19,7 +19,7 @@ func (h *UserHandler) SignUp(c echo.Context) error {
 	reqSignUp := new(domain.SignUpRequest)
 	if err := c.Bind(reqSignUp); err != nil {
 		restErr.BadRequestErr = err
-		return errors.Wrap(err, "잘못된 회원가입 json body 형식입니다.")
+		return errors.Wrap(err, "잘못된 회원가입 json body 입니다.")
 	}
 
 	newUser, err := h.UserService.SignUp(reqSignUp)
@@ -33,13 +33,13 @@ func (h *UserHandler) SignUp(c echo.Context) error {
 func (h *UserHandler) Login(c echo.Context) error {
 	reqLogin := new(domain.LoginRequest)
 	if err := c.Bind(reqLogin); err != nil {
-		return errors.Wrap(err, "잘못된 로그인 json body 형식입니다.")
+		return errors.Wrap(err, "잘못된 로그인 json body 입니다.")
 	}
 
 	// TODO: 토큰 발행 로직...
 	user, err := h.UserService.Login(reqLogin)
 	if err != nil {
-		return errors.WithStack(err)
+		return err
 	}
 
 	return c.JSON(200, user)

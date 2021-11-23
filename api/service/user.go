@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/wanted-linx/linx-backend/api/domain"
@@ -59,6 +61,10 @@ func (s *userService) Login(reqUser *domain.LoginRequest) (*domain.UserDto, erro
 		}
 
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
+	}
+
+	if u.Kind.String() != reqUser.Kind {
+		return nil, errors.WithStack(errors.New((fmt.Sprintf("잘못된 계정 유형입니다. %s 계정으로 로그인 해주세요", u.Kind.String()))))
 	}
 
 	log.Info("로그인 성공")
