@@ -29,5 +29,7 @@ func (Student) Edges() []ent.Edge {
 			Ref("student").
 			Required().
 			Unique(),
+		edge.To("club", Club.Type),
+		edge.To("club_member", ClubMember.Type),
 	}
 }

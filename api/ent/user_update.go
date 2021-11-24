@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
@@ -76,6 +77,21 @@ func (uu *UserUpdate) AddCompany(c ...*Company) *UserUpdate {
 	return uu.AddCompanyIDs(ids...)
 }
 
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by IDs.
+func (uu *UserUpdate) AddClubMemberIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddClubMemberIDs(ids...)
+	return uu
+}
+
+// AddClubMember adds the "club_member" edges to the ClubMember entity.
+func (uu *UserUpdate) AddClubMember(c ...*ClubMember) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.AddClubMemberIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -121,6 +137,27 @@ func (uu *UserUpdate) RemoveCompany(c ...*Company) *UserUpdate {
 		ids[i] = c[i].ID
 	}
 	return uu.RemoveCompanyIDs(ids...)
+}
+
+// ClearClubMember clears all "club_member" edges to the ClubMember entity.
+func (uu *UserUpdate) ClearClubMember() *UserUpdate {
+	uu.mutation.ClearClubMember()
+	return uu
+}
+
+// RemoveClubMemberIDs removes the "club_member" edge to ClubMember entities by IDs.
+func (uu *UserUpdate) RemoveClubMemberIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveClubMemberIDs(ids...)
+	return uu
+}
+
+// RemoveClubMember removes "club_member" edges to ClubMember entities.
+func (uu *UserUpdate) RemoveClubMember(c ...*ClubMember) *UserUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uu.RemoveClubMemberIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -340,6 +377,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.ClubMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedClubMemberIDs(); len(nodes) > 0 && !uu.mutation.ClubMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.ClubMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -407,6 +498,21 @@ func (uuo *UserUpdateOne) AddCompany(c ...*Company) *UserUpdateOne {
 	return uuo.AddCompanyIDs(ids...)
 }
 
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by IDs.
+func (uuo *UserUpdateOne) AddClubMemberIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddClubMemberIDs(ids...)
+	return uuo
+}
+
+// AddClubMember adds the "club_member" edges to the ClubMember entity.
+func (uuo *UserUpdateOne) AddClubMember(c ...*ClubMember) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.AddClubMemberIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -452,6 +558,27 @@ func (uuo *UserUpdateOne) RemoveCompany(c ...*Company) *UserUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return uuo.RemoveCompanyIDs(ids...)
+}
+
+// ClearClubMember clears all "club_member" edges to the ClubMember entity.
+func (uuo *UserUpdateOne) ClearClubMember() *UserUpdateOne {
+	uuo.mutation.ClearClubMember()
+	return uuo
+}
+
+// RemoveClubMemberIDs removes the "club_member" edge to ClubMember entities by IDs.
+func (uuo *UserUpdateOne) RemoveClubMemberIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveClubMemberIDs(ids...)
+	return uuo
+}
+
+// RemoveClubMember removes "club_member" edges to ClubMember entities.
+func (uuo *UserUpdateOne) RemoveClubMember(c ...*ClubMember) *UserUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uuo.RemoveClubMemberIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -687,6 +814,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.ClubMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedClubMemberIDs(); len(nodes) > 0 && !uuo.mutation.ClubMemberCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.ClubMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
 				},
 			},
 		}

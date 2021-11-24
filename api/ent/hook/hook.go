@@ -9,6 +9,32 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 )
 
+// The ClubFunc type is an adapter to allow the use of ordinary
+// function as Club mutator.
+type ClubFunc func(context.Context, *ent.ClubMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClubFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ClubMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ClubMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ClubMemberFunc type is an adapter to allow the use of ordinary
+// function as ClubMember mutator.
+type ClubMemberFunc func(context.Context, *ent.ClubMemberMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ClubMemberFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ClubMemberMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ClubMemberMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CompanyFunc type is an adapter to allow the use of ordinary
 // function as Company mutator.
 type CompanyFunc func(context.Context, *ent.CompanyMutation) (ent.Value, error)

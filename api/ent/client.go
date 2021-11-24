@@ -9,6 +9,8 @@ import (
 
 	"github.com/Wanted-Linx/linx-backend/api/ent/migrate"
 
+	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
@@ -23,6 +25,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Club is the client for interacting with the Club builders.
+	Club *ClubClient
+	// ClubMember is the client for interacting with the ClubMember builders.
+	ClubMember *ClubMemberClient
 	// Company is the client for interacting with the Company builders.
 	Company *CompanyClient
 	// Student is the client for interacting with the Student builders.
@@ -42,6 +48,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Club = NewClubClient(c.config)
+	c.ClubMember = NewClubMemberClient(c.config)
 	c.Company = NewCompanyClient(c.config)
 	c.Student = NewStudentClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -76,11 +84,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Company: NewCompanyClient(cfg),
-		Student: NewStudentClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Club:       NewClubClient(cfg),
+		ClubMember: NewClubMemberClient(cfg),
+		Company:    NewCompanyClient(cfg),
+		Student:    NewStudentClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -98,17 +108,19 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config:  cfg,
-		Company: NewCompanyClient(cfg),
-		Student: NewStudentClient(cfg),
-		User:    NewUserClient(cfg),
+		config:     cfg,
+		Club:       NewClubClient(cfg),
+		ClubMember: NewClubMemberClient(cfg),
+		Company:    NewCompanyClient(cfg),
+		Student:    NewStudentClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Company.
+//		Club.
 //		Query().
 //		Count(ctx)
 //
@@ -131,9 +143,255 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Club.Use(hooks...)
+	c.ClubMember.Use(hooks...)
 	c.Company.Use(hooks...)
 	c.Student.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// ClubClient is a client for the Club schema.
+type ClubClient struct {
+	config
+}
+
+// NewClubClient returns a client for the Club from the given config.
+func NewClubClient(c config) *ClubClient {
+	return &ClubClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `club.Hooks(f(g(h())))`.
+func (c *ClubClient) Use(hooks ...Hook) {
+	c.hooks.Club = append(c.hooks.Club, hooks...)
+}
+
+// Create returns a create builder for Club.
+func (c *ClubClient) Create() *ClubCreate {
+	mutation := newClubMutation(c.config, OpCreate)
+	return &ClubCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Club entities.
+func (c *ClubClient) CreateBulk(builders ...*ClubCreate) *ClubCreateBulk {
+	return &ClubCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Club.
+func (c *ClubClient) Update() *ClubUpdate {
+	mutation := newClubMutation(c.config, OpUpdate)
+	return &ClubUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClubClient) UpdateOne(cl *Club) *ClubUpdateOne {
+	mutation := newClubMutation(c.config, OpUpdateOne, withClub(cl))
+	return &ClubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClubClient) UpdateOneID(id int) *ClubUpdateOne {
+	mutation := newClubMutation(c.config, OpUpdateOne, withClubID(id))
+	return &ClubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Club.
+func (c *ClubClient) Delete() *ClubDelete {
+	mutation := newClubMutation(c.config, OpDelete)
+	return &ClubDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ClubClient) DeleteOne(cl *Club) *ClubDeleteOne {
+	return c.DeleteOneID(cl.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ClubClient) DeleteOneID(id int) *ClubDeleteOne {
+	builder := c.Delete().Where(club.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClubDeleteOne{builder}
+}
+
+// Query returns a query builder for Club.
+func (c *ClubClient) Query() *ClubQuery {
+	return &ClubQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Club entity by its id.
+func (c *ClubClient) Get(ctx context.Context, id int) (*Club, error) {
+	return c.Query().Where(club.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClubClient) GetX(ctx context.Context, id int) *Club {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryLeader queries the leader edge of a Club.
+func (c *ClubClient) QueryLeader(cl *Club) *StudentQuery {
+	query := &StudentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, club.LeaderTable, club.LeaderColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClubMember queries the club_member edge of a Club.
+func (c *ClubClient) QueryClubMember(cl *Club) *ClubMemberQuery {
+	query := &ClubMemberQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, id),
+			sqlgraph.To(clubmember.Table, clubmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.ClubMemberTable, club.ClubMemberColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClubClient) Hooks() []Hook {
+	return c.hooks.Club
+}
+
+// ClubMemberClient is a client for the ClubMember schema.
+type ClubMemberClient struct {
+	config
+}
+
+// NewClubMemberClient returns a client for the ClubMember from the given config.
+func NewClubMemberClient(c config) *ClubMemberClient {
+	return &ClubMemberClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `clubmember.Hooks(f(g(h())))`.
+func (c *ClubMemberClient) Use(hooks ...Hook) {
+	c.hooks.ClubMember = append(c.hooks.ClubMember, hooks...)
+}
+
+// Create returns a create builder for ClubMember.
+func (c *ClubMemberClient) Create() *ClubMemberCreate {
+	mutation := newClubMemberMutation(c.config, OpCreate)
+	return &ClubMemberCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ClubMember entities.
+func (c *ClubMemberClient) CreateBulk(builders ...*ClubMemberCreate) *ClubMemberCreateBulk {
+	return &ClubMemberCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ClubMember.
+func (c *ClubMemberClient) Update() *ClubMemberUpdate {
+	mutation := newClubMemberMutation(c.config, OpUpdate)
+	return &ClubMemberUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ClubMemberClient) UpdateOne(cm *ClubMember) *ClubMemberUpdateOne {
+	mutation := newClubMemberMutation(c.config, OpUpdateOne, withClubMember(cm))
+	return &ClubMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ClubMemberClient) UpdateOneID(id int) *ClubMemberUpdateOne {
+	mutation := newClubMemberMutation(c.config, OpUpdateOne, withClubMemberID(id))
+	return &ClubMemberUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ClubMember.
+func (c *ClubMemberClient) Delete() *ClubMemberDelete {
+	mutation := newClubMemberMutation(c.config, OpDelete)
+	return &ClubMemberDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ClubMemberClient) DeleteOne(cm *ClubMember) *ClubMemberDeleteOne {
+	return c.DeleteOneID(cm.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ClubMemberClient) DeleteOneID(id int) *ClubMemberDeleteOne {
+	builder := c.Delete().Where(clubmember.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ClubMemberDeleteOne{builder}
+}
+
+// Query returns a query builder for ClubMember.
+func (c *ClubMemberClient) Query() *ClubMemberQuery {
+	return &ClubMemberQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ClubMember entity by its id.
+func (c *ClubMemberClient) Get(ctx context.Context, id int) (*ClubMember, error) {
+	return c.Query().Where(clubmember.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ClubMemberClient) GetX(ctx context.Context, id int) *ClubMember {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStudent queries the student edge of a ClubMember.
+func (c *ClubMemberClient) QueryStudent(cm *ClubMember) *StudentQuery {
+	query := &StudentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clubmember.Table, clubmember.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, clubmember.StudentTable, clubmember.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(cm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClub queries the club edge of a ClubMember.
+func (c *ClubMemberClient) QueryClub(cm *ClubMember) *ClubQuery {
+	query := &ClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(clubmember.Table, clubmember.FieldID, id),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, clubmember.ClubTable, clubmember.ClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(cm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ClubMemberClient) Hooks() []Hook {
+	return c.hooks.ClubMember
 }
 
 // CompanyClient is a client for the Company schema.
@@ -343,6 +601,38 @@ func (c *StudentClient) QueryUser(s *Student) *UserQuery {
 	return query
 }
 
+// QueryClub queries the club edge of a Student.
+func (c *StudentClient) QueryClub(s *Student) *ClubQuery {
+	query := &ClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, id),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.ClubTable, student.ClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClubMember queries the club_member edge of a Student.
+func (c *StudentClient) QueryClubMember(s *Student) *ClubMemberQuery {
+	query := &ClubMemberQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, id),
+			sqlgraph.To(clubmember.Table, clubmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.ClubMemberTable, student.ClubMemberColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *StudentClient) Hooks() []Hook {
 	return c.hooks.Student
@@ -458,6 +748,22 @@ func (c *UserClient) QueryCompany(u *User) *CompanyQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(company.Table, company.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, user.CompanyTable, user.CompanyColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClubMember queries the club_member edge of a User.
+func (c *UserClient) QueryClubMember(u *User) *ClubMemberQuery {
+	query := &ClubMemberQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(clubmember.Table, clubmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ClubMemberTable, user.ClubMemberColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

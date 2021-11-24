@@ -8,6 +8,71 @@ import (
 )
 
 var (
+	// ClubsColumns holds the columns for the "clubs" table.
+	ClubsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "organization", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "profile_image", Type: field.TypeString, Nullable: true},
+		{Name: "profile_link", Type: field.TypeString, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "student_club", Type: field.TypeInt, Nullable: true},
+	}
+	// ClubsTable holds the schema information for the "clubs" table.
+	ClubsTable = &schema.Table{
+		Name:       "clubs",
+		Columns:    ClubsColumns,
+		PrimaryKey: []*schema.Column{ClubsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "clubs_students_club",
+				Columns:    []*schema.Column{ClubsColumns[7]},
+				RefColumns: []*schema.Column{StudentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// ClubMembersColumns holds the columns for the "club_members" table.
+	ClubMembersColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "club_id", Type: field.TypeInt, Nullable: true},
+		{Name: "student_id", Type: field.TypeInt, Nullable: true},
+		{Name: "user_club_member", Type: field.TypeInt, Nullable: true},
+	}
+	// ClubMembersTable holds the schema information for the "club_members" table.
+	ClubMembersTable = &schema.Table{
+		Name:       "club_members",
+		Columns:    ClubMembersColumns,
+		PrimaryKey: []*schema.Column{ClubMembersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "club_members_clubs_club_member",
+				Columns:    []*schema.Column{ClubMembersColumns[1]},
+				RefColumns: []*schema.Column{ClubsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "club_members_students_club_member",
+				Columns:    []*schema.Column{ClubMembersColumns[2]},
+				RefColumns: []*schema.Column{StudentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "club_members_users_club_member",
+				Columns:    []*schema.Column{ClubMembersColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "clubmember_club_id_student_id",
+				Unique:  true,
+				Columns: []*schema.Column{ClubMembersColumns[1], ClubMembersColumns[2]},
+			},
+		},
+	}
 	// CompaniesColumns holds the columns for the "companies" table.
 	CompaniesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -70,6 +135,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ClubsTable,
+		ClubMembersTable,
 		CompaniesTable,
 		StudentsTable,
 		UsersTable,
@@ -77,6 +144,10 @@ var (
 )
 
 func init() {
+	ClubsTable.ForeignKeys[0].RefTable = StudentsTable
+	ClubMembersTable.ForeignKeys[0].RefTable = ClubsTable
+	ClubMembersTable.ForeignKeys[1].RefTable = StudentsTable
+	ClubMembersTable.ForeignKeys[2].RefTable = UsersTable
 	CompaniesTable.ForeignKeys[0].RefTable = UsersTable
 	StudentsTable.ForeignKeys[0].RefTable = UsersTable
 }

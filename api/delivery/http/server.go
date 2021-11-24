@@ -11,7 +11,9 @@ var e *echo.Echo
 func NewServer(
 	userHandler *handler.UserHandler,
 	studentHandler *handler.StudentHandler,
-	companyHandler *handler.CompanyHandler) *echo.Echo {
+	companyHandler *handler.CompanyHandler,
+	clubHandler *handler.ClubHandler,
+	clubMemberHandler *handler.ClubMemberHandler) *echo.Echo {
 	e = echo.New()
 	e.HTTPErrorHandler = httpErrorHandler
 	e.Use(middleware.Logger())
@@ -22,6 +24,6 @@ func NewServer(
 		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
 	}))
 
-	initRouter(userHandler, studentHandler, companyHandler)
+	initRouter(userHandler, studentHandler, companyHandler, clubHandler, clubMemberHandler)
 	return e
 }

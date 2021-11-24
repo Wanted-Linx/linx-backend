@@ -16,16 +16,22 @@ func main() {
 	userRepo := repository.NewUserRepository(dbClient)
 	studentRepo := repository.NewStudentRepository(dbClient)
 	companyRepo := repository.NewCompanyRepository(dbClient)
+	clubRepo := repository.NewClubRepository(dbClient)
+	clubMemberRepo := repository.NewClubMemberRepository(dbClient)
 
 	userService := service.NewUserSerivce(userRepo, studentRepo)
-	studentService := service.NewStudentService(studentRepo)
+	studentService := service.NewStudentService(studentRepo, clubMemberRepo)
 	companyService := service.NewCompanyService(companyRepo)
+	clubService := service.NewClubService(clubRepo, clubMemberRepo)
+	clubMemberService := service.NewClubMemberService(clubMemberRepo)
 
 	userHandler := handler.NewUserHandler(userService, studentService, companyService)
 	studentHandler := handler.NewStudentHandler(studentService)
 	companyHandler := handler.NewCompanyHandler(companyService)
+	clubHandler := handler.NewClubHandler(clubService)
+	clubMemberHandler := handler.NewClubMemberHandler(clubMemberService)
 
-	server := http.NewServer(userHandler, studentHandler, companyHandler)
+	server := http.NewServer(userHandler, studentHandler, companyHandler, clubHandler, clubMemberHandler)
 
 	server.Logger.Fatal(server.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }

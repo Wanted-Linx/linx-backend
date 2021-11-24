@@ -45,29 +45,6 @@ func (s *userService) SignUp(reqSignUp *domain.SignUpRequest) (*domain.UserDto, 
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
-	// if newUser.Kind.String() == "student" {
-	// 	// register student table
-	// 	student := &ent.Student{
-	// 		ID:         newUser.ID,
-	// 		Name:       reqSignUp.Name,
-	// 		University: reqSignUp.University,
-	// 		Edges: ent.StudentEdges{
-	// 			User: &ent.User{ID: newUser.ID},
-	// 		},
-	// 	}
-
-	// 	newStudent, err := s.studentRepo.Save(student)
-	// 	if err != nil {
-	// 		log.Info("회원가입(학생) 실패")
-	// 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
-	// 	}
-
-	// 	log.Info("회원가입(학생) 성공", newStudent)
-	// } else {
-	// 	// register company table
-	// 	log.Info("회원가입(기업) 성공")
-	// }
-
 	return domain.UserToDto(newUser), nil
 }
 

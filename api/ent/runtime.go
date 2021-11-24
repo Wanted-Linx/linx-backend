@@ -2,8 +2,21 @@
 
 package ent
 
+import (
+	"time"
+
+	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	clubFields := schema.Club{}.Fields()
+	_ = clubFields
+	// clubDescCreatedAt is the schema descriptor for created_at field.
+	clubDescCreatedAt := clubFields[5].Descriptor()
+	// club.DefaultCreatedAt holds the default value on creation for the created_at field.
+	club.DefaultCreatedAt = clubDescCreatedAt.Default.(func() time.Time)
 }
