@@ -13,12 +13,17 @@ import (
 type UserHandler struct {
 	UserService    domain.UserService
 	StudentSerivce domain.StudentService
+	CompanyService domain.CompanyService
 }
 
-func NewUserHandler(userService domain.UserService, studentService domain.StudentService) *UserHandler {
+func NewUserHandler(
+	userService domain.UserService,
+	studentService domain.StudentService,
+	companyService domain.CompanyService) *UserHandler {
 	return &UserHandler{
 		UserService:    userService,
 		StudentSerivce: studentService,
+		CompanyService: companyService,
 	}
 }
 
@@ -42,13 +47,11 @@ func (h *UserHandler) SignUp(c echo.Context) error {
 		return c.JSON(200, newStudent)
 	}
 
-	return c.JSON(200, "")
-
-	// newCompany, err := h.CompanyService.Save(newUser.ID, reqSignUp)
-	// if err != nil {
-	// 	return nil
-	// }
-	// return c.JSON(200, newCompany)
+	newCompany, err := h.CompanyService.Save(newUser.ID, reqSignUp)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, newCompany)
 }
 
 func (h *UserHandler) Login(c echo.Context) error {
