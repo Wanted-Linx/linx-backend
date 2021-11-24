@@ -6,6 +6,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// Club is the predicate function for club builders.
+type Club func(*sql.Selector)
+
+// ClubMember is the predicate function for clubmember builders.
+type ClubMember func(*sql.Selector)
+
 // Company is the predicate function for company builders.
 type Company func(*sql.Selector)
 

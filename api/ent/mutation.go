@@ -6,7 +6,10 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
+	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
@@ -24,10 +27,1216 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeCompany = "Company"
-	TypeStudent = "Student"
-	TypeUser    = "User"
+	TypeClub       = "Club"
+	TypeClubMember = "ClubMember"
+	TypeCompany    = "Company"
+	TypeStudent    = "Student"
+	TypeUser       = "User"
 )
+
+// ClubMutation represents an operation that mutates the Club nodes in the graph.
+type ClubMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	organization       *string
+	description        *string
+	profile_image      *string
+	profile_link       *string
+	created_at         *time.Time
+	clearedFields      map[string]struct{}
+	leader             *int
+	clearedleader      bool
+	club_member        map[int]struct{}
+	removedclub_member map[int]struct{}
+	clearedclub_member bool
+	done               bool
+	oldValue           func(context.Context) (*Club, error)
+	predicates         []predicate.Club
+}
+
+var _ ent.Mutation = (*ClubMutation)(nil)
+
+// clubOption allows management of the mutation configuration using functional options.
+type clubOption func(*ClubMutation)
+
+// newClubMutation creates new mutation for the Club entity.
+func newClubMutation(c config, op Op, opts ...clubOption) *ClubMutation {
+	m := &ClubMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeClub,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withClubID sets the ID field of the mutation.
+func withClubID(id int) clubOption {
+	return func(m *ClubMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Club
+		)
+		m.oldValue = func(ctx context.Context) (*Club, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Club.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withClub sets the old Club of the mutation.
+func withClub(node *Club) clubOption {
+	return func(m *ClubMutation) {
+		m.oldValue = func(context.Context) (*Club, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ClubMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ClubMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ClubMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetName sets the "name" field.
+func (m *ClubMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *ClubMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *ClubMutation) ResetName() {
+	m.name = nil
+}
+
+// SetOrganization sets the "organization" field.
+func (m *ClubMutation) SetOrganization(s string) {
+	m.organization = &s
+}
+
+// Organization returns the value of the "organization" field in the mutation.
+func (m *ClubMutation) Organization() (r string, exists bool) {
+	v := m.organization
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrganization returns the old "organization" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldOrganization(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldOrganization is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldOrganization requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrganization: %w", err)
+	}
+	return oldValue.Organization, nil
+}
+
+// ResetOrganization resets all changes to the "organization" field.
+func (m *ClubMutation) ResetOrganization() {
+	m.organization = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *ClubMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *ClubMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *ClubMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetProfileImage sets the "profile_image" field.
+func (m *ClubMutation) SetProfileImage(s string) {
+	m.profile_image = &s
+}
+
+// ProfileImage returns the value of the "profile_image" field in the mutation.
+func (m *ClubMutation) ProfileImage() (r string, exists bool) {
+	v := m.profile_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfileImage returns the old "profile_image" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldProfileImage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProfileImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProfileImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfileImage: %w", err)
+	}
+	return oldValue.ProfileImage, nil
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (m *ClubMutation) ClearProfileImage() {
+	m.profile_image = nil
+	m.clearedFields[club.FieldProfileImage] = struct{}{}
+}
+
+// ProfileImageCleared returns if the "profile_image" field was cleared in this mutation.
+func (m *ClubMutation) ProfileImageCleared() bool {
+	_, ok := m.clearedFields[club.FieldProfileImage]
+	return ok
+}
+
+// ResetProfileImage resets all changes to the "profile_image" field.
+func (m *ClubMutation) ResetProfileImage() {
+	m.profile_image = nil
+	delete(m.clearedFields, club.FieldProfileImage)
+}
+
+// SetProfileLink sets the "profile_link" field.
+func (m *ClubMutation) SetProfileLink(s string) {
+	m.profile_link = &s
+}
+
+// ProfileLink returns the value of the "profile_link" field in the mutation.
+func (m *ClubMutation) ProfileLink() (r string, exists bool) {
+	v := m.profile_link
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfileLink returns the old "profile_link" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldProfileLink(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProfileLink is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProfileLink requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfileLink: %w", err)
+	}
+	return oldValue.ProfileLink, nil
+}
+
+// ClearProfileLink clears the value of the "profile_link" field.
+func (m *ClubMutation) ClearProfileLink() {
+	m.profile_link = nil
+	m.clearedFields[club.FieldProfileLink] = struct{}{}
+}
+
+// ProfileLinkCleared returns if the "profile_link" field was cleared in this mutation.
+func (m *ClubMutation) ProfileLinkCleared() bool {
+	_, ok := m.clearedFields[club.FieldProfileLink]
+	return ok
+}
+
+// ResetProfileLink resets all changes to the "profile_link" field.
+func (m *ClubMutation) ResetProfileLink() {
+	m.profile_link = nil
+	delete(m.clearedFields, club.FieldProfileLink)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ClubMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ClubMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Club entity.
+// If the Club object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ClubMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetLeaderID sets the "leader" edge to the Student entity by id.
+func (m *ClubMutation) SetLeaderID(id int) {
+	m.leader = &id
+}
+
+// ClearLeader clears the "leader" edge to the Student entity.
+func (m *ClubMutation) ClearLeader() {
+	m.clearedleader = true
+}
+
+// LeaderCleared reports if the "leader" edge to the Student entity was cleared.
+func (m *ClubMutation) LeaderCleared() bool {
+	return m.clearedleader
+}
+
+// LeaderID returns the "leader" edge ID in the mutation.
+func (m *ClubMutation) LeaderID() (id int, exists bool) {
+	if m.leader != nil {
+		return *m.leader, true
+	}
+	return
+}
+
+// LeaderIDs returns the "leader" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// LeaderID instead. It exists only for internal usage by the builders.
+func (m *ClubMutation) LeaderIDs() (ids []int) {
+	if id := m.leader; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetLeader resets all changes to the "leader" edge.
+func (m *ClubMutation) ResetLeader() {
+	m.leader = nil
+	m.clearedleader = false
+}
+
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by ids.
+func (m *ClubMutation) AddClubMemberIDs(ids ...int) {
+	if m.club_member == nil {
+		m.club_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.club_member[ids[i]] = struct{}{}
+	}
+}
+
+// ClearClubMember clears the "club_member" edge to the ClubMember entity.
+func (m *ClubMutation) ClearClubMember() {
+	m.clearedclub_member = true
+}
+
+// ClubMemberCleared reports if the "club_member" edge to the ClubMember entity was cleared.
+func (m *ClubMutation) ClubMemberCleared() bool {
+	return m.clearedclub_member
+}
+
+// RemoveClubMemberIDs removes the "club_member" edge to the ClubMember entity by IDs.
+func (m *ClubMutation) RemoveClubMemberIDs(ids ...int) {
+	if m.removedclub_member == nil {
+		m.removedclub_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.club_member, ids[i])
+		m.removedclub_member[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedClubMember returns the removed IDs of the "club_member" edge to the ClubMember entity.
+func (m *ClubMutation) RemovedClubMemberIDs() (ids []int) {
+	for id := range m.removedclub_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ClubMemberIDs returns the "club_member" edge IDs in the mutation.
+func (m *ClubMutation) ClubMemberIDs() (ids []int) {
+	for id := range m.club_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetClubMember resets all changes to the "club_member" edge.
+func (m *ClubMutation) ResetClubMember() {
+	m.club_member = nil
+	m.clearedclub_member = false
+	m.removedclub_member = nil
+}
+
+// Where appends a list predicates to the ClubMutation builder.
+func (m *ClubMutation) Where(ps ...predicate.Club) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *ClubMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Club).
+func (m *ClubMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ClubMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.name != nil {
+		fields = append(fields, club.FieldName)
+	}
+	if m.organization != nil {
+		fields = append(fields, club.FieldOrganization)
+	}
+	if m.description != nil {
+		fields = append(fields, club.FieldDescription)
+	}
+	if m.profile_image != nil {
+		fields = append(fields, club.FieldProfileImage)
+	}
+	if m.profile_link != nil {
+		fields = append(fields, club.FieldProfileLink)
+	}
+	if m.created_at != nil {
+		fields = append(fields, club.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ClubMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case club.FieldName:
+		return m.Name()
+	case club.FieldOrganization:
+		return m.Organization()
+	case club.FieldDescription:
+		return m.Description()
+	case club.FieldProfileImage:
+		return m.ProfileImage()
+	case club.FieldProfileLink:
+		return m.ProfileLink()
+	case club.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ClubMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case club.FieldName:
+		return m.OldName(ctx)
+	case club.FieldOrganization:
+		return m.OldOrganization(ctx)
+	case club.FieldDescription:
+		return m.OldDescription(ctx)
+	case club.FieldProfileImage:
+		return m.OldProfileImage(ctx)
+	case club.FieldProfileLink:
+		return m.OldProfileLink(ctx)
+	case club.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Club field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClubMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case club.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case club.FieldOrganization:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrganization(v)
+		return nil
+	case club.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case club.FieldProfileImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProfileImage(v)
+		return nil
+	case club.FieldProfileLink:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProfileLink(v)
+		return nil
+	case club.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Club field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ClubMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ClubMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClubMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Club numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ClubMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(club.FieldProfileImage) {
+		fields = append(fields, club.FieldProfileImage)
+	}
+	if m.FieldCleared(club.FieldProfileLink) {
+		fields = append(fields, club.FieldProfileLink)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ClubMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ClubMutation) ClearField(name string) error {
+	switch name {
+	case club.FieldProfileImage:
+		m.ClearProfileImage()
+		return nil
+	case club.FieldProfileLink:
+		m.ClearProfileLink()
+		return nil
+	}
+	return fmt.Errorf("unknown Club nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ClubMutation) ResetField(name string) error {
+	switch name {
+	case club.FieldName:
+		m.ResetName()
+		return nil
+	case club.FieldOrganization:
+		m.ResetOrganization()
+		return nil
+	case club.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case club.FieldProfileImage:
+		m.ResetProfileImage()
+		return nil
+	case club.FieldProfileLink:
+		m.ResetProfileLink()
+		return nil
+	case club.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Club field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ClubMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.leader != nil {
+		edges = append(edges, club.EdgeLeader)
+	}
+	if m.club_member != nil {
+		edges = append(edges, club.EdgeClubMember)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ClubMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case club.EdgeLeader:
+		if id := m.leader; id != nil {
+			return []ent.Value{*id}
+		}
+	case club.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.club_member))
+		for id := range m.club_member {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ClubMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedclub_member != nil {
+		edges = append(edges, club.EdgeClubMember)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ClubMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case club.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.removedclub_member))
+		for id := range m.removedclub_member {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ClubMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedleader {
+		edges = append(edges, club.EdgeLeader)
+	}
+	if m.clearedclub_member {
+		edges = append(edges, club.EdgeClubMember)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ClubMutation) EdgeCleared(name string) bool {
+	switch name {
+	case club.EdgeLeader:
+		return m.clearedleader
+	case club.EdgeClubMember:
+		return m.clearedclub_member
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ClubMutation) ClearEdge(name string) error {
+	switch name {
+	case club.EdgeLeader:
+		m.ClearLeader()
+		return nil
+	}
+	return fmt.Errorf("unknown Club unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ClubMutation) ResetEdge(name string) error {
+	switch name {
+	case club.EdgeLeader:
+		m.ResetLeader()
+		return nil
+	case club.EdgeClubMember:
+		m.ResetClubMember()
+		return nil
+	}
+	return fmt.Errorf("unknown Club edge %s", name)
+}
+
+// ClubMemberMutation represents an operation that mutates the ClubMember nodes in the graph.
+type ClubMemberMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	clearedFields  map[string]struct{}
+	student        *int
+	clearedstudent bool
+	club           *int
+	clearedclub    bool
+	done           bool
+	oldValue       func(context.Context) (*ClubMember, error)
+	predicates     []predicate.ClubMember
+}
+
+var _ ent.Mutation = (*ClubMemberMutation)(nil)
+
+// clubmemberOption allows management of the mutation configuration using functional options.
+type clubmemberOption func(*ClubMemberMutation)
+
+// newClubMemberMutation creates new mutation for the ClubMember entity.
+func newClubMemberMutation(c config, op Op, opts ...clubmemberOption) *ClubMemberMutation {
+	m := &ClubMemberMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeClubMember,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withClubMemberID sets the ID field of the mutation.
+func withClubMemberID(id int) clubmemberOption {
+	return func(m *ClubMemberMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ClubMember
+		)
+		m.oldValue = func(ctx context.Context) (*ClubMember, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ClubMember.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withClubMember sets the old ClubMember of the mutation.
+func withClubMember(node *ClubMember) clubmemberOption {
+	return func(m *ClubMemberMutation) {
+		m.oldValue = func(context.Context) (*ClubMember, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ClubMemberMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ClubMemberMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ClubMemberMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetClubID sets the "club_id" field.
+func (m *ClubMemberMutation) SetClubID(i int) {
+	m.club = &i
+}
+
+// ClubID returns the value of the "club_id" field in the mutation.
+func (m *ClubMemberMutation) ClubID() (r int, exists bool) {
+	v := m.club
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClubID returns the old "club_id" field's value of the ClubMember entity.
+// If the ClubMember object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMemberMutation) OldClubID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldClubID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldClubID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClubID: %w", err)
+	}
+	return oldValue.ClubID, nil
+}
+
+// ResetClubID resets all changes to the "club_id" field.
+func (m *ClubMemberMutation) ResetClubID() {
+	m.club = nil
+}
+
+// SetStudentID sets the "student_id" field.
+func (m *ClubMemberMutation) SetStudentID(i int) {
+	m.student = &i
+}
+
+// StudentID returns the value of the "student_id" field in the mutation.
+func (m *ClubMemberMutation) StudentID() (r int, exists bool) {
+	v := m.student
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStudentID returns the old "student_id" field's value of the ClubMember entity.
+// If the ClubMember object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ClubMemberMutation) OldStudentID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldStudentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldStudentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStudentID: %w", err)
+	}
+	return oldValue.StudentID, nil
+}
+
+// ResetStudentID resets all changes to the "student_id" field.
+func (m *ClubMemberMutation) ResetStudentID() {
+	m.student = nil
+}
+
+// ClearStudent clears the "student" edge to the Student entity.
+func (m *ClubMemberMutation) ClearStudent() {
+	m.clearedstudent = true
+}
+
+// StudentCleared reports if the "student" edge to the Student entity was cleared.
+func (m *ClubMemberMutation) StudentCleared() bool {
+	return m.clearedstudent
+}
+
+// StudentIDs returns the "student" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StudentID instead. It exists only for internal usage by the builders.
+func (m *ClubMemberMutation) StudentIDs() (ids []int) {
+	if id := m.student; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStudent resets all changes to the "student" edge.
+func (m *ClubMemberMutation) ResetStudent() {
+	m.student = nil
+	m.clearedstudent = false
+}
+
+// ClearClub clears the "club" edge to the Club entity.
+func (m *ClubMemberMutation) ClearClub() {
+	m.clearedclub = true
+}
+
+// ClubCleared reports if the "club" edge to the Club entity was cleared.
+func (m *ClubMemberMutation) ClubCleared() bool {
+	return m.clearedclub
+}
+
+// ClubIDs returns the "club" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ClubID instead. It exists only for internal usage by the builders.
+func (m *ClubMemberMutation) ClubIDs() (ids []int) {
+	if id := m.club; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetClub resets all changes to the "club" edge.
+func (m *ClubMemberMutation) ResetClub() {
+	m.club = nil
+	m.clearedclub = false
+}
+
+// Where appends a list predicates to the ClubMemberMutation builder.
+func (m *ClubMemberMutation) Where(ps ...predicate.ClubMember) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *ClubMemberMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (ClubMember).
+func (m *ClubMemberMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ClubMemberMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.club != nil {
+		fields = append(fields, clubmember.FieldClubID)
+	}
+	if m.student != nil {
+		fields = append(fields, clubmember.FieldStudentID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ClubMemberMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case clubmember.FieldClubID:
+		return m.ClubID()
+	case clubmember.FieldStudentID:
+		return m.StudentID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ClubMemberMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case clubmember.FieldClubID:
+		return m.OldClubID(ctx)
+	case clubmember.FieldStudentID:
+		return m.OldStudentID(ctx)
+	}
+	return nil, fmt.Errorf("unknown ClubMember field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClubMemberMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case clubmember.FieldClubID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClubID(v)
+		return nil
+	case clubmember.FieldStudentID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStudentID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ClubMember field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ClubMemberMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ClubMemberMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ClubMemberMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ClubMember numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ClubMemberMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ClubMemberMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ClubMemberMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ClubMember nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ClubMemberMutation) ResetField(name string) error {
+	switch name {
+	case clubmember.FieldClubID:
+		m.ResetClubID()
+		return nil
+	case clubmember.FieldStudentID:
+		m.ResetStudentID()
+		return nil
+	}
+	return fmt.Errorf("unknown ClubMember field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ClubMemberMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.student != nil {
+		edges = append(edges, clubmember.EdgeStudent)
+	}
+	if m.club != nil {
+		edges = append(edges, clubmember.EdgeClub)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ClubMemberMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case clubmember.EdgeStudent:
+		if id := m.student; id != nil {
+			return []ent.Value{*id}
+		}
+	case clubmember.EdgeClub:
+		if id := m.club; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ClubMemberMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ClubMemberMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ClubMemberMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedstudent {
+		edges = append(edges, clubmember.EdgeStudent)
+	}
+	if m.clearedclub {
+		edges = append(edges, clubmember.EdgeClub)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ClubMemberMutation) EdgeCleared(name string) bool {
+	switch name {
+	case clubmember.EdgeStudent:
+		return m.clearedstudent
+	case clubmember.EdgeClub:
+		return m.clearedclub
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ClubMemberMutation) ClearEdge(name string) error {
+	switch name {
+	case clubmember.EdgeStudent:
+		m.ClearStudent()
+		return nil
+	case clubmember.EdgeClub:
+		m.ClearClub()
+		return nil
+	}
+	return fmt.Errorf("unknown ClubMember unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ClubMemberMutation) ResetEdge(name string) error {
+	switch name {
+	case clubmember.EdgeStudent:
+		m.ResetStudent()
+		return nil
+	case clubmember.EdgeClub:
+		m.ResetClub()
+		return nil
+	}
+	return fmt.Errorf("unknown ClubMember edge %s", name)
+}
 
 // CompanyMutation represents an operation that mutates the Company nodes in the graph.
 type CompanyMutation struct {
@@ -675,19 +1884,25 @@ func (m *CompanyMutation) ResetEdge(name string) error {
 // StudentMutation represents an operation that mutates the Student nodes in the graph.
 type StudentMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	university    *string
-	profile_link  *string
-	profile_image *string
-	clearedFields map[string]struct{}
-	user          *int
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*Student, error)
-	predicates    []predicate.Student
+	op                 Op
+	typ                string
+	id                 *int
+	name               *string
+	university         *string
+	profile_link       *string
+	profile_image      *string
+	clearedFields      map[string]struct{}
+	user               *int
+	cleareduser        bool
+	club               map[int]struct{}
+	removedclub        map[int]struct{}
+	clearedclub        bool
+	club_member        map[int]struct{}
+	removedclub_member map[int]struct{}
+	clearedclub_member bool
+	done               bool
+	oldValue           func(context.Context) (*Student, error)
+	predicates         []predicate.Student
 }
 
 var _ ent.Mutation = (*StudentMutation)(nil)
@@ -984,6 +2199,114 @@ func (m *StudentMutation) ResetUser() {
 	m.cleareduser = false
 }
 
+// AddClubIDs adds the "club" edge to the Club entity by ids.
+func (m *StudentMutation) AddClubIDs(ids ...int) {
+	if m.club == nil {
+		m.club = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.club[ids[i]] = struct{}{}
+	}
+}
+
+// ClearClub clears the "club" edge to the Club entity.
+func (m *StudentMutation) ClearClub() {
+	m.clearedclub = true
+}
+
+// ClubCleared reports if the "club" edge to the Club entity was cleared.
+func (m *StudentMutation) ClubCleared() bool {
+	return m.clearedclub
+}
+
+// RemoveClubIDs removes the "club" edge to the Club entity by IDs.
+func (m *StudentMutation) RemoveClubIDs(ids ...int) {
+	if m.removedclub == nil {
+		m.removedclub = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.club, ids[i])
+		m.removedclub[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedClub returns the removed IDs of the "club" edge to the Club entity.
+func (m *StudentMutation) RemovedClubIDs() (ids []int) {
+	for id := range m.removedclub {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ClubIDs returns the "club" edge IDs in the mutation.
+func (m *StudentMutation) ClubIDs() (ids []int) {
+	for id := range m.club {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetClub resets all changes to the "club" edge.
+func (m *StudentMutation) ResetClub() {
+	m.club = nil
+	m.clearedclub = false
+	m.removedclub = nil
+}
+
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by ids.
+func (m *StudentMutation) AddClubMemberIDs(ids ...int) {
+	if m.club_member == nil {
+		m.club_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.club_member[ids[i]] = struct{}{}
+	}
+}
+
+// ClearClubMember clears the "club_member" edge to the ClubMember entity.
+func (m *StudentMutation) ClearClubMember() {
+	m.clearedclub_member = true
+}
+
+// ClubMemberCleared reports if the "club_member" edge to the ClubMember entity was cleared.
+func (m *StudentMutation) ClubMemberCleared() bool {
+	return m.clearedclub_member
+}
+
+// RemoveClubMemberIDs removes the "club_member" edge to the ClubMember entity by IDs.
+func (m *StudentMutation) RemoveClubMemberIDs(ids ...int) {
+	if m.removedclub_member == nil {
+		m.removedclub_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.club_member, ids[i])
+		m.removedclub_member[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedClubMember returns the removed IDs of the "club_member" edge to the ClubMember entity.
+func (m *StudentMutation) RemovedClubMemberIDs() (ids []int) {
+	for id := range m.removedclub_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ClubMemberIDs returns the "club_member" edge IDs in the mutation.
+func (m *StudentMutation) ClubMemberIDs() (ids []int) {
+	for id := range m.club_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetClubMember resets all changes to the "club_member" edge.
+func (m *StudentMutation) ResetClubMember() {
+	m.club_member = nil
+	m.clearedclub_member = false
+	m.removedclub_member = nil
+}
+
 // Where appends a list predicates to the StudentMutation builder.
 func (m *StudentMutation) Where(ps ...predicate.Student) {
 	m.predicates = append(m.predicates, ps...)
@@ -1168,9 +2491,15 @@ func (m *StudentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StudentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.user != nil {
 		edges = append(edges, student.EdgeUser)
+	}
+	if m.club != nil {
+		edges = append(edges, student.EdgeClub)
+	}
+	if m.club_member != nil {
+		edges = append(edges, student.EdgeClubMember)
 	}
 	return edges
 }
@@ -1183,13 +2512,31 @@ func (m *StudentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
+	case student.EdgeClub:
+		ids := make([]ent.Value, 0, len(m.club))
+		for id := range m.club {
+			ids = append(ids, id)
+		}
+		return ids
+	case student.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.club_member))
+		for id := range m.club_member {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StudentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
+	if m.removedclub != nil {
+		edges = append(edges, student.EdgeClub)
+	}
+	if m.removedclub_member != nil {
+		edges = append(edges, student.EdgeClubMember)
+	}
 	return edges
 }
 
@@ -1197,15 +2544,33 @@ func (m *StudentMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *StudentMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case student.EdgeClub:
+		ids := make([]ent.Value, 0, len(m.removedclub))
+		for id := range m.removedclub {
+			ids = append(ids, id)
+		}
+		return ids
+	case student.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.removedclub_member))
+		for id := range m.removedclub_member {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StudentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 3)
 	if m.cleareduser {
 		edges = append(edges, student.EdgeUser)
+	}
+	if m.clearedclub {
+		edges = append(edges, student.EdgeClub)
+	}
+	if m.clearedclub_member {
+		edges = append(edges, student.EdgeClubMember)
 	}
 	return edges
 }
@@ -1216,6 +2581,10 @@ func (m *StudentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case student.EdgeUser:
 		return m.cleareduser
+	case student.EdgeClub:
+		return m.clearedclub
+	case student.EdgeClubMember:
+		return m.clearedclub_member
 	}
 	return false
 }
@@ -1238,6 +2607,12 @@ func (m *StudentMutation) ResetEdge(name string) error {
 	case student.EdgeUser:
 		m.ResetUser()
 		return nil
+	case student.EdgeClub:
+		m.ResetClub()
+		return nil
+	case student.EdgeClubMember:
+		m.ResetClubMember()
+		return nil
 	}
 	return fmt.Errorf("unknown Student edge %s", name)
 }
@@ -1245,22 +2620,25 @@ func (m *StudentMutation) ResetEdge(name string) error {
 // UserMutation represents an operation that mutates the User nodes in the graph.
 type UserMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	email          *string
-	password       *string
-	kind           *user.Kind
-	clearedFields  map[string]struct{}
-	student        map[int]struct{}
-	removedstudent map[int]struct{}
-	clearedstudent bool
-	company        map[int]struct{}
-	removedcompany map[int]struct{}
-	clearedcompany bool
-	done           bool
-	oldValue       func(context.Context) (*User, error)
-	predicates     []predicate.User
+	op                 Op
+	typ                string
+	id                 *int
+	email              *string
+	password           *string
+	kind               *user.Kind
+	clearedFields      map[string]struct{}
+	student            map[int]struct{}
+	removedstudent     map[int]struct{}
+	clearedstudent     bool
+	company            map[int]struct{}
+	removedcompany     map[int]struct{}
+	clearedcompany     bool
+	club_member        map[int]struct{}
+	removedclub_member map[int]struct{}
+	clearedclub_member bool
+	done               bool
+	oldValue           func(context.Context) (*User, error)
+	predicates         []predicate.User
 }
 
 var _ ent.Mutation = (*UserMutation)(nil)
@@ -1558,6 +2936,60 @@ func (m *UserMutation) ResetCompany() {
 	m.removedcompany = nil
 }
 
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by ids.
+func (m *UserMutation) AddClubMemberIDs(ids ...int) {
+	if m.club_member == nil {
+		m.club_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.club_member[ids[i]] = struct{}{}
+	}
+}
+
+// ClearClubMember clears the "club_member" edge to the ClubMember entity.
+func (m *UserMutation) ClearClubMember() {
+	m.clearedclub_member = true
+}
+
+// ClubMemberCleared reports if the "club_member" edge to the ClubMember entity was cleared.
+func (m *UserMutation) ClubMemberCleared() bool {
+	return m.clearedclub_member
+}
+
+// RemoveClubMemberIDs removes the "club_member" edge to the ClubMember entity by IDs.
+func (m *UserMutation) RemoveClubMemberIDs(ids ...int) {
+	if m.removedclub_member == nil {
+		m.removedclub_member = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.club_member, ids[i])
+		m.removedclub_member[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedClubMember returns the removed IDs of the "club_member" edge to the ClubMember entity.
+func (m *UserMutation) RemovedClubMemberIDs() (ids []int) {
+	for id := range m.removedclub_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ClubMemberIDs returns the "club_member" edge IDs in the mutation.
+func (m *UserMutation) ClubMemberIDs() (ids []int) {
+	for id := range m.club_member {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetClubMember resets all changes to the "club_member" edge.
+func (m *UserMutation) ResetClubMember() {
+	m.club_member = nil
+	m.clearedclub_member = false
+	m.removedclub_member = nil
+}
+
 // Where appends a list predicates to the UserMutation builder.
 func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
@@ -1710,12 +3142,15 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.student != nil {
 		edges = append(edges, user.EdgeStudent)
 	}
 	if m.company != nil {
 		edges = append(edges, user.EdgeCompany)
+	}
+	if m.club_member != nil {
+		edges = append(edges, user.EdgeClubMember)
 	}
 	return edges
 }
@@ -1736,18 +3171,27 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.club_member))
+		for id := range m.club_member {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedstudent != nil {
 		edges = append(edges, user.EdgeStudent)
 	}
 	if m.removedcompany != nil {
 		edges = append(edges, user.EdgeCompany)
+	}
+	if m.removedclub_member != nil {
+		edges = append(edges, user.EdgeClubMember)
 	}
 	return edges
 }
@@ -1768,18 +3212,27 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case user.EdgeClubMember:
+		ids := make([]ent.Value, 0, len(m.removedclub_member))
+		for id := range m.removedclub_member {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedstudent {
 		edges = append(edges, user.EdgeStudent)
 	}
 	if m.clearedcompany {
 		edges = append(edges, user.EdgeCompany)
+	}
+	if m.clearedclub_member {
+		edges = append(edges, user.EdgeClubMember)
 	}
 	return edges
 }
@@ -1792,6 +3245,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedstudent
 	case user.EdgeCompany:
 		return m.clearedcompany
+	case user.EdgeClubMember:
+		return m.clearedclub_member
 	}
 	return false
 }
@@ -1813,6 +3268,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 		return nil
 	case user.EdgeCompany:
 		m.ResetCompany()
+		return nil
+	case user.EdgeClubMember:
+		m.ResetClubMember()
 		return nil
 	}
 	return fmt.Errorf("unknown User edge %s", name)

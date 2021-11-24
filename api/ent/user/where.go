@@ -431,6 +431,34 @@ func HasCompanyWith(preds ...predicate.Company) predicate.User {
 	})
 }
 
+// HasClubMember applies the HasEdge predicate on the "club_member" edge.
+func HasClubMember() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClubMemberWith applies the HasEdge predicate on the "club_member" edge with a given conditions (other predicates).
+func HasClubMemberWith(preds ...predicate.ClubMember) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

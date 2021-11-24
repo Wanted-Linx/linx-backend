@@ -619,6 +619,62 @@ func HasUserWith(preds ...predicate.User) predicate.Student {
 	})
 }
 
+// HasClub applies the HasEdge predicate on the "club" edge.
+func HasClub() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubTable, ClubColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClubWith applies the HasEdge predicate on the "club" edge with a given conditions (other predicates).
+func HasClubWith(preds ...predicate.Club) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubTable, ClubColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasClubMember applies the HasEdge predicate on the "club_member" edge.
+func HasClubMember() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClubMemberWith applies the HasEdge predicate on the "club_member" edge with a given conditions (other predicates).
+func HasClubMemberWith(preds ...predicate.ClubMember) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Student) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {

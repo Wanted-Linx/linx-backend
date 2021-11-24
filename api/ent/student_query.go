@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -11,6 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
@@ -26,8 +29,10 @@ type StudentQuery struct {
 	fields     []string
 	predicates []predicate.Student
 	// eager-loading edges.
-	withUser *UserQuery
-	withFKs  bool
+	withUser       *UserQuery
+	withClub       *ClubQuery
+	withClubMember *ClubMemberQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +84,50 @@ func (sq *StudentQuery) QueryUser() *UserQuery {
 			sqlgraph.From(student.Table, student.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, student.UserTable, student.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryClub chains the current query on the "club" edge.
+func (sq *StudentQuery) QueryClub() *ClubQuery {
+	query := &ClubQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, selector),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.ClubTable, student.ClubColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryClubMember chains the current query on the "club_member" edge.
+func (sq *StudentQuery) QueryClubMember() *ClubMemberQuery {
+	query := &ClubMemberQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, selector),
+			sqlgraph.To(clubmember.Table, clubmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.ClubMemberTable, student.ClubMemberColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -262,12 +311,14 @@ func (sq *StudentQuery) Clone() *StudentQuery {
 		return nil
 	}
 	return &StudentQuery{
-		config:     sq.config,
-		limit:      sq.limit,
-		offset:     sq.offset,
-		order:      append([]OrderFunc{}, sq.order...),
-		predicates: append([]predicate.Student{}, sq.predicates...),
-		withUser:   sq.withUser.Clone(),
+		config:         sq.config,
+		limit:          sq.limit,
+		offset:         sq.offset,
+		order:          append([]OrderFunc{}, sq.order...),
+		predicates:     append([]predicate.Student{}, sq.predicates...),
+		withUser:       sq.withUser.Clone(),
+		withClub:       sq.withClub.Clone(),
+		withClubMember: sq.withClubMember.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -282,6 +333,28 @@ func (sq *StudentQuery) WithUser(opts ...func(*UserQuery)) *StudentQuery {
 		opt(query)
 	}
 	sq.withUser = query
+	return sq
+}
+
+// WithClub tells the query-builder to eager-load the nodes that are connected to
+// the "club" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StudentQuery) WithClub(opts ...func(*ClubQuery)) *StudentQuery {
+	query := &ClubQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withClub = query
+	return sq
+}
+
+// WithClubMember tells the query-builder to eager-load the nodes that are connected to
+// the "club_member" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StudentQuery) WithClubMember(opts ...func(*ClubMemberQuery)) *StudentQuery {
+	query := &ClubMemberQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withClubMember = query
 	return sq
 }
 
@@ -351,8 +424,10 @@ func (sq *StudentQuery) sqlAll(ctx context.Context) ([]*Student, error) {
 		nodes       = []*Student{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			sq.withUser != nil,
+			sq.withClub != nil,
+			sq.withClubMember != nil,
 		}
 	)
 	if sq.withUser != nil {
@@ -407,6 +482,61 @@ func (sq *StudentQuery) sqlAll(ctx context.Context) ([]*Student, error) {
 			for i := range nodes {
 				nodes[i].Edges.User = n
 			}
+		}
+	}
+
+	if query := sq.withClub; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Student)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Club = []*Club{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Club(func(s *sql.Selector) {
+			s.Where(sql.InValues(student.ClubColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.student_club
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "student_club" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "student_club" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Club = append(node.Edges.Club, n)
+		}
+	}
+
+	if query := sq.withClubMember; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Student)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ClubMember = []*ClubMember{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ClubMember(func(s *sql.Selector) {
+			s.Where(sql.InValues(student.ClubMemberColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.StudentID
+			node, ok := nodeids[fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "student_id" returned %v for node %v`, fk, n.ID)
+			}
+			node.Edges.ClubMember = append(node.Edges.ClubMember, n)
 		}
 	}
 

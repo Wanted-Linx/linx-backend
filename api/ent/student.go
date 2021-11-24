@@ -34,9 +34,13 @@ type Student struct {
 type StudentEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// Club holds the value of the club edge.
+	Club []*Club `json:"club,omitempty"`
+	// ClubMember holds the value of the club_member edge.
+	ClubMember []*ClubMember `json:"club_member,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -51,6 +55,24 @@ func (e StudentEdges) UserOrErr() (*User, error) {
 		return e.User, nil
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// ClubOrErr returns the Club value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) ClubOrErr() ([]*Club, error) {
+	if e.loadedTypes[1] {
+		return e.Club, nil
+	}
+	return nil, &NotLoadedError{edge: "club"}
+}
+
+// ClubMemberOrErr returns the ClubMember value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) ClubMemberOrErr() ([]*ClubMember, error) {
+	if e.loadedTypes[2] {
+		return e.ClubMember, nil
+	}
+	return nil, &NotLoadedError{edge: "club_member"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -126,6 +148,16 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 // QueryUser queries the "user" edge of the Student entity.
 func (s *Student) QueryUser() *UserQuery {
 	return (&StudentClient{config: s.config}).QueryUser(s)
+}
+
+// QueryClub queries the "club" edge of the Student entity.
+func (s *Student) QueryClub() *ClubQuery {
+	return (&StudentClient{config: s.config}).QueryClub(s)
+}
+
+// QueryClubMember queries the "club_member" edge of the Student entity.
+func (s *Student) QueryClubMember() *ClubMemberQuery {
+	return (&StudentClient{config: s.config}).QueryClubMember(s)
 }
 
 // Update returns a builder for updating this Student.
