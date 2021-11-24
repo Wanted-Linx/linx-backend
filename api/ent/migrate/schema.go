@@ -8,12 +8,35 @@ import (
 )
 
 var (
+	// CompaniesColumns holds the columns for the "companies" table.
+	CompaniesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "business_number", Type: field.TypeString},
+		{Name: "address", Type: field.TypeString, Nullable: true},
+		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "profile_image", Type: field.TypeString, Nullable: true},
+		{Name: "user_company", Type: field.TypeInt, Nullable: true},
+	}
+	// CompaniesTable holds the schema information for the "companies" table.
+	CompaniesTable = &schema.Table{
+		Name:       "companies",
+		Columns:    CompaniesColumns,
+		PrimaryKey: []*schema.Column{CompaniesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "companies_users_company",
+				Columns:    []*schema.Column{CompaniesColumns[6]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// StudentsColumns holds the columns for the "students" table.
 	StudentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "university", Type: field.TypeString},
-		{Name: "interested_type", Type: field.TypeString, Nullable: true},
 		{Name: "profile_link", Type: field.TypeString, Nullable: true},
 		{Name: "profile_image", Type: field.TypeString, Nullable: true},
 		{Name: "user_student", Type: field.TypeInt, Nullable: true},
@@ -26,7 +49,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "students_users_student",
-				Columns:    []*schema.Column{StudentsColumns[6]},
+				Columns:    []*schema.Column{StudentsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -47,11 +70,13 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CompaniesTable,
 		StudentsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	CompaniesTable.ForeignKeys[0].RefTable = UsersTable
 	StudentsTable.ForeignKeys[0].RefTable = UsersTable
 }

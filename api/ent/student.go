@@ -20,8 +20,6 @@ type Student struct {
 	Name string `json:"name,omitempty"`
 	// University holds the value of the "university" field.
 	University string `json:"university,omitempty"`
-	// InterestedType holds the value of the "interested_type" field.
-	InterestedType *string `json:"interested_type,omitempty"`
 	// ProfileLink holds the value of the "profile_link" field.
 	ProfileLink *string `json:"profile_link,omitempty"`
 	// ProfileImage holds the value of the "profile_image" field.
@@ -62,7 +60,7 @@ func (*Student) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case student.FieldID:
 			values[i] = new(sql.NullInt64)
-		case student.FieldName, student.FieldUniversity, student.FieldInterestedType, student.FieldProfileLink, student.FieldProfileImage:
+		case student.FieldName, student.FieldUniversity, student.FieldProfileLink, student.FieldProfileImage:
 			values[i] = new(sql.NullString)
 		case student.ForeignKeys[0]: // user_student
 			values[i] = new(sql.NullInt64)
@@ -98,13 +96,6 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field university", values[i])
 			} else if value.Valid {
 				s.University = value.String
-			}
-		case student.FieldInterestedType:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field interested_type", values[i])
-			} else if value.Valid {
-				s.InterestedType = new(string)
-				*s.InterestedType = value.String
 			}
 		case student.FieldProfileLink:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -164,10 +155,6 @@ func (s *Student) String() string {
 	builder.WriteString(s.Name)
 	builder.WriteString(", university=")
 	builder.WriteString(s.University)
-	if v := s.InterestedType; v != nil {
-		builder.WriteString(", interested_type=")
-		builder.WriteString(*v)
-	}
 	if v := s.ProfileLink; v != nil {
 		builder.WriteString(", profile_link=")
 		builder.WriteString(*v)

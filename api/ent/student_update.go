@@ -40,26 +40,6 @@ func (su *StudentUpdate) SetUniversity(s string) *StudentUpdate {
 	return su
 }
 
-// SetInterestedType sets the "interested_type" field.
-func (su *StudentUpdate) SetInterestedType(s string) *StudentUpdate {
-	su.mutation.SetInterestedType(s)
-	return su
-}
-
-// SetNillableInterestedType sets the "interested_type" field if the given value is not nil.
-func (su *StudentUpdate) SetNillableInterestedType(s *string) *StudentUpdate {
-	if s != nil {
-		su.SetInterestedType(*s)
-	}
-	return su
-}
-
-// ClearInterestedType clears the value of the "interested_type" field.
-func (su *StudentUpdate) ClearInterestedType() *StudentUpdate {
-	su.mutation.ClearInterestedType()
-	return su
-}
-
 // SetProfileLink sets the "profile_link" field.
 func (su *StudentUpdate) SetProfileLink(s string) *StudentUpdate {
 	su.mutation.SetProfileLink(s)
@@ -222,19 +202,6 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: student.FieldUniversity,
 		})
 	}
-	if value, ok := su.mutation.InterestedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: student.FieldInterestedType,
-		})
-	}
-	if su.mutation.InterestedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: student.FieldInterestedType,
-		})
-	}
 	if value, ok := su.mutation.ProfileLink(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -324,26 +291,6 @@ func (suo *StudentUpdateOne) SetName(s string) *StudentUpdateOne {
 // SetUniversity sets the "university" field.
 func (suo *StudentUpdateOne) SetUniversity(s string) *StudentUpdateOne {
 	suo.mutation.SetUniversity(s)
-	return suo
-}
-
-// SetInterestedType sets the "interested_type" field.
-func (suo *StudentUpdateOne) SetInterestedType(s string) *StudentUpdateOne {
-	suo.mutation.SetInterestedType(s)
-	return suo
-}
-
-// SetNillableInterestedType sets the "interested_type" field if the given value is not nil.
-func (suo *StudentUpdateOne) SetNillableInterestedType(s *string) *StudentUpdateOne {
-	if s != nil {
-		suo.SetInterestedType(*s)
-	}
-	return suo
-}
-
-// ClearInterestedType clears the value of the "interested_type" field.
-func (suo *StudentUpdateOne) ClearInterestedType() *StudentUpdateOne {
-	suo.mutation.ClearInterestedType()
 	return suo
 }
 
@@ -531,19 +478,6 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: student.FieldUniversity,
-		})
-	}
-	if value, ok := suo.mutation.InterestedType(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: student.FieldInterestedType,
-		})
-	}
-	if suo.mutation.InterestedTypeCleared() {
-		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Column: student.FieldInterestedType,
 		})
 	}
 	if value, ok := suo.mutation.ProfileLink(); ok {

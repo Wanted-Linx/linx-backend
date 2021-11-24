@@ -25,7 +25,6 @@ func (r *studentRepository) Save(reqStudent *ent.Student) (*ent.Student, error) 
 		SetUser(reqStudent.Edges.User).
 		SetNillableProfileLink(reqStudent.ProfileLink).
 		SetNillableProfileImage(reqStudent.ProfileImage).
-		SetNillableInterestedType(reqStudent.InterestedType).
 		Save(context.Background())
 	if err != nil {
 		return nil, err

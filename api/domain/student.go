@@ -30,5 +30,6 @@ func StudentToDto(src *ent.Student) *StudentDto {
 		University:   src.University,
 		ProfileLink:  src.ProfileLink,
 		ProfileImage: src.ProfileImage,
+		//Interested_type
 	}
 }

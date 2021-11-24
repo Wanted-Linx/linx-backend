@@ -30,9 +30,11 @@ type User struct {
 type UserEdges struct {
 	// Student holds the value of the student edge.
 	Student []*Student `json:"student,omitempty"`
+	// Company holds the value of the company edge.
+	Company []*Company `json:"company,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // StudentOrErr returns the Student value or an error if the edge
@@ -42,6 +44,15 @@ func (e UserEdges) StudentOrErr() ([]*Student, error) {
 		return e.Student, nil
 	}
 	return nil, &NotLoadedError{edge: "student"}
+}
+
+// CompanyOrErr returns the Company value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) CompanyOrErr() ([]*Company, error) {
+	if e.loadedTypes[1] {
+		return e.Company, nil
+	}
+	return nil, &NotLoadedError{edge: "company"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -100,6 +111,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 // QueryStudent queries the "student" edge of the User entity.
 func (u *User) QueryStudent() *StudentQuery {
 	return (&UserClient{config: u.config}).QueryStudent(u)
+}
+
+// QueryCompany queries the "company" edge of the User entity.
+func (u *User) QueryCompany() *CompanyQuery {
+	return (&UserClient{config: u.config}).QueryCompany(u)
 }
 
 // Update returns a builder for updating this User.
