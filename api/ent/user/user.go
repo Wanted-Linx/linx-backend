@@ -2,6 +2,10 @@
 
 package user
 
+import (
+	"fmt"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -11,8 +15,19 @@ const (
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
+	// EdgeStudent holds the string denoting the student edge name in mutations.
+	EdgeStudent = "student"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// StudentTable is the table that holds the student relation/edge.
+	StudentTable = "students"
+	// StudentInverseTable is the table name for the Student entity.
+	// It exists in this package in order to avoid circular dependency with the "student" package.
+	StudentInverseTable = "students"
+	// StudentColumn is the table column denoting the student relation/edge.
+	StudentColumn = "user_student"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -20,6 +35,7 @@ var Columns = []string{
 	FieldID,
 	FieldEmail,
 	FieldPassword,
+	FieldKind,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -30,4 +46,27 @@ func ValidColumn(column string) bool {
 		}
 	}
 	return false
+}
+
+// Kind defines the type for the "kind" enum field.
+type Kind string
+
+// Kind values.
+const (
+	KindCompany Kind = "company"
+	KindStudent Kind = "student"
+)
+
+func (k Kind) String() string {
+	return string(k)
+}
+
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindCompany, KindStudent:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for kind field: %q", k)
+	}
 }

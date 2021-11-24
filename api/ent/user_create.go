@@ -9,7 +9,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/wanted-linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
 // UserCreate is the builder for creating a User entity.
@@ -29,6 +30,27 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 func (uc *UserCreate) SetPassword(s string) *UserCreate {
 	uc.mutation.SetPassword(s)
 	return uc
+}
+
+// SetKind sets the "kind" field.
+func (uc *UserCreate) SetKind(u user.Kind) *UserCreate {
+	uc.mutation.SetKind(u)
+	return uc
+}
+
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (uc *UserCreate) AddStudentIDs(ids ...int) *UserCreate {
+	uc.mutation.AddStudentIDs(ids...)
+	return uc
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (uc *UserCreate) AddStudent(s ...*Student) *UserCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uc.AddStudentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -107,6 +129,14 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Password(); !ok {
 		return &ValidationError{Name: "password", err: errors.New(`ent: missing required field "password"`)}
 	}
+	if _, ok := uc.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "kind"`)}
+	}
+	if v, ok := uc.mutation.Kind(); ok {
+		if err := user.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "kind": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -149,6 +179,33 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Column: user.FieldPassword,
 		})
 		_node.Password = value
+	}
+	if value, ok := uc.mutation.Kind(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeEnum,
+			Value:  value,
+			Column: user.FieldKind,
+		})
+		_node.Kind = value
+	}
+	if nodes := uc.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

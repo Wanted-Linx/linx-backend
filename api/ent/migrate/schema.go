@@ -8,11 +8,35 @@ import (
 )
 
 var (
+	// StudentsColumns holds the columns for the "students" table.
+	StudentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "university", Type: field.TypeString},
+		{Name: "profile_link", Type: field.TypeString},
+		{Name: "profile_image", Type: field.TypeString},
+		{Name: "user_student", Type: field.TypeInt, Nullable: true},
+	}
+	// StudentsTable holds the schema information for the "students" table.
+	StudentsTable = &schema.Table{
+		Name:       "students",
+		Columns:    StudentsColumns,
+		PrimaryKey: []*schema.Column{StudentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "students_users_student",
+				Columns:    []*schema.Column{StudentsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"company", "student"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -22,9 +46,11 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		StudentsTable,
 		UsersTable,
 	}
 )
 
 func init() {
+	StudentsTable.ForeignKeys[0].RefTable = UsersTable
 }

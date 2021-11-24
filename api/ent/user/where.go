@@ -4,7 +4,8 @@ package user
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/wanted-linx/linx-backend/api/ent/predicate"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -323,6 +324,82 @@ func PasswordEqualFold(v string) predicate.User {
 func PasswordContainsFold(v string) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldPassword), v))
+	})
+}
+
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldKind), v))
+	})
+}
+
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldKind), v))
+	})
+}
+
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldKind), v...))
+	})
+}
+
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.User {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldKind), v...))
+	})
+}
+
+// HasStudent applies the HasEdge predicate on the "student" edge.
+func HasStudent() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StudentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStudentWith applies the HasEdge predicate on the "student" edge with a given conditions (other predicates).
+func HasStudentWith(preds ...predicate.Student) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StudentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 
