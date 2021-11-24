@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/wanted-linx/linx-backend/api/config"
-	"github.com/wanted-linx/linx-backend/api/delivery/http"
-	"github.com/wanted-linx/linx-backend/api/delivery/http/handler"
-	"github.com/wanted-linx/linx-backend/api/repository"
-	"github.com/wanted-linx/linx-backend/api/service"
+	"github.com/Wanted-Linx/linx-backend/api/config"
+	"github.com/Wanted-Linx/linx-backend/api/delivery/http"
+	"github.com/Wanted-Linx/linx-backend/api/delivery/http/handler"
+	"github.com/Wanted-Linx/linx-backend/api/repository"
+	"github.com/Wanted-Linx/linx-backend/api/service"
 )
 
 func main() {

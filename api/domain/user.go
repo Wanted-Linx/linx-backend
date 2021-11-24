@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/wanted-linx/linx-backend/api/ent"
+import "github.com/Wanted-Linx/linx-backend/api/ent"
 
 type UserDto struct {
 	ID    int    `json:"id"`

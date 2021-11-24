@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/wanted-linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
 // User is the model entity for the User schema.
@@ -21,6 +21,27 @@ type User struct {
 	Password string `json:"password,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind user.Kind `json:"kind,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges UserEdges `json:"edges"`
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// Student holds the value of the student edge.
+	Student []*Student `json:"student,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// StudentOrErr returns the Student value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) StudentOrErr() ([]*Student, error) {
+	if e.loadedTypes[0] {
+		return e.Student, nil
+	}
+	return nil, &NotLoadedError{edge: "student"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -74,6 +95,11 @@ func (u *User) assignValues(columns []string, values []interface{}) error {
 		}
 	}
 	return nil
+}
+
+// QueryStudent queries the "student" edge of the User entity.
+func (u *User) QueryStudent() *StudentQuery {
+	return (&UserClient{config: u.config}).QueryStudent(u)
 }
 
 // Update returns a builder for updating this User.

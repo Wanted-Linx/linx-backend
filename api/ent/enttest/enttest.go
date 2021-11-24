@@ -5,9 +5,9 @@ package enttest
 import (
 	"context"
 
-	"github.com/wanted-linx/linx-backend/api/ent"
+	"github.com/Wanted-Linx/linx-backend/api/ent"
 	// required by schema hooks.
-	_ "github.com/wanted-linx/linx-backend/api/ent/runtime"
+	_ "github.com/Wanted-Linx/linx-backend/api/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
 )

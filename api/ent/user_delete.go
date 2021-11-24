@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/wanted-linx/linx-backend/api/ent/predicate"
-	"github.com/wanted-linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
 // UserDelete is the builder for deleting a User entity.

@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/wanted-linx/linx-backend/api/ent/migrate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/migrate"
 
-	"github.com/wanted-linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -20,6 +22,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Student is the client for interacting with the Student builders.
+	Student *StudentClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -35,6 +39,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Student = NewStudentClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -67,9 +72,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		User:   NewUserClient(cfg),
+		ctx:     ctx,
+		config:  cfg,
+		Student: NewStudentClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
@@ -87,15 +93,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config: cfg,
-		User:   NewUserClient(cfg),
+		config:  cfg,
+		Student: NewStudentClient(cfg),
+		User:    NewUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		User.
+//		Student.
 //		Query().
 //		Count(ctx)
 //
@@ -118,7 +125,114 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Student.Use(hooks...)
 	c.User.Use(hooks...)
+}
+
+// StudentClient is a client for the Student schema.
+type StudentClient struct {
+	config
+}
+
+// NewStudentClient returns a client for the Student from the given config.
+func NewStudentClient(c config) *StudentClient {
+	return &StudentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `student.Hooks(f(g(h())))`.
+func (c *StudentClient) Use(hooks ...Hook) {
+	c.hooks.Student = append(c.hooks.Student, hooks...)
+}
+
+// Create returns a create builder for Student.
+func (c *StudentClient) Create() *StudentCreate {
+	mutation := newStudentMutation(c.config, OpCreate)
+	return &StudentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Student entities.
+func (c *StudentClient) CreateBulk(builders ...*StudentCreate) *StudentCreateBulk {
+	return &StudentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Student.
+func (c *StudentClient) Update() *StudentUpdate {
+	mutation := newStudentMutation(c.config, OpUpdate)
+	return &StudentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *StudentClient) UpdateOne(s *Student) *StudentUpdateOne {
+	mutation := newStudentMutation(c.config, OpUpdateOne, withStudent(s))
+	return &StudentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *StudentClient) UpdateOneID(id int) *StudentUpdateOne {
+	mutation := newStudentMutation(c.config, OpUpdateOne, withStudentID(id))
+	return &StudentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Student.
+func (c *StudentClient) Delete() *StudentDelete {
+	mutation := newStudentMutation(c.config, OpDelete)
+	return &StudentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *StudentClient) DeleteOne(s *Student) *StudentDeleteOne {
+	return c.DeleteOneID(s.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *StudentClient) DeleteOneID(id int) *StudentDeleteOne {
+	builder := c.Delete().Where(student.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &StudentDeleteOne{builder}
+}
+
+// Query returns a query builder for Student.
+func (c *StudentClient) Query() *StudentQuery {
+	return &StudentQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Student entity by its id.
+func (c *StudentClient) Get(ctx context.Context, id int) (*Student, error) {
+	return c.Query().Where(student.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *StudentClient) GetX(ctx context.Context, id int) *Student {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a Student.
+func (c *StudentClient) QueryUser(s *Student) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, student.UserTable, student.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *StudentClient) Hooks() []Hook {
+	return c.hooks.Student
 }
 
 // UserClient is a client for the User schema.
@@ -204,6 +318,22 @@ func (c *UserClient) GetX(ctx context.Context, id int) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryStudent queries the student edge of a User.
+func (c *UserClient) QueryStudent(u *User) *StudentQuery {
+	query := &StudentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.StudentTable, user.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

@@ -1,9 +1,9 @@
 package http
 
 import (
+	"github.com/Wanted-Linx/linx-backend/api/delivery/http/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/wanted-linx/linx-backend/api/delivery/http/handler"
 )
 
 var e *echo.Echo

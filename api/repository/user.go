@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 
-	"github.com/wanted-linx/linx-backend/api/domain"
-	"github.com/wanted-linx/linx-backend/api/ent"
-	"github.com/wanted-linx/linx-backend/api/ent/user"
-	"github.com/wanted-linx/linx-backend/api/util"
+	"github.com/Wanted-Linx/linx-backend/api/domain"
+	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/util"
 )
 
 type userRepository struct {

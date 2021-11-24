@@ -4,7 +4,8 @@ package user
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"github.com/wanted-linx/linx-backend/api/ent/predicate"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 )
 
 // ID filters vertices based on their ID field.
@@ -371,6 +372,34 @@ func KindNotIn(vs ...Kind) predicate.User {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldKind), v...))
+	})
+}
+
+// HasStudent applies the HasEdge predicate on the "student" edge.
+func HasStudent() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StudentTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasStudentWith applies the HasEdge predicate on the "student" edge with a given conditions (other predicates).
+func HasStudentWith(preds ...predicate.Student) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(StudentInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, StudentTable, StudentColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

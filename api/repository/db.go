@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/Wanted-Linx/linx-backend/api/config"
+	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/Wanted-Linx/linx-backend/api/ent/migrate"
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
-	"github.com/wanted-linx/linx-backend/api/config"
-	"github.com/wanted-linx/linx-backend/api/ent"
-	"github.com/wanted-linx/linx-backend/api/ent/migrate"
 )
 
 func Connect() *ent.Client {

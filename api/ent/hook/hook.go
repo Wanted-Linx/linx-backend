@@ -6,8 +6,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wanted-linx/linx-backend/api/ent"
+	"github.com/Wanted-Linx/linx-backend/api/ent"
 )
+
+// The StudentFunc type is an adapter to allow the use of ordinary
+// function as Student mutator.
+type StudentFunc func(context.Context, *ent.StudentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f StudentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.StudentMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.StudentMutation", m)
+	}
+	return f(ctx, mv)
+}
 
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.

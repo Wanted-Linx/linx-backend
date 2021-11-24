@@ -1,10 +1,10 @@
 package handler
 
 import (
+	"github.com/Wanted-Linx/linx-backend/api/domain"
+	restErr "github.com/Wanted-Linx/linx-backend/api/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
-	"github.com/wanted-linx/linx-backend/api/domain"
-	restErr "github.com/wanted-linx/linx-backend/api/errors"
 )
 
 type UserHandler struct {

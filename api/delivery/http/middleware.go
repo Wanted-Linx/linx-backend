@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/Wanted-Linx/linx-backend/api/ent"
+	restErr "github.com/Wanted-Linx/linx-backend/api/errors"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"github.com/wanted-linx/linx-backend/api/ent"
-	restErr "github.com/wanted-linx/linx-backend/api/errors"
 )
 
 func httpErrorHandler(err error, c echo.Context) {

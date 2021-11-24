@@ -1,8 +1,6 @@
 package http
 
-import (
-	"github.com/wanted-linx/linx-backend/api/delivery/http/handler"
-)
+import "github.com/Wanted-Linx/linx-backend/api/delivery/http/handler"
 
 func initRouter(userHandler *handler.UserHandler) {
 	userRouter(userHandler)

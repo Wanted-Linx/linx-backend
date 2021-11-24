@@ -9,8 +9,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/wanted-linx/linx-backend/api/ent/predicate"
-	"github.com/wanted-linx/linx-backend/api/ent/user"
+	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
 // UserUpdate is the builder for updating User entities.
@@ -44,9 +45,45 @@ func (uu *UserUpdate) SetKind(u user.Kind) *UserUpdate {
 	return uu
 }
 
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (uu *UserUpdate) AddStudentIDs(ids ...int) *UserUpdate {
+	uu.mutation.AddStudentIDs(ids...)
+	return uu
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (uu *UserUpdate) AddStudent(s ...*Student) *UserUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.AddStudentIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (uu *UserUpdate) ClearStudent() *UserUpdate {
+	uu.mutation.ClearStudent()
+	return uu
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (uu *UserUpdate) RemoveStudentIDs(ids ...int) *UserUpdate {
+	uu.mutation.RemoveStudentIDs(ids...)
+	return uu
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (uu *UserUpdate) RemoveStudent(s ...*Student) *UserUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uu.RemoveStudentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -158,6 +195,60 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: user.FieldKind,
 		})
 	}
+	if uu.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedStudentIDs(); len(nodes) > 0 && !uu.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -195,9 +286,45 @@ func (uuo *UserUpdateOne) SetKind(u user.Kind) *UserUpdateOne {
 	return uuo
 }
 
+// AddStudentIDs adds the "student" edge to the Student entity by IDs.
+func (uuo *UserUpdateOne) AddStudentIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.AddStudentIDs(ids...)
+	return uuo
+}
+
+// AddStudent adds the "student" edges to the Student entity.
+func (uuo *UserUpdateOne) AddStudent(s ...*Student) *UserUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.AddStudentIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
+}
+
+// ClearStudent clears all "student" edges to the Student entity.
+func (uuo *UserUpdateOne) ClearStudent() *UserUpdateOne {
+	uuo.mutation.ClearStudent()
+	return uuo
+}
+
+// RemoveStudentIDs removes the "student" edge to Student entities by IDs.
+func (uuo *UserUpdateOne) RemoveStudentIDs(ids ...int) *UserUpdateOne {
+	uuo.mutation.RemoveStudentIDs(ids...)
+	return uuo
+}
+
+// RemoveStudent removes "student" edges to Student entities.
+func (uuo *UserUpdateOne) RemoveStudent(s ...*Student) *UserUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return uuo.RemoveStudentIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -332,6 +459,60 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Value:  value,
 			Column: user.FieldKind,
 		})
+	}
+	if uuo.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedStudentIDs(); len(nodes) > 0 && !uuo.mutation.StudentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.StudentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.StudentTable,
+			Columns: []string{user.StudentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &User{config: uuo.config}
 	_spec.Assign = _node.assignValues
