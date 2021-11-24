@@ -17,7 +17,6 @@ func (Student) Fields() []ent.Field {
 		field.Int("id"),
 		field.String("name"),
 		field.String("university"),
-		field.String("interested_type").Optional().Nillable(),
 		field.String("profile_link").Optional().Nillable(),
 		field.String("profile_image").Optional().Nillable(),
 	}

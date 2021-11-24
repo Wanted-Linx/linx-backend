@@ -32,20 +32,6 @@ func (sc *StudentCreate) SetUniversity(s string) *StudentCreate {
 	return sc
 }
 
-// SetInterestedType sets the "interested_type" field.
-func (sc *StudentCreate) SetInterestedType(s string) *StudentCreate {
-	sc.mutation.SetInterestedType(s)
-	return sc
-}
-
-// SetNillableInterestedType sets the "interested_type" field if the given value is not nil.
-func (sc *StudentCreate) SetNillableInterestedType(s *string) *StudentCreate {
-	if s != nil {
-		sc.SetInterestedType(*s)
-	}
-	return sc
-}
-
 // SetProfileLink sets the "profile_link" field.
 func (sc *StudentCreate) SetProfileLink(s string) *StudentCreate {
 	sc.mutation.SetProfileLink(s)
@@ -218,14 +204,6 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Column: student.FieldUniversity,
 		})
 		_node.University = value
-	}
-	if value, ok := sc.mutation.InterestedType(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: student.FieldInterestedType,
-		})
-		_node.InterestedType = &value
 	}
 	if value, ok := sc.mutation.ProfileLink(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
