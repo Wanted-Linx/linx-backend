@@ -8,11 +8,15 @@ import (
 )
 
 type studentService struct {
-	studentRepo domain.StudentRepository
+	studentRepo    domain.StudentRepository
+	clubMemberRepo domain.ClubMemberRepository
 }
 
-func NewStudentService(studentRepo domain.StudentRepository) domain.StudentService {
-	return &studentService{studentRepo: studentRepo}
+func NewStudentService(studentRepo domain.StudentRepository, clubMeberRepo domain.ClubMemberRepository) domain.StudentService {
+	return &studentService{
+		studentRepo:    studentRepo,
+		clubMemberRepo: clubMeberRepo,
+	}
 }
 
 func (s *studentService) Save(userID int, reqSignup *domain.SignUpRequest) (*domain.StudentDto, error) {
@@ -31,7 +35,7 @@ func (s *studentService) Save(userID int, reqSignup *domain.SignUpRequest) (*dom
 	}
 
 	log.Info("회원가입(학생) 완료", newStudent)
-	return domain.StudentToDto(newStudent), nil
+	return domain.StudentToDto(newStudent, nil), nil
 }
 
 func (s *studentService) GetStudentByID(studentID int) (*domain.StudentDto, error) {
