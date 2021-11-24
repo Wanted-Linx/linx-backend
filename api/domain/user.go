@@ -9,10 +9,12 @@ type UserDto struct {
 }
 
 type SignUpRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	Kind     string `json:"kind"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	Name           string `json:"name"`
+	BusinessNumber string `json:"business_number"`
+	University     string `json:"university"`
+	Kind           string `json:"kind"`
 }
 
 type LoginRequest struct {

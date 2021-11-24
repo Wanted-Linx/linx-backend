@@ -14,9 +14,14 @@ func main() {
 	dbClient := repository.Connect()
 
 	userRepo := repository.NewUserRepository(dbClient)
-	userService := service.NewUserSerivce(userRepo)
-	userHandler := handler.NewUserHandler(userService)
+	studentRepo := repository.NewStudentRepository(dbClient)
 
-	server := http.NewServer(userHandler)
+	userService := service.NewUserSerivce(userRepo, studentRepo)
+	studentService := service.NewStudentService(studentRepo)
+
+	userHandler := handler.NewUserHandler(userService, studentService)
+	studentHandler := handler.NewStudentHandler(studentService)
+
+	server := http.NewServer(userHandler, studentHandler)
 	server.Logger.Fatal(server.Start(fmt.Sprintf(":%d", config.Config.Port)))
 }

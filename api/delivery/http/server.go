@@ -8,7 +8,7 @@ import (
 
 var e *echo.Echo
 
-func NewServer(userHandler *handler.UserHandler) *echo.Echo {
+func NewServer(userHandler *handler.UserHandler, studentHandler *handler.StudentHandler) *echo.Echo {
 	e = echo.New()
 	e.HTTPErrorHandler = httpErrorHandler
 	e.Use(middleware.Logger())
@@ -19,6 +19,6 @@ func NewServer(userHandler *handler.UserHandler) *echo.Echo {
 		AllowMethods: []string{echo.GET, echo.HEAD, echo.PUT, echo.PATCH, echo.POST, echo.DELETE},
 	}))
 
-	initRouter(userHandler)
+	initRouter(userHandler, studentHandler)
 	return e
 }
