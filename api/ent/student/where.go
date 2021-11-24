@@ -105,6 +105,13 @@ func University(v string) predicate.Student {
 	})
 }
 
+// InterestedType applies equality check predicate on the "interested_type" field. It's identical to InterestedTypeEQ.
+func InterestedType(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInterestedType), v))
+	})
+}
+
 // ProfileLink applies equality check predicate on the "profile_link" field. It's identical to ProfileLinkEQ.
 func ProfileLink(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
@@ -341,6 +348,131 @@ func UniversityContainsFold(v string) predicate.Student {
 	})
 }
 
+// InterestedTypeEQ applies the EQ predicate on the "interested_type" field.
+func InterestedTypeEQ(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeNEQ applies the NEQ predicate on the "interested_type" field.
+func InterestedTypeNEQ(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeIn applies the In predicate on the "interested_type" field.
+func InterestedTypeIn(vs ...string) predicate.Student {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Student(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldInterestedType), v...))
+	})
+}
+
+// InterestedTypeNotIn applies the NotIn predicate on the "interested_type" field.
+func InterestedTypeNotIn(vs ...string) predicate.Student {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Student(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldInterestedType), v...))
+	})
+}
+
+// InterestedTypeGT applies the GT predicate on the "interested_type" field.
+func InterestedTypeGT(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeGTE applies the GTE predicate on the "interested_type" field.
+func InterestedTypeGTE(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeLT applies the LT predicate on the "interested_type" field.
+func InterestedTypeLT(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeLTE applies the LTE predicate on the "interested_type" field.
+func InterestedTypeLTE(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeContains applies the Contains predicate on the "interested_type" field.
+func InterestedTypeContains(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeHasPrefix applies the HasPrefix predicate on the "interested_type" field.
+func InterestedTypeHasPrefix(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeHasSuffix applies the HasSuffix predicate on the "interested_type" field.
+func InterestedTypeHasSuffix(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeIsNil applies the IsNil predicate on the "interested_type" field.
+func InterestedTypeIsNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldInterestedType)))
+	})
+}
+
+// InterestedTypeNotNil applies the NotNil predicate on the "interested_type" field.
+func InterestedTypeNotNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldInterestedType)))
+	})
+}
+
+// InterestedTypeEqualFold applies the EqualFold predicate on the "interested_type" field.
+func InterestedTypeEqualFold(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldInterestedType), v))
+	})
+}
+
+// InterestedTypeContainsFold applies the ContainsFold predicate on the "interested_type" field.
+func InterestedTypeContainsFold(v string) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldInterestedType), v))
+	})
+}
+
 // ProfileLinkEQ applies the EQ predicate on the "profile_link" field.
 func ProfileLinkEQ(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
@@ -435,6 +567,20 @@ func ProfileLinkHasPrefix(v string) predicate.Student {
 func ProfileLinkHasSuffix(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldProfileLink), v))
+	})
+}
+
+// ProfileLinkIsNil applies the IsNil predicate on the "profile_link" field.
+func ProfileLinkIsNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProfileLink)))
+	})
+}
+
+// ProfileLinkNotNil applies the NotNil predicate on the "profile_link" field.
+func ProfileLinkNotNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProfileLink)))
 	})
 }
 
@@ -546,6 +692,20 @@ func ProfileImageHasPrefix(v string) predicate.Student {
 func ProfileImageHasSuffix(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageIsNil applies the IsNil predicate on the "profile_image" field.
+func ProfileImageIsNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProfileImage)))
+	})
+}
+
+// ProfileImageNotNil applies the NotNil predicate on the "profile_image" field.
+func ProfileImageNotNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProfileImage)))
 	})
 }
 

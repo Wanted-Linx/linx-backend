@@ -30,19 +30,20 @@ const (
 // StudentMutation represents an operation that mutates the Student nodes in the graph.
 type StudentMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	university    *string
-	profile_link  *string
-	profile_image *string
-	clearedFields map[string]struct{}
-	user          *int
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*Student, error)
-	predicates    []predicate.Student
+	op              Op
+	typ             string
+	id              *int
+	name            *string
+	university      *string
+	interested_type *string
+	profile_link    *string
+	profile_image   *string
+	clearedFields   map[string]struct{}
+	user            *int
+	cleareduser     bool
+	done            bool
+	oldValue        func(context.Context) (*Student, error)
+	predicates      []predicate.Student
 }
 
 var _ ent.Mutation = (*StudentMutation)(nil)
@@ -113,6 +114,12 @@ func (m StudentMutation) Tx() (*Tx, error) {
 	tx := &Tx{config: m.config}
 	tx.init()
 	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Student entities.
+func (m *StudentMutation) SetID(id int) {
+	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
@@ -196,6 +203,55 @@ func (m *StudentMutation) ResetUniversity() {
 	m.university = nil
 }
 
+// SetInterestedType sets the "interested_type" field.
+func (m *StudentMutation) SetInterestedType(s string) {
+	m.interested_type = &s
+}
+
+// InterestedType returns the value of the "interested_type" field in the mutation.
+func (m *StudentMutation) InterestedType() (r string, exists bool) {
+	v := m.interested_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInterestedType returns the old "interested_type" field's value of the Student entity.
+// If the Student object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StudentMutation) OldInterestedType(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldInterestedType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldInterestedType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInterestedType: %w", err)
+	}
+	return oldValue.InterestedType, nil
+}
+
+// ClearInterestedType clears the value of the "interested_type" field.
+func (m *StudentMutation) ClearInterestedType() {
+	m.interested_type = nil
+	m.clearedFields[student.FieldInterestedType] = struct{}{}
+}
+
+// InterestedTypeCleared returns if the "interested_type" field was cleared in this mutation.
+func (m *StudentMutation) InterestedTypeCleared() bool {
+	_, ok := m.clearedFields[student.FieldInterestedType]
+	return ok
+}
+
+// ResetInterestedType resets all changes to the "interested_type" field.
+func (m *StudentMutation) ResetInterestedType() {
+	m.interested_type = nil
+	delete(m.clearedFields, student.FieldInterestedType)
+}
+
 // SetProfileLink sets the "profile_link" field.
 func (m *StudentMutation) SetProfileLink(s string) {
 	m.profile_link = &s
@@ -213,7 +269,7 @@ func (m *StudentMutation) ProfileLink() (r string, exists bool) {
 // OldProfileLink returns the old "profile_link" field's value of the Student entity.
 // If the Student object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldProfileLink(ctx context.Context) (v string, err error) {
+func (m *StudentMutation) OldProfileLink(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldProfileLink is only allowed on UpdateOne operations")
 	}
@@ -227,9 +283,22 @@ func (m *StudentMutation) OldProfileLink(ctx context.Context) (v string, err err
 	return oldValue.ProfileLink, nil
 }
 
+// ClearProfileLink clears the value of the "profile_link" field.
+func (m *StudentMutation) ClearProfileLink() {
+	m.profile_link = nil
+	m.clearedFields[student.FieldProfileLink] = struct{}{}
+}
+
+// ProfileLinkCleared returns if the "profile_link" field was cleared in this mutation.
+func (m *StudentMutation) ProfileLinkCleared() bool {
+	_, ok := m.clearedFields[student.FieldProfileLink]
+	return ok
+}
+
 // ResetProfileLink resets all changes to the "profile_link" field.
 func (m *StudentMutation) ResetProfileLink() {
 	m.profile_link = nil
+	delete(m.clearedFields, student.FieldProfileLink)
 }
 
 // SetProfileImage sets the "profile_image" field.
@@ -249,7 +318,7 @@ func (m *StudentMutation) ProfileImage() (r string, exists bool) {
 // OldProfileImage returns the old "profile_image" field's value of the Student entity.
 // If the Student object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *StudentMutation) OldProfileImage(ctx context.Context) (v string, err error) {
+func (m *StudentMutation) OldProfileImage(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, fmt.Errorf("OldProfileImage is only allowed on UpdateOne operations")
 	}
@@ -263,9 +332,22 @@ func (m *StudentMutation) OldProfileImage(ctx context.Context) (v string, err er
 	return oldValue.ProfileImage, nil
 }
 
+// ClearProfileImage clears the value of the "profile_image" field.
+func (m *StudentMutation) ClearProfileImage() {
+	m.profile_image = nil
+	m.clearedFields[student.FieldProfileImage] = struct{}{}
+}
+
+// ProfileImageCleared returns if the "profile_image" field was cleared in this mutation.
+func (m *StudentMutation) ProfileImageCleared() bool {
+	_, ok := m.clearedFields[student.FieldProfileImage]
+	return ok
+}
+
 // ResetProfileImage resets all changes to the "profile_image" field.
 func (m *StudentMutation) ResetProfileImage() {
 	m.profile_image = nil
+	delete(m.clearedFields, student.FieldProfileImage)
 }
 
 // SetUserID sets the "user" edge to the User entity by id.
@@ -326,12 +408,15 @@ func (m *StudentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StudentMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, student.FieldName)
 	}
 	if m.university != nil {
 		fields = append(fields, student.FieldUniversity)
+	}
+	if m.interested_type != nil {
+		fields = append(fields, student.FieldInterestedType)
 	}
 	if m.profile_link != nil {
 		fields = append(fields, student.FieldProfileLink)
@@ -351,6 +436,8 @@ func (m *StudentMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case student.FieldUniversity:
 		return m.University()
+	case student.FieldInterestedType:
+		return m.InterestedType()
 	case student.FieldProfileLink:
 		return m.ProfileLink()
 	case student.FieldProfileImage:
@@ -368,6 +455,8 @@ func (m *StudentMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldName(ctx)
 	case student.FieldUniversity:
 		return m.OldUniversity(ctx)
+	case student.FieldInterestedType:
+		return m.OldInterestedType(ctx)
 	case student.FieldProfileLink:
 		return m.OldProfileLink(ctx)
 	case student.FieldProfileImage:
@@ -394,6 +483,13 @@ func (m *StudentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUniversity(v)
+		return nil
+	case student.FieldInterestedType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInterestedType(v)
 		return nil
 	case student.FieldProfileLink:
 		v, ok := value.(string)
@@ -438,7 +534,17 @@ func (m *StudentMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *StudentMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(student.FieldInterestedType) {
+		fields = append(fields, student.FieldInterestedType)
+	}
+	if m.FieldCleared(student.FieldProfileLink) {
+		fields = append(fields, student.FieldProfileLink)
+	}
+	if m.FieldCleared(student.FieldProfileImage) {
+		fields = append(fields, student.FieldProfileImage)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -451,6 +557,17 @@ func (m *StudentMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *StudentMutation) ClearField(name string) error {
+	switch name {
+	case student.FieldInterestedType:
+		m.ClearInterestedType()
+		return nil
+	case student.FieldProfileLink:
+		m.ClearProfileLink()
+		return nil
+	case student.FieldProfileImage:
+		m.ClearProfileImage()
+		return nil
+	}
 	return fmt.Errorf("unknown Student nullable field %s", name)
 }
 
@@ -463,6 +580,9 @@ func (m *StudentMutation) ResetField(name string) error {
 		return nil
 	case student.FieldUniversity:
 		m.ResetUniversity()
+		return nil
+	case student.FieldInterestedType:
+		m.ResetInterestedType()
 		return nil
 	case student.FieldProfileLink:
 		m.ResetProfileLink()

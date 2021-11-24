@@ -14,10 +14,12 @@ type Student struct {
 // Fields of the Student.
 func (Student) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("id"),
 		field.String("name"),
 		field.String("university"),
-		field.String("profile_link"),
-		field.String("profile_image"),
+		field.String("interested_type").Optional().Nillable(),
+		field.String("profile_link").Optional().Nillable(),
+		field.String("profile_image").Optional().Nillable(),
 	}
 }
 
