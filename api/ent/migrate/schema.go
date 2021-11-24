@@ -13,8 +13,9 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "university", Type: field.TypeString},
-		{Name: "profile_link", Type: field.TypeString},
-		{Name: "profile_image", Type: field.TypeString},
+		{Name: "interested_type", Type: field.TypeString, Nullable: true},
+		{Name: "profile_link", Type: field.TypeString, Nullable: true},
+		{Name: "profile_image", Type: field.TypeString, Nullable: true},
 		{Name: "user_student", Type: field.TypeInt, Nullable: true},
 	}
 	// StudentsTable holds the schema information for the "students" table.
@@ -25,7 +26,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "students_users_student",
-				Columns:    []*schema.Column{StudentsColumns[5]},
+				Columns:    []*schema.Column{StudentsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

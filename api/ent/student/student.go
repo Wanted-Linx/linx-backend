@@ -11,6 +11,8 @@ const (
 	FieldName = "name"
 	// FieldUniversity holds the string denoting the university field in the database.
 	FieldUniversity = "university"
+	// FieldInterestedType holds the string denoting the interested_type field in the database.
+	FieldInterestedType = "interested_type"
 	// FieldProfileLink holds the string denoting the profile_link field in the database.
 	FieldProfileLink = "profile_link"
 	// FieldProfileImage holds the string denoting the profile_image field in the database.
@@ -33,6 +35,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldUniversity,
+	FieldInterestedType,
 	FieldProfileLink,
 	FieldProfileImage,
 }

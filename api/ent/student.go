@@ -20,10 +20,12 @@ type Student struct {
 	Name string `json:"name,omitempty"`
 	// University holds the value of the "university" field.
 	University string `json:"university,omitempty"`
+	// InterestedType holds the value of the "interested_type" field.
+	InterestedType *string `json:"interested_type,omitempty"`
 	// ProfileLink holds the value of the "profile_link" field.
-	ProfileLink string `json:"profile_link,omitempty"`
+	ProfileLink *string `json:"profile_link,omitempty"`
 	// ProfileImage holds the value of the "profile_image" field.
-	ProfileImage string `json:"profile_image,omitempty"`
+	ProfileImage *string `json:"profile_image,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
 	Edges        StudentEdges `json:"edges"`
@@ -60,7 +62,7 @@ func (*Student) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case student.FieldID:
 			values[i] = new(sql.NullInt64)
-		case student.FieldName, student.FieldUniversity, student.FieldProfileLink, student.FieldProfileImage:
+		case student.FieldName, student.FieldUniversity, student.FieldInterestedType, student.FieldProfileLink, student.FieldProfileImage:
 			values[i] = new(sql.NullString)
 		case student.ForeignKeys[0]: // user_student
 			values[i] = new(sql.NullInt64)
@@ -97,17 +99,26 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				s.University = value.String
 			}
+		case student.FieldInterestedType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field interested_type", values[i])
+			} else if value.Valid {
+				s.InterestedType = new(string)
+				*s.InterestedType = value.String
+			}
 		case student.FieldProfileLink:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field profile_link", values[i])
 			} else if value.Valid {
-				s.ProfileLink = value.String
+				s.ProfileLink = new(string)
+				*s.ProfileLink = value.String
 			}
 		case student.FieldProfileImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field profile_image", values[i])
 			} else if value.Valid {
-				s.ProfileImage = value.String
+				s.ProfileImage = new(string)
+				*s.ProfileImage = value.String
 			}
 		case student.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -153,10 +164,18 @@ func (s *Student) String() string {
 	builder.WriteString(s.Name)
 	builder.WriteString(", university=")
 	builder.WriteString(s.University)
-	builder.WriteString(", profile_link=")
-	builder.WriteString(s.ProfileLink)
-	builder.WriteString(", profile_image=")
-	builder.WriteString(s.ProfileImage)
+	if v := s.InterestedType; v != nil {
+		builder.WriteString(", interested_type=")
+		builder.WriteString(*v)
+	}
+	if v := s.ProfileLink; v != nil {
+		builder.WriteString(", profile_link=")
+		builder.WriteString(*v)
+	}
+	if v := s.ProfileImage; v != nil {
+		builder.WriteString(", profile_image=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

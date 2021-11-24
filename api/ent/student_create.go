@@ -32,15 +32,51 @@ func (sc *StudentCreate) SetUniversity(s string) *StudentCreate {
 	return sc
 }
 
+// SetInterestedType sets the "interested_type" field.
+func (sc *StudentCreate) SetInterestedType(s string) *StudentCreate {
+	sc.mutation.SetInterestedType(s)
+	return sc
+}
+
+// SetNillableInterestedType sets the "interested_type" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableInterestedType(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetInterestedType(*s)
+	}
+	return sc
+}
+
 // SetProfileLink sets the "profile_link" field.
 func (sc *StudentCreate) SetProfileLink(s string) *StudentCreate {
 	sc.mutation.SetProfileLink(s)
 	return sc
 }
 
+// SetNillableProfileLink sets the "profile_link" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableProfileLink(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetProfileLink(*s)
+	}
+	return sc
+}
+
 // SetProfileImage sets the "profile_image" field.
 func (sc *StudentCreate) SetProfileImage(s string) *StudentCreate {
 	sc.mutation.SetProfileImage(s)
+	return sc
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableProfileImage(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetProfileImage(*s)
+	}
+	return sc
+}
+
+// SetID sets the "id" field.
+func (sc *StudentCreate) SetID(i int) *StudentCreate {
+	sc.mutation.SetID(i)
 	return sc
 }
 
@@ -131,12 +167,6 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.University(); !ok {
 		return &ValidationError{Name: "university", err: errors.New(`ent: missing required field "university"`)}
 	}
-	if _, ok := sc.mutation.ProfileLink(); !ok {
-		return &ValidationError{Name: "profile_link", err: errors.New(`ent: missing required field "profile_link"`)}
-	}
-	if _, ok := sc.mutation.ProfileImage(); !ok {
-		return &ValidationError{Name: "profile_image", err: errors.New(`ent: missing required field "profile_image"`)}
-	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
 	}
@@ -151,8 +181,10 @@ func (sc *StudentCreate) sqlSave(ctx context.Context) (*Student, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int(id)
+	}
 	return _node, nil
 }
 
@@ -167,6 +199,10 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -183,13 +219,21 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 		})
 		_node.University = value
 	}
+	if value, ok := sc.mutation.InterestedType(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldInterestedType,
+		})
+		_node.InterestedType = &value
+	}
 	if value, ok := sc.mutation.ProfileLink(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
 			Column: student.FieldProfileLink,
 		})
-		_node.ProfileLink = value
+		_node.ProfileLink = &value
 	}
 	if value, ok := sc.mutation.ProfileImage(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -197,7 +241,7 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: student.FieldProfileImage,
 		})
-		_node.ProfileImage = value
+		_node.ProfileImage = &value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -263,7 +307,7 @@ func (scb *StudentCreateBulk) Save(ctx context.Context) ([]*Student, error) {
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
 					nodes[i].ID = int(id)
 				}
