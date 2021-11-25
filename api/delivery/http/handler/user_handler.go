@@ -55,8 +55,12 @@ func (h *UserHandler) SignUp(c echo.Context) error {
 }
 
 func (h *UserHandler) Login(c echo.Context) error {
-	userID, _ := util.GetRequestUserID(c)
+	userID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
 	log.Println(userID)
+
 	reqLogin := new(domain.LoginRequest)
 	if err := c.Bind(reqLogin); err != nil {
 		return errors.Wrap(err, "잘못된 로그인 json body 입니다.")

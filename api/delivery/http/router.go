@@ -36,7 +36,7 @@ func studentRouter(studentHandler *handler.StudentHandler) {
 func companyRouter(companyHandler *handler.CompanyHandler) {
 	group := e.Group("/companies")
 	// ?owner={{company_id}}
-	group.GET("", companyHandler.GetCompany)
+	group.GET("/:company_id", companyHandler.GetCompany)
 	group.GET("", companyHandler.GetAllCompanies)
 	// 기업 프로필 이미지 업로드
 	group.POST("/profile/images", companyHandler.UploadProfileImage)

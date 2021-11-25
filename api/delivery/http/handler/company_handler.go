@@ -28,12 +28,12 @@ func (h *CompanyHandler) GetCompany(c echo.Context) error {
 
 	log.Info("조회 요청 유저 id: ", userID)
 
-	ownerID, err := strconv.Atoi(util.GetQueryParams("owner", c))
+	companyID, err := strconv.Atoi(util.GetParams("company_id", c))
 	if err != nil {
 		return errors.Wrap(err, "잘못된 query string을 입력했습니다.")
 	}
 
-	s, err := h.companySerivce.GetCompanyByID(ownerID)
+	s, err := h.companySerivce.GetCompanyByID(companyID)
 	if err != nil {
 		return err
 	}
