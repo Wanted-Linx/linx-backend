@@ -23,7 +23,11 @@ func userRouter(userHandler *handler.UserHandler) {
 }
 
 func studentRouter(studentHandler *handler.StudentHandler) {
-	_ = e.Group("/students")
+	group := e.Group("/students")
+	group.GET("", studentHandler.GetStudent)
+	group.PUT("/profile", studentHandler.UpdateProfile)
+	group.POST("/profile/images", studentHandler.UploadProfileImage)
+	group.GET("/profile/images", studentHandler.GetProfileImage)
 }
 
 func companyRouter(companyHandler *handler.CompanyHandler) {
