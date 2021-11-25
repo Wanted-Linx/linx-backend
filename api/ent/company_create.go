@@ -74,6 +74,20 @@ func (cc *CompanyCreate) SetNillableProfileImage(s *string) *CompanyCreate {
 	return cc
 }
 
+// SetHompage sets the "hompage" field.
+func (cc *CompanyCreate) SetHompage(s string) *CompanyCreate {
+	cc.mutation.SetHompage(s)
+	return cc
+}
+
+// SetNillableHompage sets the "hompage" field if the given value is not nil.
+func (cc *CompanyCreate) SetNillableHompage(s *string) *CompanyCreate {
+	if s != nil {
+		cc.SetHompage(*s)
+	}
+	return cc
+}
+
 // SetID sets the "id" field.
 func (cc *CompanyCreate) SetID(i int) *CompanyCreate {
 	cc.mutation.SetID(i)
@@ -242,6 +256,14 @@ func (cc *CompanyCreate) createSpec() (*Company, *sqlgraph.CreateSpec) {
 			Column: company.FieldProfileImage,
 		})
 		_node.ProfileImage = &value
+	}
+	if value, ok := cc.mutation.Hompage(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: company.FieldHompage,
+		})
+		_node.Hompage = &value
 	}
 	if nodes := cc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

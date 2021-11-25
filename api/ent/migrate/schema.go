@@ -81,6 +81,7 @@ var (
 		{Name: "address", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "profile_image", Type: field.TypeString, Nullable: true},
+		{Name: "hompage", Type: field.TypeString, Nullable: true},
 		{Name: "user_company", Type: field.TypeInt, Nullable: true},
 	}
 	// CompaniesTable holds the schema information for the "companies" table.
@@ -91,7 +92,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "companies_users_company",
-				Columns:    []*schema.Column{CompaniesColumns[6]},
+				Columns:    []*schema.Column{CompaniesColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

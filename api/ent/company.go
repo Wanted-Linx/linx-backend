@@ -26,6 +26,8 @@ type Company struct {
 	Description *string `json:"description,omitempty"`
 	// ProfileImage holds the value of the "profile_image" field.
 	ProfileImage *string `json:"profile_image,omitempty"`
+	// Hompage holds the value of the "hompage" field.
+	Hompage *string `json:"hompage,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CompanyQuery when eager-loading is set.
 	Edges        CompanyEdges `json:"edges"`
@@ -62,7 +64,7 @@ func (*Company) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case company.FieldID:
 			values[i] = new(sql.NullInt64)
-		case company.FieldName, company.FieldBusinessNumber, company.FieldAddress, company.FieldDescription, company.FieldProfileImage:
+		case company.FieldName, company.FieldBusinessNumber, company.FieldAddress, company.FieldDescription, company.FieldProfileImage, company.FieldHompage:
 			values[i] = new(sql.NullString)
 		case company.ForeignKeys[0]: // user_company
 			values[i] = new(sql.NullInt64)
@@ -120,6 +122,13 @@ func (c *Company) assignValues(columns []string, values []interface{}) error {
 				c.ProfileImage = new(string)
 				*c.ProfileImage = value.String
 			}
+		case company.FieldHompage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field hompage", values[i])
+			} else if value.Valid {
+				c.Hompage = new(string)
+				*c.Hompage = value.String
+			}
 		case company.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for edge-field user_company", value)
@@ -174,6 +183,10 @@ func (c *Company) String() string {
 	}
 	if v := c.ProfileImage; v != nil {
 		builder.WriteString(", profile_image=")
+		builder.WriteString(*v)
+	}
+	if v := c.Hompage; v != nil {
+		builder.WriteString(", hompage=")
 		builder.WriteString(*v)
 	}
 	builder.WriteByte(')')

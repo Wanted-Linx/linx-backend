@@ -20,6 +20,7 @@ func (Company) Fields() []ent.Field {
 		field.String("address").Optional().Nillable(),
 		field.String("description").Optional().Nillable(),
 		field.String("profile_image").Optional().Nillable(),
+		field.String("hompage").Optional().Nillable(),
 	}
 }
 
