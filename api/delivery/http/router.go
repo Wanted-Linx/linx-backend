@@ -24,6 +24,7 @@ func userRouter(userHandler *handler.UserHandler) {
 
 func studentRouter(studentHandler *handler.StudentHandler) {
 	group := e.Group("/students")
+	// ?owner={{student_id}}
 	group.GET("", studentHandler.GetStudent)
 	// 학생 프로필 업로드
 	group.POST("/profile/images", studentHandler.UploadProfileImage)
@@ -33,7 +34,15 @@ func studentRouter(studentHandler *handler.StudentHandler) {
 }
 
 func companyRouter(companyHandler *handler.CompanyHandler) {
-	_ = e.Group("/companies")
+	group := e.Group("/companies")
+	// ?owner={{company_id}}
+	group.GET("", companyHandler.GetCompany)
+	group.GET("", companyHandler.GetAllCompanies)
+	// 기업 프로필 이미지 업로드
+	group.POST("/profile/images", companyHandler.UploadProfileImage)
+	// 기업 프로필 수정
+	group.PUT("/profile", companyHandler.UpdateProfile)
+	group.GET("/profile/images", companyHandler.GetProfileImage)
 }
 
 func clubRouter(clubHandler *handler.ClubHandler) {
