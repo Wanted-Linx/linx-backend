@@ -25,8 +25,10 @@ func userRouter(userHandler *handler.UserHandler) {
 func studentRouter(studentHandler *handler.StudentHandler) {
 	group := e.Group("/students")
 	group.GET("", studentHandler.GetStudent)
-	group.PUT("/profile", studentHandler.UpdateProfile)
+	// 학생 프로필 업로드
 	group.POST("/profile/images", studentHandler.UploadProfileImage)
+	// 학생 프로필 수정
+	group.PUT("/profile", studentHandler.UpdateProfile)
 	group.GET("/profile/images", studentHandler.GetProfileImage)
 }
 
@@ -37,9 +39,12 @@ func companyRouter(companyHandler *handler.CompanyHandler) {
 func clubRouter(clubHandler *handler.ClubHandler) {
 	group := e.Group("/clubs")
 	group.POST("", clubHandler.CreateClub)
+	group.GET("", clubHandler.GetAllClubs)
+	group.GET("/:club_id", clubHandler.GetClubByID)
 }
 
 func clubMemberRouter(clubMemberHandler *handler.ClubMemberHandler) {
+	// 동아리에 가입 API
 	group := e.Group("/clubs/members")
 	group.POST("", clubMemberHandler.RegisterClubMember)
 }

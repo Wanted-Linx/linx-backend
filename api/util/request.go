@@ -15,3 +15,7 @@ func GetRequestUserID(c echo.Context) (int, error) {
 func GetQueryParams(param string, c echo.Context) string {
 	return c.QueryParam(param)
 }
+
+func GetParams(param string, c echo.Context) string {
+	return c.Param(param)
+}
