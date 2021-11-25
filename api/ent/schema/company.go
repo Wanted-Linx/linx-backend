@@ -31,5 +31,6 @@ func (Company) Edges() []ent.Edge {
 			Ref("company").
 			Required().
 			Unique(),
+		edge.To("project", Project.Type),
 	}
 }

@@ -850,6 +850,62 @@ func HasClubMemberWith(preds ...predicate.ClubMember) predicate.Club {
 	})
 }
 
+// HasProject applies the HasEdge predicate on the "project" edge.
+func HasProject() predicate.Club {
+	return predicate.Club(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectTable, ProjectColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectWith applies the HasEdge predicate on the "project" edge with a given conditions (other predicates).
+func HasProjectWith(preds ...predicate.Project) predicate.Club {
+	return predicate.Club(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectTable, ProjectColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjectClub applies the HasEdge predicate on the "project_club" edge.
+func HasProjectClub() predicate.Club {
+	return predicate.Club(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectClubTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectClubTable, ProjectClubColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectClubWith applies the HasEdge predicate on the "project_club" edge with a given conditions (other predicates).
+func HasProjectClubWith(preds ...predicate.ProjectClub) predicate.Club {
+	return predicate.Club(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectClubInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectClubTable, ProjectClubColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Club) predicate.Club {
 	return predicate.Club(func(s *sql.Selector) {

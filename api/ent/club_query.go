@@ -15,6 +15,8 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 )
 
@@ -28,9 +30,11 @@ type ClubQuery struct {
 	fields     []string
 	predicates []predicate.Club
 	// eager-loading edges.
-	withLeader     *StudentQuery
-	withClubMember *ClubMemberQuery
-	withFKs        bool
+	withLeader      *StudentQuery
+	withClubMember  *ClubMemberQuery
+	withProject     *ProjectQuery
+	withProjectClub *ProjectClubQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -104,6 +108,50 @@ func (cq *ClubQuery) QueryClubMember() *ClubMemberQuery {
 			sqlgraph.From(club.Table, club.FieldID, selector),
 			sqlgraph.To(clubmember.Table, clubmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, club.ClubMemberTable, club.ClubMemberColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProject chains the current query on the "project" edge.
+func (cq *ClubQuery) QueryProject() *ProjectQuery {
+	query := &ProjectQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.ProjectTable, club.ProjectColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjectClub chains the current query on the "project_club" edge.
+func (cq *ClubQuery) QueryProjectClub() *ProjectClubQuery {
+	query := &ProjectClubQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, selector),
+			sqlgraph.To(projectclub.Table, projectclub.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.ProjectClubTable, club.ProjectClubColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -287,13 +335,15 @@ func (cq *ClubQuery) Clone() *ClubQuery {
 		return nil
 	}
 	return &ClubQuery{
-		config:         cq.config,
-		limit:          cq.limit,
-		offset:         cq.offset,
-		order:          append([]OrderFunc{}, cq.order...),
-		predicates:     append([]predicate.Club{}, cq.predicates...),
-		withLeader:     cq.withLeader.Clone(),
-		withClubMember: cq.withClubMember.Clone(),
+		config:          cq.config,
+		limit:           cq.limit,
+		offset:          cq.offset,
+		order:           append([]OrderFunc{}, cq.order...),
+		predicates:      append([]predicate.Club{}, cq.predicates...),
+		withLeader:      cq.withLeader.Clone(),
+		withClubMember:  cq.withClubMember.Clone(),
+		withProject:     cq.withProject.Clone(),
+		withProjectClub: cq.withProjectClub.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -319,6 +369,28 @@ func (cq *ClubQuery) WithClubMember(opts ...func(*ClubMemberQuery)) *ClubQuery {
 		opt(query)
 	}
 	cq.withClubMember = query
+	return cq
+}
+
+// WithProject tells the query-builder to eager-load the nodes that are connected to
+// the "project" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ClubQuery) WithProject(opts ...func(*ProjectQuery)) *ClubQuery {
+	query := &ProjectQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withProject = query
+	return cq
+}
+
+// WithProjectClub tells the query-builder to eager-load the nodes that are connected to
+// the "project_club" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *ClubQuery) WithProjectClub(opts ...func(*ProjectClubQuery)) *ClubQuery {
+	query := &ProjectClubQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withProjectClub = query
 	return cq
 }
 
@@ -388,9 +460,11 @@ func (cq *ClubQuery) sqlAll(ctx context.Context) ([]*Club, error) {
 		nodes       = []*Club{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			cq.withLeader != nil,
 			cq.withClubMember != nil,
+			cq.withProject != nil,
+			cq.withProjectClub != nil,
 		}
 	)
 	if cq.withLeader != nil {
@@ -471,6 +545,60 @@ func (cq *ClubQuery) sqlAll(ctx context.Context) ([]*Club, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "club_id" returned %v for node %v`, fk, n.ID)
 			}
 			node.Edges.ClubMember = append(node.Edges.ClubMember, n)
+		}
+	}
+
+	if query := cq.withProject; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Club)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Project = []*Project{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Project(func(s *sql.Selector) {
+			s.Where(sql.InValues(club.ProjectColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.club_project
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "club_project" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "club_project" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Project = append(node.Edges.Project, n)
+		}
+	}
+
+	if query := cq.withProjectClub; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Club)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProjectClub = []*ProjectClub{}
+		}
+		query.Where(predicate.ProjectClub(func(s *sql.Selector) {
+			s.Where(sql.InValues(club.ProjectClubColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.ClubID
+			node, ok := nodeids[fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "club_id" returned %v for node %v`, fk, n.ID)
+			}
+			node.Edges.ProjectClub = append(node.Edges.ProjectClub, n)
 		}
 	}
 

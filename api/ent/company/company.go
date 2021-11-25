@@ -21,6 +21,8 @@ const (
 	FieldHompage = "hompage"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeProject holds the string denoting the project edge name in mutations.
+	EdgeProject = "project"
 	// Table holds the table name of the company in the database.
 	Table = "companies"
 	// UserTable is the table that holds the user relation/edge.
@@ -30,6 +32,13 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_company"
+	// ProjectTable is the table that holds the project relation/edge.
+	ProjectTable = "projects"
+	// ProjectInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectInverseTable = "projects"
+	// ProjectColumn is the table column denoting the project relation/edge.
+	ProjectColumn = "company_project"
 )
 
 // Columns holds all SQL columns for company fields.

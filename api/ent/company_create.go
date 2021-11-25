@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -103,6 +104,21 @@ func (cc *CompanyCreate) SetUserID(id int) *CompanyCreate {
 // SetUser sets the "user" edge to the User entity.
 func (cc *CompanyCreate) SetUser(u *User) *CompanyCreate {
 	return cc.SetUserID(u.ID)
+}
+
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cc *CompanyCreate) AddProjectIDs(ids ...int) *CompanyCreate {
+	cc.mutation.AddProjectIDs(ids...)
+	return cc
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cc *CompanyCreate) AddProject(p ...*Project) *CompanyCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cc.AddProjectIDs(ids...)
 }
 
 // Mutation returns the CompanyMutation object of the builder.
@@ -283,6 +299,25 @@ func (cc *CompanyCreate) createSpec() (*Company, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.user_company = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

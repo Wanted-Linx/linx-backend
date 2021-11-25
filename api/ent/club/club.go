@@ -27,6 +27,10 @@ const (
 	EdgeLeader = "leader"
 	// EdgeClubMember holds the string denoting the club_member edge name in mutations.
 	EdgeClubMember = "club_member"
+	// EdgeProject holds the string denoting the project edge name in mutations.
+	EdgeProject = "project"
+	// EdgeProjectClub holds the string denoting the project_club edge name in mutations.
+	EdgeProjectClub = "project_club"
 	// Table holds the table name of the club in the database.
 	Table = "clubs"
 	// LeaderTable is the table that holds the leader relation/edge.
@@ -43,6 +47,20 @@ const (
 	ClubMemberInverseTable = "club_members"
 	// ClubMemberColumn is the table column denoting the club_member relation/edge.
 	ClubMemberColumn = "club_id"
+	// ProjectTable is the table that holds the project relation/edge.
+	ProjectTable = "projects"
+	// ProjectInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectInverseTable = "projects"
+	// ProjectColumn is the table column denoting the project relation/edge.
+	ProjectColumn = "club_project"
+	// ProjectClubTable is the table that holds the project_club relation/edge.
+	ProjectClubTable = "project_clubs"
+	// ProjectClubInverseTable is the table name for the ProjectClub entity.
+	// It exists in this package in order to avoid circular dependency with the "projectclub" package.
+	ProjectClubInverseTable = "project_clubs"
+	// ProjectClubColumn is the table column denoting the project_club relation/edge.
+	ProjectClubColumn = "club_id"
 )
 
 // Columns holds all SQL columns for club fields.

@@ -14,6 +14,8 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 )
 
@@ -128,6 +130,36 @@ func (cu *ClubUpdate) AddClubMember(c ...*ClubMember) *ClubUpdate {
 	return cu.AddClubMemberIDs(ids...)
 }
 
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cu *ClubUpdate) AddProjectIDs(ids ...int) *ClubUpdate {
+	cu.mutation.AddProjectIDs(ids...)
+	return cu
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cu *ClubUpdate) AddProject(p ...*Project) *ClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.AddProjectIDs(ids...)
+}
+
+// AddProjectClubIDs adds the "project_club" edge to the ProjectClub entity by IDs.
+func (cu *ClubUpdate) AddProjectClubIDs(ids ...int) *ClubUpdate {
+	cu.mutation.AddProjectClubIDs(ids...)
+	return cu
+}
+
+// AddProjectClub adds the "project_club" edges to the ProjectClub entity.
+func (cu *ClubUpdate) AddProjectClub(p ...*ProjectClub) *ClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.AddProjectClubIDs(ids...)
+}
+
 // Mutation returns the ClubMutation object of the builder.
 func (cu *ClubUpdate) Mutation() *ClubMutation {
 	return cu.mutation
@@ -158,6 +190,48 @@ func (cu *ClubUpdate) RemoveClubMember(c ...*ClubMember) *ClubUpdate {
 		ids[i] = c[i].ID
 	}
 	return cu.RemoveClubMemberIDs(ids...)
+}
+
+// ClearProject clears all "project" edges to the Project entity.
+func (cu *ClubUpdate) ClearProject() *ClubUpdate {
+	cu.mutation.ClearProject()
+	return cu
+}
+
+// RemoveProjectIDs removes the "project" edge to Project entities by IDs.
+func (cu *ClubUpdate) RemoveProjectIDs(ids ...int) *ClubUpdate {
+	cu.mutation.RemoveProjectIDs(ids...)
+	return cu
+}
+
+// RemoveProject removes "project" edges to Project entities.
+func (cu *ClubUpdate) RemoveProject(p ...*Project) *ClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.RemoveProjectIDs(ids...)
+}
+
+// ClearProjectClub clears all "project_club" edges to the ProjectClub entity.
+func (cu *ClubUpdate) ClearProjectClub() *ClubUpdate {
+	cu.mutation.ClearProjectClub()
+	return cu
+}
+
+// RemoveProjectClubIDs removes the "project_club" edge to ProjectClub entities by IDs.
+func (cu *ClubUpdate) RemoveProjectClubIDs(ids ...int) *ClubUpdate {
+	cu.mutation.RemoveProjectClubIDs(ids...)
+	return cu
+}
+
+// RemoveProjectClub removes "project_club" edges to ProjectClub entities.
+func (cu *ClubUpdate) RemoveProjectClub(p ...*ProjectClub) *ClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.RemoveProjectClubIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -389,6 +463,114 @@ func (cu *ClubUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedProjectIDs(); len(nodes) > 0 && !cu.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cu.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedProjectClubIDs(); len(nodes) > 0 && !cu.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{club.Label}
@@ -506,6 +688,36 @@ func (cuo *ClubUpdateOne) AddClubMember(c ...*ClubMember) *ClubUpdateOne {
 	return cuo.AddClubMemberIDs(ids...)
 }
 
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cuo *ClubUpdateOne) AddProjectIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.AddProjectIDs(ids...)
+	return cuo
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cuo *ClubUpdateOne) AddProject(p ...*Project) *ClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.AddProjectIDs(ids...)
+}
+
+// AddProjectClubIDs adds the "project_club" edge to the ProjectClub entity by IDs.
+func (cuo *ClubUpdateOne) AddProjectClubIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.AddProjectClubIDs(ids...)
+	return cuo
+}
+
+// AddProjectClub adds the "project_club" edges to the ProjectClub entity.
+func (cuo *ClubUpdateOne) AddProjectClub(p ...*ProjectClub) *ClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.AddProjectClubIDs(ids...)
+}
+
 // Mutation returns the ClubMutation object of the builder.
 func (cuo *ClubUpdateOne) Mutation() *ClubMutation {
 	return cuo.mutation
@@ -536,6 +748,48 @@ func (cuo *ClubUpdateOne) RemoveClubMember(c ...*ClubMember) *ClubUpdateOne {
 		ids[i] = c[i].ID
 	}
 	return cuo.RemoveClubMemberIDs(ids...)
+}
+
+// ClearProject clears all "project" edges to the Project entity.
+func (cuo *ClubUpdateOne) ClearProject() *ClubUpdateOne {
+	cuo.mutation.ClearProject()
+	return cuo
+}
+
+// RemoveProjectIDs removes the "project" edge to Project entities by IDs.
+func (cuo *ClubUpdateOne) RemoveProjectIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.RemoveProjectIDs(ids...)
+	return cuo
+}
+
+// RemoveProject removes "project" edges to Project entities.
+func (cuo *ClubUpdateOne) RemoveProject(p ...*Project) *ClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.RemoveProjectIDs(ids...)
+}
+
+// ClearProjectClub clears all "project_club" edges to the ProjectClub entity.
+func (cuo *ClubUpdateOne) ClearProjectClub() *ClubUpdateOne {
+	cuo.mutation.ClearProjectClub()
+	return cuo
+}
+
+// RemoveProjectClubIDs removes the "project_club" edge to ProjectClub entities by IDs.
+func (cuo *ClubUpdateOne) RemoveProjectClubIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.RemoveProjectClubIDs(ids...)
+	return cuo
+}
+
+// RemoveProjectClub removes "project_club" edges to ProjectClub entities.
+func (cuo *ClubUpdateOne) RemoveProjectClub(p ...*ProjectClub) *ClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.RemoveProjectClubIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -783,6 +1037,114 @@ func (cuo *ClubUpdateOne) sqlSave(ctx context.Context) (_node *Club, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedProjectIDs(); len(nodes) > 0 && !cuo.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedProjectClubIDs(); len(nodes) > 0 && !cuo.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
 				},
 			},
 		}

@@ -12,6 +12,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 )
 
@@ -106,6 +108,36 @@ func (cc *ClubCreate) AddClubMember(c ...*ClubMember) *ClubCreate {
 		ids[i] = c[i].ID
 	}
 	return cc.AddClubMemberIDs(ids...)
+}
+
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cc *ClubCreate) AddProjectIDs(ids ...int) *ClubCreate {
+	cc.mutation.AddProjectIDs(ids...)
+	return cc
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cc *ClubCreate) AddProject(p ...*Project) *ClubCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cc.AddProjectIDs(ids...)
+}
+
+// AddProjectClubIDs adds the "project_club" edge to the ProjectClub entity by IDs.
+func (cc *ClubCreate) AddProjectClubIDs(ids ...int) *ClubCreate {
+	cc.mutation.AddProjectClubIDs(ids...)
+	return cc
+}
+
+// AddProjectClub adds the "project_club" edges to the ProjectClub entity.
+func (cc *ClubCreate) AddProjectClub(p ...*ProjectClub) *ClubCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cc.AddProjectClubIDs(ids...)
 }
 
 // Mutation returns the ClubMutation object of the builder.
@@ -308,6 +340,44 @@ func (cc *ClubCreate) createSpec() (*Club, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectTable,
+			Columns: []string{club.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.ProjectClubTable,
+			Columns: []string{club.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
 				},
 			},
 		}
