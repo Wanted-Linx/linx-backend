@@ -13,6 +13,7 @@ type ClubMember struct {
 
 type JoinedClub struct {
 	ClubID       int    `json:"club_id"`
+	LeaderID     int    `json:"leader_id"`
 	LeaderName   string `json:"leader_name"`
 	Name         string `json:"name"`
 	Organization string `json:"organization"`
@@ -48,6 +49,7 @@ func MemberClubsToDto(srcMemberClubs []*ent.Club) []*JoinedClub {
 	for _, memberClub := range srcMemberClubs {
 		var club JoinedClub
 		club.ClubID = memberClub.ID
+		club.LeaderID = memberClub.Edges.Leader.ID
 		club.LeaderName = memberClub.Edges.Leader.Name
 		club.Name = memberClub.Name
 		club.Organization = memberClub.Organization

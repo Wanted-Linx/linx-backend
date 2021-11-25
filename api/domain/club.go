@@ -9,6 +9,7 @@ import (
 type ClubDto struct {
 	ID             int           `json:"id"`
 	LeaderID       int           `json:"leader_id"`
+	LeaderName     string        `json:"leader_name"`
 	Name           string        `json:"name"`
 	Organization   string        `json:"organization"`
 	Description    string        `json:"description"`
@@ -30,12 +31,13 @@ type ClubCreateRequest struct {
 type ClubService interface {
 	CreateClub(studentID int, reqClub *ClubCreateRequest) (*ClubDto, error)
 	GetClubByID(clubID int) (*ClubDto, error)
+	GetAllClubs(limit, offset int) ([]*ClubDto, error)
 }
 
 type ClubRepository interface {
 	Save(reqClub *ent.Club) (*ent.Club, error)
-	GetByID(clubID int) (*ent.Club, error)
-	// GetAll(clubID int) ([]*ent.Student, error)
+	GetByID(clubID int) (*ent.Club, []*ent.Student, error)
+	GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Student, error)
 }
 
 func ClubToDto(srcClub *ent.Club, srcClubMembers []*ent.Student) *ClubDto {
@@ -44,6 +46,7 @@ func ClubToDto(srcClub *ent.Club, srcClubMembers []*ent.Student) *ClubDto {
 	return &ClubDto{
 		ID:           srcClub.ID,
 		LeaderID:     srcClub.Edges.Leader.ID,
+		LeaderName:   srcClub.Edges.Leader.Name,
 		Name:         srcClub.Name,
 		Organization: srcClub.Organization,
 		Description:  srcClub.Description,

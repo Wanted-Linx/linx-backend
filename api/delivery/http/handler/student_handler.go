@@ -26,7 +26,7 @@ func (h *StudentHandler) GetStudent(c echo.Context) error {
 		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
-	log.Info("조회하는 유저", studentID)
+	log.Info("조회 요청 유저 id: ", studentID)
 
 	ownerID, err := strconv.Atoi(util.GetQueryParams("owner", c))
 	if err != nil {

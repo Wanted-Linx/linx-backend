@@ -39,13 +39,41 @@ func (r *clubRepository) Save(reqClub *ent.Club) (*ent.Club, error) {
 	return c, nil
 }
 
-func (r *clubRepository) GetByID(clubID int) (*ent.Club, error) {
+func (r *clubRepository) GetByID(clubID int) (*ent.Club, []*ent.Student, error) {
 	c, err := r.db.Club.Query().
 		Where(club.ID(clubID)).
+		WithLeader().
 		Only(context.Background())
 	if err != nil {
-		return nil, err
+		return nil, nil, errors.WithStack(err)
 	}
 
-	return c, nil
+	members, err := c.QueryClubMember().QueryStudent().All(context.Background())
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
+
+	return c, members, nil
+}
+
+func (r *clubRepository) GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Student, error) {
+	c, err := r.db.Club.Query().
+		Offset(offset).Limit(limit).
+		WithLeader().
+		All(context.Background())
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
+
+	allMembers := make([][]*ent.Student, len(c))
+	for idx, club := range c {
+		members, err := club.QueryClubMember().QueryStudent().All(context.Background())
+		if err != nil {
+			return nil, nil, errors.WithStack(err)
+		}
+
+		allMembers[idx] = members
+	}
+
+	return c, allMembers, nil
 }

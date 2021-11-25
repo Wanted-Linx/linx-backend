@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/util"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 type ClubHandler struct {
@@ -32,4 +35,49 @@ func (h *ClubHandler) CreateClub(c echo.Context) error {
 	}
 
 	return c.JSON(200, newClub)
+}
+
+func (h *ClubHandler) GetClubByID(c echo.Context) error {
+	userID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	log.Info("조회 요청한 유저 id:", userID)
+	clubID, err := strconv.Atoi(util.GetParams("club_id", c))
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	club, err := h.clubService.GetClubByID(clubID)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, club)
+}
+
+func (h *ClubHandler) GetAllClubs(c echo.Context) error {
+	userID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	log.Info("조회 요청한 유저 id:", userID)
+	limit, err := strconv.Atoi(util.GetQueryParams("limit", c))
+	if err != nil {
+		return errors.WithMessage(err, "잘못된 query string으로 입력했습니다.")
+	}
+
+	offset, err := strconv.Atoi(util.GetQueryParams("offset", c))
+	if err != nil {
+		return errors.WithMessage(err, "잘못된 query string으로 입력했습니다.")
+	}
+
+	clubs, err := h.clubService.GetAllClubs(limit, offset)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, clubs)
 }

@@ -59,6 +59,30 @@ func (s *clubService) CreateClub(clubLeaderID int, reqClub *domain.ClubCreateReq
 }
 
 func (s *clubService) GetClubByID(clubID int) (*domain.ClubDto, error) {
+	club, members, err := s.clubRepo.GetByID(clubID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, errors.WithMessage(err, "해당하는 동아리를 찾지 못했습니다.")
+		}
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
 
-	return nil, nil
+	log.Info("동아리 조회 완료", club, members)
+	return domain.ClubToDto(club, members), nil
+}
+
+func (s *clubService) GetAllClubs(limit, offset int) ([]*domain.ClubDto, error) {
+	clubs, allMembers, err := s.clubRepo.GetAll(limit, offset)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	clubsDto := make([]*domain.ClubDto, len(clubs))
+
+	for idx, club := range clubs {
+		clubDto := domain.ClubToDto(club, allMembers[idx])
+		clubsDto[idx] = clubDto
+	}
+
+	return clubsDto, nil
 }
