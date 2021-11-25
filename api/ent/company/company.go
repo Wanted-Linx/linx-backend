@@ -17,6 +17,8 @@ const (
 	FieldDescription = "description"
 	// FieldProfileImage holds the string denoting the profile_image field in the database.
 	FieldProfileImage = "profile_image"
+	// FieldHompage holds the string denoting the hompage field in the database.
+	FieldHompage = "hompage"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the company in the database.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldAddress,
 	FieldDescription,
 	FieldProfileImage,
+	FieldHompage,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "companies"

@@ -1249,6 +1249,7 @@ type CompanyMutation struct {
 	address         *string
 	description     *string
 	profile_image   *string
+	hompage         *string
 	clearedFields   map[string]struct{}
 	user            *int
 	cleareduser     bool
@@ -1561,6 +1562,55 @@ func (m *CompanyMutation) ResetProfileImage() {
 	delete(m.clearedFields, company.FieldProfileImage)
 }
 
+// SetHompage sets the "hompage" field.
+func (m *CompanyMutation) SetHompage(s string) {
+	m.hompage = &s
+}
+
+// Hompage returns the value of the "hompage" field in the mutation.
+func (m *CompanyMutation) Hompage() (r string, exists bool) {
+	v := m.hompage
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHompage returns the old "hompage" field's value of the Company entity.
+// If the Company object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CompanyMutation) OldHompage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldHompage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldHompage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHompage: %w", err)
+	}
+	return oldValue.Hompage, nil
+}
+
+// ClearHompage clears the value of the "hompage" field.
+func (m *CompanyMutation) ClearHompage() {
+	m.hompage = nil
+	m.clearedFields[company.FieldHompage] = struct{}{}
+}
+
+// HompageCleared returns if the "hompage" field was cleared in this mutation.
+func (m *CompanyMutation) HompageCleared() bool {
+	_, ok := m.clearedFields[company.FieldHompage]
+	return ok
+}
+
+// ResetHompage resets all changes to the "hompage" field.
+func (m *CompanyMutation) ResetHompage() {
+	m.hompage = nil
+	delete(m.clearedFields, company.FieldHompage)
+}
+
 // SetUserID sets the "user" edge to the User entity by id.
 func (m *CompanyMutation) SetUserID(id int) {
 	m.user = &id
@@ -1619,7 +1669,7 @@ func (m *CompanyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CompanyMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.name != nil {
 		fields = append(fields, company.FieldName)
 	}
@@ -1634,6 +1684,9 @@ func (m *CompanyMutation) Fields() []string {
 	}
 	if m.profile_image != nil {
 		fields = append(fields, company.FieldProfileImage)
+	}
+	if m.hompage != nil {
+		fields = append(fields, company.FieldHompage)
 	}
 	return fields
 }
@@ -1653,6 +1706,8 @@ func (m *CompanyMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case company.FieldProfileImage:
 		return m.ProfileImage()
+	case company.FieldHompage:
+		return m.Hompage()
 	}
 	return nil, false
 }
@@ -1672,6 +1727,8 @@ func (m *CompanyMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDescription(ctx)
 	case company.FieldProfileImage:
 		return m.OldProfileImage(ctx)
+	case company.FieldHompage:
+		return m.OldHompage(ctx)
 	}
 	return nil, fmt.Errorf("unknown Company field %s", name)
 }
@@ -1716,6 +1773,13 @@ func (m *CompanyMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProfileImage(v)
 		return nil
+	case company.FieldHompage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHompage(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Company field %s", name)
 }
@@ -1755,6 +1819,9 @@ func (m *CompanyMutation) ClearedFields() []string {
 	if m.FieldCleared(company.FieldProfileImage) {
 		fields = append(fields, company.FieldProfileImage)
 	}
+	if m.FieldCleared(company.FieldHompage) {
+		fields = append(fields, company.FieldHompage)
+	}
 	return fields
 }
 
@@ -1778,6 +1845,9 @@ func (m *CompanyMutation) ClearField(name string) error {
 	case company.FieldProfileImage:
 		m.ClearProfileImage()
 		return nil
+	case company.FieldHompage:
+		m.ClearHompage()
+		return nil
 	}
 	return fmt.Errorf("unknown Company nullable field %s", name)
 }
@@ -1800,6 +1870,9 @@ func (m *CompanyMutation) ResetField(name string) error {
 		return nil
 	case company.FieldProfileImage:
 		m.ResetProfileImage()
+		return nil
+	case company.FieldHompage:
+		m.ResetHompage()
 		return nil
 	}
 	return fmt.Errorf("unknown Company field %s", name)

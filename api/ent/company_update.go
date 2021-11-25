@@ -100,6 +100,26 @@ func (cu *CompanyUpdate) ClearProfileImage() *CompanyUpdate {
 	return cu
 }
 
+// SetHompage sets the "hompage" field.
+func (cu *CompanyUpdate) SetHompage(s string) *CompanyUpdate {
+	cu.mutation.SetHompage(s)
+	return cu
+}
+
+// SetNillableHompage sets the "hompage" field if the given value is not nil.
+func (cu *CompanyUpdate) SetNillableHompage(s *string) *CompanyUpdate {
+	if s != nil {
+		cu.SetHompage(*s)
+	}
+	return cu
+}
+
+// ClearHompage clears the value of the "hompage" field.
+func (cu *CompanyUpdate) ClearHompage() *CompanyUpdate {
+	cu.mutation.ClearHompage()
+	return cu
+}
+
 // SetUserID sets the "user" edge to the User entity by ID.
 func (cu *CompanyUpdate) SetUserID(id int) *CompanyUpdate {
 	cu.mutation.SetUserID(id)
@@ -261,6 +281,19 @@ func (cu *CompanyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: company.FieldProfileImage,
 		})
 	}
+	if value, ok := cu.mutation.Hompage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: company.FieldHompage,
+		})
+	}
+	if cu.mutation.HompageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: company.FieldHompage,
+		})
+	}
 	if cu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -384,6 +417,26 @@ func (cuo *CompanyUpdateOne) SetNillableProfileImage(s *string) *CompanyUpdateOn
 // ClearProfileImage clears the value of the "profile_image" field.
 func (cuo *CompanyUpdateOne) ClearProfileImage() *CompanyUpdateOne {
 	cuo.mutation.ClearProfileImage()
+	return cuo
+}
+
+// SetHompage sets the "hompage" field.
+func (cuo *CompanyUpdateOne) SetHompage(s string) *CompanyUpdateOne {
+	cuo.mutation.SetHompage(s)
+	return cuo
+}
+
+// SetNillableHompage sets the "hompage" field if the given value is not nil.
+func (cuo *CompanyUpdateOne) SetNillableHompage(s *string) *CompanyUpdateOne {
+	if s != nil {
+		cuo.SetHompage(*s)
+	}
+	return cuo
+}
+
+// ClearHompage clears the value of the "hompage" field.
+func (cuo *CompanyUpdateOne) ClearHompage() *CompanyUpdateOne {
+	cuo.mutation.ClearHompage()
 	return cuo
 }
 
@@ -570,6 +623,19 @@ func (cuo *CompanyUpdateOne) sqlSave(ctx context.Context) (_node *Company, err e
 		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Column: company.FieldProfileImage,
+		})
+	}
+	if value, ok := cuo.mutation.Hompage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: company.FieldHompage,
+		})
+	}
+	if cuo.mutation.HompageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: company.FieldHompage,
 		})
 	}
 	if cuo.mutation.UserCleared() {

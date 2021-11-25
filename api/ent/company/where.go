@@ -126,6 +126,13 @@ func ProfileImage(v string) predicate.Company {
 	})
 }
 
+// Hompage applies equality check predicate on the "hompage" field. It's identical to HompageEQ.
+func Hompage(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHompage), v))
+	})
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.Company {
 	return predicate.Company(func(s *sql.Selector) {
@@ -720,6 +727,131 @@ func ProfileImageEqualFold(v string) predicate.Company {
 func ProfileImageContainsFold(v string) predicate.Company {
 	return predicate.Company(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldProfileImage), v))
+	})
+}
+
+// HompageEQ applies the EQ predicate on the "hompage" field.
+func HompageEQ(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldHompage), v))
+	})
+}
+
+// HompageNEQ applies the NEQ predicate on the "hompage" field.
+func HompageNEQ(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldHompage), v))
+	})
+}
+
+// HompageIn applies the In predicate on the "hompage" field.
+func HompageIn(vs ...string) predicate.Company {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Company(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldHompage), v...))
+	})
+}
+
+// HompageNotIn applies the NotIn predicate on the "hompage" field.
+func HompageNotIn(vs ...string) predicate.Company {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Company(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldHompage), v...))
+	})
+}
+
+// HompageGT applies the GT predicate on the "hompage" field.
+func HompageGT(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldHompage), v))
+	})
+}
+
+// HompageGTE applies the GTE predicate on the "hompage" field.
+func HompageGTE(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldHompage), v))
+	})
+}
+
+// HompageLT applies the LT predicate on the "hompage" field.
+func HompageLT(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldHompage), v))
+	})
+}
+
+// HompageLTE applies the LTE predicate on the "hompage" field.
+func HompageLTE(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldHompage), v))
+	})
+}
+
+// HompageContains applies the Contains predicate on the "hompage" field.
+func HompageContains(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldHompage), v))
+	})
+}
+
+// HompageHasPrefix applies the HasPrefix predicate on the "hompage" field.
+func HompageHasPrefix(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldHompage), v))
+	})
+}
+
+// HompageHasSuffix applies the HasSuffix predicate on the "hompage" field.
+func HompageHasSuffix(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldHompage), v))
+	})
+}
+
+// HompageIsNil applies the IsNil predicate on the "hompage" field.
+func HompageIsNil() predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldHompage)))
+	})
+}
+
+// HompageNotNil applies the NotNil predicate on the "hompage" field.
+func HompageNotNil() predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldHompage)))
+	})
+}
+
+// HompageEqualFold applies the EqualFold predicate on the "hompage" field.
+func HompageEqualFold(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldHompage), v))
+	})
+}
+
+// HompageContainsFold applies the ContainsFold predicate on the "hompage" field.
+func HompageContainsFold(v string) predicate.Company {
+	return predicate.Company(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldHompage), v))
 	})
 }
 

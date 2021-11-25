@@ -43,6 +43,7 @@ type StudentRepository interface {
 	GetByID(studentID int, reqStudent *ent.Student) (*ent.Student, error)
 	UpdateProfile(reqStudent *ent.Student) (*ent.Student, error)
 	UploadProfileImage(reqStudent *ent.Student) (*ent.Student, error)
+	// GetProfileImage(reqStudent *ent.Student) ([]byte, error)
 	// GetAll(clubID int) ([]*ent.Student, error)
 }
 
