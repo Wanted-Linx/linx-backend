@@ -17,6 +17,10 @@ const (
 	FieldProfileImage = "profile_image"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeClub holds the string denoting the club edge name in mutations.
+	EdgeClub = "club"
+	// EdgeClubMember holds the string denoting the club_member edge name in mutations.
+	EdgeClubMember = "club_member"
 	// Table holds the table name of the student in the database.
 	Table = "students"
 	// UserTable is the table that holds the user relation/edge.
@@ -26,6 +30,20 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_student"
+	// ClubTable is the table that holds the club relation/edge.
+	ClubTable = "clubs"
+	// ClubInverseTable is the table name for the Club entity.
+	// It exists in this package in order to avoid circular dependency with the "club" package.
+	ClubInverseTable = "clubs"
+	// ClubColumn is the table column denoting the club relation/edge.
+	ClubColumn = "student_club"
+	// ClubMemberTable is the table that holds the club_member relation/edge.
+	ClubMemberTable = "club_members"
+	// ClubMemberInverseTable is the table name for the ClubMember entity.
+	// It exists in this package in order to avoid circular dependency with the "clubmember" package.
+	ClubMemberInverseTable = "club_members"
+	// ClubMemberColumn is the table column denoting the club_member relation/edge.
+	ClubMemberColumn = "student_id"
 )
 
 // Columns holds all SQL columns for student fields.

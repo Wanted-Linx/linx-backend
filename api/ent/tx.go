@@ -12,6 +12,22 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// Club is the client for interacting with the Club builders.
+	Club *ClubClient
+	// ClubMember is the client for interacting with the ClubMember builders.
+	ClubMember *ClubMemberClient
+	// Company is the client for interacting with the Company builders.
+	Company *CompanyClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
+	// ProjectClub is the client for interacting with the ProjectClub builders.
+	ProjectClub *ProjectClubClient
+	// ProjectLog is the client for interacting with the ProjectLog builders.
+	ProjectLog *ProjectLogClient
+	// ProjectLogFeedback is the client for interacting with the ProjectLogFeedback builders.
+	ProjectLogFeedback *ProjectLogFeedbackClient
+	// ProjectLogParticipant is the client for interacting with the ProjectLogParticipant builders.
+	ProjectLogParticipant *ProjectLogParticipantClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
 	// User is the client for interacting with the User builders.
@@ -151,6 +167,14 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.Club = NewClubClient(tx.config)
+	tx.ClubMember = NewClubMemberClient(tx.config)
+	tx.Company = NewCompanyClient(tx.config)
+	tx.Project = NewProjectClient(tx.config)
+	tx.ProjectClub = NewProjectClubClient(tx.config)
+	tx.ProjectLog = NewProjectLogClient(tx.config)
+	tx.ProjectLogFeedback = NewProjectLogFeedbackClient(tx.config)
+	tx.ProjectLogParticipant = NewProjectLogParticipantClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
@@ -162,7 +186,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Student.QueryXXX(), the query will be executed
+// applies a query, for example: Club.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

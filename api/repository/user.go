@@ -44,6 +44,8 @@ func (r *userRepository) GetByID(userID int) (*ent.User, error) {
 func (r *userRepository) FindByEmailAndPassword(email, password string) (*ent.User, error) {
 	u, err := r.db.User.Query().
 		Where(user.Email(email)).
+		WithStudent().
+		WithCompany().
 		Only(context.Background())
 	if err != nil {
 		return nil, err

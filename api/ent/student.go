@@ -21,9 +21,9 @@ type Student struct {
 	// University holds the value of the "university" field.
 	University string `json:"university,omitempty"`
 	// ProfileLink holds the value of the "profile_link" field.
-	ProfileLink string `json:"profile_link,omitempty"`
+	ProfileLink *string `json:"profile_link,omitempty"`
 	// ProfileImage holds the value of the "profile_image" field.
-	ProfileImage string `json:"profile_image,omitempty"`
+	ProfileImage *string `json:"profile_image,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the StudentQuery when eager-loading is set.
 	Edges        StudentEdges `json:"edges"`
@@ -34,9 +34,13 @@ type Student struct {
 type StudentEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// Club holds the value of the club edge.
+	Club []*Club `json:"club,omitempty"`
+	// ClubMember holds the value of the club_member edge.
+	ClubMember []*ClubMember `json:"club_member,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -51,6 +55,24 @@ func (e StudentEdges) UserOrErr() (*User, error) {
 		return e.User, nil
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// ClubOrErr returns the Club value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) ClubOrErr() ([]*Club, error) {
+	if e.loadedTypes[1] {
+		return e.Club, nil
+	}
+	return nil, &NotLoadedError{edge: "club"}
+}
+
+// ClubMemberOrErr returns the ClubMember value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) ClubMemberOrErr() ([]*ClubMember, error) {
+	if e.loadedTypes[2] {
+		return e.ClubMember, nil
+	}
+	return nil, &NotLoadedError{edge: "club_member"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -101,13 +123,15 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field profile_link", values[i])
 			} else if value.Valid {
-				s.ProfileLink = value.String
+				s.ProfileLink = new(string)
+				*s.ProfileLink = value.String
 			}
 		case student.FieldProfileImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field profile_image", values[i])
 			} else if value.Valid {
-				s.ProfileImage = value.String
+				s.ProfileImage = new(string)
+				*s.ProfileImage = value.String
 			}
 		case student.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -124,6 +148,16 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 // QueryUser queries the "user" edge of the Student entity.
 func (s *Student) QueryUser() *UserQuery {
 	return (&StudentClient{config: s.config}).QueryUser(s)
+}
+
+// QueryClub queries the "club" edge of the Student entity.
+func (s *Student) QueryClub() *ClubQuery {
+	return (&StudentClient{config: s.config}).QueryClub(s)
+}
+
+// QueryClubMember queries the "club_member" edge of the Student entity.
+func (s *Student) QueryClubMember() *ClubMemberQuery {
+	return (&StudentClient{config: s.config}).QueryClubMember(s)
 }
 
 // Update returns a builder for updating this Student.
@@ -153,10 +187,14 @@ func (s *Student) String() string {
 	builder.WriteString(s.Name)
 	builder.WriteString(", university=")
 	builder.WriteString(s.University)
-	builder.WriteString(", profile_link=")
-	builder.WriteString(s.ProfileLink)
-	builder.WriteString(", profile_image=")
-	builder.WriteString(s.ProfileImage)
+	if v := s.ProfileLink; v != nil {
+		builder.WriteString(", profile_link=")
+		builder.WriteString(*v)
+	}
+	if v := s.ProfileImage; v != nil {
+		builder.WriteString(", profile_image=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

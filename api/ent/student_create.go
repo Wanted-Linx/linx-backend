@@ -9,6 +9,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
@@ -38,9 +40,31 @@ func (sc *StudentCreate) SetProfileLink(s string) *StudentCreate {
 	return sc
 }
 
+// SetNillableProfileLink sets the "profile_link" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableProfileLink(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetProfileLink(*s)
+	}
+	return sc
+}
+
 // SetProfileImage sets the "profile_image" field.
 func (sc *StudentCreate) SetProfileImage(s string) *StudentCreate {
 	sc.mutation.SetProfileImage(s)
+	return sc
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableProfileImage(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetProfileImage(*s)
+	}
+	return sc
+}
+
+// SetID sets the "id" field.
+func (sc *StudentCreate) SetID(i int) *StudentCreate {
+	sc.mutation.SetID(i)
 	return sc
 }
 
@@ -53,6 +77,36 @@ func (sc *StudentCreate) SetUserID(id int) *StudentCreate {
 // SetUser sets the "user" edge to the User entity.
 func (sc *StudentCreate) SetUser(u *User) *StudentCreate {
 	return sc.SetUserID(u.ID)
+}
+
+// AddClubIDs adds the "club" edge to the Club entity by IDs.
+func (sc *StudentCreate) AddClubIDs(ids ...int) *StudentCreate {
+	sc.mutation.AddClubIDs(ids...)
+	return sc
+}
+
+// AddClub adds the "club" edges to the Club entity.
+func (sc *StudentCreate) AddClub(c ...*Club) *StudentCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return sc.AddClubIDs(ids...)
+}
+
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by IDs.
+func (sc *StudentCreate) AddClubMemberIDs(ids ...int) *StudentCreate {
+	sc.mutation.AddClubMemberIDs(ids...)
+	return sc
+}
+
+// AddClubMember adds the "club_member" edges to the ClubMember entity.
+func (sc *StudentCreate) AddClubMember(c ...*ClubMember) *StudentCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return sc.AddClubMemberIDs(ids...)
 }
 
 // Mutation returns the StudentMutation object of the builder.
@@ -131,12 +185,6 @@ func (sc *StudentCreate) check() error {
 	if _, ok := sc.mutation.University(); !ok {
 		return &ValidationError{Name: "university", err: errors.New(`ent: missing required field "university"`)}
 	}
-	if _, ok := sc.mutation.ProfileLink(); !ok {
-		return &ValidationError{Name: "profile_link", err: errors.New(`ent: missing required field "profile_link"`)}
-	}
-	if _, ok := sc.mutation.ProfileImage(); !ok {
-		return &ValidationError{Name: "profile_image", err: errors.New(`ent: missing required field "profile_image"`)}
-	}
 	if _, ok := sc.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user", err: errors.New("ent: missing required edge \"user\"")}
 	}
@@ -151,8 +199,10 @@ func (sc *StudentCreate) sqlSave(ctx context.Context) (*Student, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != _node.ID {
+		id := _spec.ID.Value.(int64)
+		_node.ID = int(id)
+	}
 	return _node, nil
 }
 
@@ -167,6 +217,10 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	if id, ok := sc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
+	}
 	if value, ok := sc.mutation.Name(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -189,7 +243,7 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: student.FieldProfileLink,
 		})
-		_node.ProfileLink = value
+		_node.ProfileLink = &value
 	}
 	if value, ok := sc.mutation.ProfileImage(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
@@ -197,7 +251,7 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Value:  value,
 			Column: student.FieldProfileImage,
 		})
-		_node.ProfileImage = value
+		_node.ProfileImage = &value
 	}
 	if nodes := sc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -217,6 +271,44 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.user_student = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.ClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.ClubTable,
+			Columns: []string{student.ClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: club.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sc.mutation.ClubMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.ClubMemberTable,
+			Columns: []string{student.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -263,7 +355,7 @@ func (scb *StudentCreateBulk) Save(ctx context.Context) ([]*Student, error) {
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				if specs[i].ID.Value != nil {
+				if specs[i].ID.Value != nil && nodes[i].ID == 0 {
 					id := specs[i].ID.Value.(int64)
 					nodes[i].ID = int(id)
 				}

@@ -13,11 +13,15 @@ import (
 )
 
 type userService struct {
-	userRepo domain.UserReposiory
+	userRepo    domain.UserReposiory
+	studentRepo domain.StudentRepository
 }
 
-func NewUserSerivce(userRepo domain.UserReposiory) domain.UserService {
-	return &userService{userRepo: userRepo}
+func NewUserSerivce(userRepo domain.UserReposiory, studentRepo domain.StudentRepository) domain.UserService {
+	return &userService{
+		userRepo:    userRepo,
+		studentRepo: studentRepo,
+	}
 }
 
 func (s *userService) SignUp(reqSignUp *domain.SignUpRequest) (*domain.UserDto, error) {
@@ -26,6 +30,7 @@ func (s *userService) SignUp(reqSignUp *domain.SignUpRequest) (*domain.UserDto, 
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
+	log.Println(reqSignUp)
 	u := &ent.User{
 		Email:    reqSignUp.Email,
 		Password: hashPassword,
@@ -38,14 +43,6 @@ func (s *userService) SignUp(reqSignUp *domain.SignUpRequest) (*domain.UserDto, 
 			return nil, errors.WithMessage(err, "이미 존재하는 이메일입니다.")
 		}
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
-	}
-
-	if newUser.Kind.String() == "student" {
-		// register student table
-		log.Info("회원가입(학생) 성공")
-	} else {
-		// register company table
-		log.Info("회원가입(기업) 성공")
 	}
 
 	return domain.UserToDto(newUser), nil

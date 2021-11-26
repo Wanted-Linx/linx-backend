@@ -9,6 +9,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
+	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
@@ -51,6 +53,36 @@ func (uc *UserCreate) AddStudent(s ...*Student) *UserCreate {
 		ids[i] = s[i].ID
 	}
 	return uc.AddStudentIDs(ids...)
+}
+
+// AddCompanyIDs adds the "company" edge to the Company entity by IDs.
+func (uc *UserCreate) AddCompanyIDs(ids ...int) *UserCreate {
+	uc.mutation.AddCompanyIDs(ids...)
+	return uc
+}
+
+// AddCompany adds the "company" edges to the Company entity.
+func (uc *UserCreate) AddCompany(c ...*Company) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddCompanyIDs(ids...)
+}
+
+// AddClubMemberIDs adds the "club_member" edge to the ClubMember entity by IDs.
+func (uc *UserCreate) AddClubMemberIDs(ids ...int) *UserCreate {
+	uc.mutation.AddClubMemberIDs(ids...)
+	return uc
+}
+
+// AddClubMember adds the "club_member" edges to the ClubMember entity.
+func (uc *UserCreate) AddClubMember(c ...*ClubMember) *UserCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return uc.AddClubMemberIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -199,6 +231,44 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: student.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.CompanyIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.CompanyTable,
+			Columns: []string{user.CompanyColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: company.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ClubMemberIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ClubMemberTable,
+			Columns: []string{user.ClubMemberColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: clubmember.FieldID,
 				},
 			},
 		}

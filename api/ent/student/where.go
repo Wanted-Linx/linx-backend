@@ -438,6 +438,20 @@ func ProfileLinkHasSuffix(v string) predicate.Student {
 	})
 }
 
+// ProfileLinkIsNil applies the IsNil predicate on the "profile_link" field.
+func ProfileLinkIsNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProfileLink)))
+	})
+}
+
+// ProfileLinkNotNil applies the NotNil predicate on the "profile_link" field.
+func ProfileLinkNotNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProfileLink)))
+	})
+}
+
 // ProfileLinkEqualFold applies the EqualFold predicate on the "profile_link" field.
 func ProfileLinkEqualFold(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
@@ -549,6 +563,20 @@ func ProfileImageHasSuffix(v string) predicate.Student {
 	})
 }
 
+// ProfileImageIsNil applies the IsNil predicate on the "profile_image" field.
+func ProfileImageIsNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProfileImage)))
+	})
+}
+
+// ProfileImageNotNil applies the NotNil predicate on the "profile_image" field.
+func ProfileImageNotNil() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProfileImage)))
+	})
+}
+
 // ProfileImageEqualFold applies the EqualFold predicate on the "profile_image" field.
 func ProfileImageEqualFold(v string) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {
@@ -582,6 +610,62 @@ func HasUserWith(preds ...predicate.User) predicate.Student {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(UserInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasClub applies the HasEdge predicate on the "club" edge.
+func HasClub() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubTable, ClubColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClubWith applies the HasEdge predicate on the "club" edge with a given conditions (other predicates).
+func HasClubWith(preds ...predicate.Club) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubTable, ClubColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasClubMember applies the HasEdge predicate on the "club_member" edge.
+func HasClubMember() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasClubMemberWith applies the HasEdge predicate on the "club_member" edge with a given conditions (other predicates).
+func HasClubMemberWith(preds ...predicate.ClubMember) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ClubMemberInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ClubMemberTable, ClubMemberColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
