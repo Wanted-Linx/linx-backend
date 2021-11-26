@@ -118,6 +118,14 @@ func (pu *ProjectUpdate) SetClubID(id int) *ProjectUpdate {
 	return pu
 }
 
+// SetNillableClubID sets the "club" edge to the Club entity by ID if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableClubID(id *int) *ProjectUpdate {
+	if id != nil {
+		pu = pu.SetClubID(*id)
+	}
+	return pu
+}
+
 // SetClub sets the "club" edge to the Club entity.
 func (pu *ProjectUpdate) SetClub(c *Club) *ProjectUpdate {
 	return pu.SetClubID(c.ID)
@@ -276,9 +284,6 @@ func (pu *ProjectUpdate) ExecX(ctx context.Context) {
 func (pu *ProjectUpdate) check() error {
 	if _, ok := pu.mutation.CompanyID(); pu.mutation.CompanyCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"company\"")
-	}
-	if _, ok := pu.mutation.ClubID(); pu.mutation.ClubCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"club\"")
 	}
 	return nil
 }
@@ -654,6 +659,14 @@ func (puo *ProjectUpdateOne) SetClubID(id int) *ProjectUpdateOne {
 	return puo
 }
 
+// SetNillableClubID sets the "club" edge to the Club entity by ID if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableClubID(id *int) *ProjectUpdateOne {
+	if id != nil {
+		puo = puo.SetClubID(*id)
+	}
+	return puo
+}
+
 // SetClub sets the "club" edge to the Club entity.
 func (puo *ProjectUpdateOne) SetClub(c *Club) *ProjectUpdateOne {
 	return puo.SetClubID(c.ID)
@@ -819,9 +832,6 @@ func (puo *ProjectUpdateOne) ExecX(ctx context.Context) {
 func (puo *ProjectUpdateOne) check() error {
 	if _, ok := puo.mutation.CompanyID(); puo.mutation.CompanyCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"company\"")
-	}
-	if _, ok := puo.mutation.ClubID(); puo.mutation.ClubCleared() && !ok {
-		return errors.New("ent: clearing a required unique edge \"club\"")
 	}
 	return nil
 }

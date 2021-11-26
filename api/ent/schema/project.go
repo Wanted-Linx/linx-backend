@@ -39,8 +39,8 @@ func (Project) Edges() []ent.Edge {
 			Unique(),
 		edge.From("club", Club.Type).
 			Ref("project").
-			Required().
 			Unique(),
+		// Club Required 뺌(프로젝트 최초 생성할 때는 없으니까...)
 		edge.To("project_club", ProjectClub.Type),
 		edge.To("project_log", ProjectLog.Type),
 	}

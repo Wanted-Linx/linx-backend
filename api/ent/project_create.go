@@ -103,6 +103,14 @@ func (pc *ProjectCreate) SetClubID(id int) *ProjectCreate {
 	return pc
 }
 
+// SetNillableClubID sets the "club" edge to the Club entity by ID if the given value is not nil.
+func (pc *ProjectCreate) SetNillableClubID(id *int) *ProjectCreate {
+	if id != nil {
+		pc = pc.SetClubID(*id)
+	}
+	return pc
+}
+
 // SetClub sets the "club" edge to the Club entity.
 func (pc *ProjectCreate) SetClub(c *Club) *ProjectCreate {
 	return pc.SetClubID(c.ID)
@@ -246,9 +254,6 @@ func (pc *ProjectCreate) check() error {
 	}
 	if _, ok := pc.mutation.CompanyID(); !ok {
 		return &ValidationError{Name: "company", err: errors.New("ent: missing required edge \"company\"")}
-	}
-	if _, ok := pc.mutation.ClubID(); !ok {
-		return &ValidationError{Name: "club", err: errors.New("ent: missing required edge \"club\"")}
 	}
 	return nil
 }
