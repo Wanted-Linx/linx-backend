@@ -7,7 +7,6 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 )
 
 type studentRepository struct {
@@ -55,9 +54,7 @@ func (r *studentRepository) GetByID(studentID int, reqStudent *ent.Student) (*en
 		return nil, errors.WithStack(err)
 	}
 
-	log.Info(clubs)
 	s.Edges.Club = clubs
-	log.Info(s.Edges.Club)
 	return s, nil
 }
 

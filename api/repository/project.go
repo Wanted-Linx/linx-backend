@@ -35,46 +35,34 @@ func (r *projectRepository) Save(reqProject *ent.Project) (*ent.Project, error) 
 		return nil, errors.WithStack(err)
 	}
 
-	// projecLogs, err := p.QueryProjectLog().All(context.Background())
-	// if err != nil {
-	// 	return nil, errors.WithStack(err)
-	// }
-
 	company, err := p.QueryCompany().First(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-
-	// clubs, err := p.QueryProjectClub().QueryClub().WithLeader().All(context.Background())
-	// if err != nil {
-	// 	return nil, errors.WithStack(err)
-	// }
-
-	// p.Edges.ProjectLog = projecLogs
 	p.Edges.Company = company
-	// p.Edges.Club = clubs
 	return p, nil
 }
 
 func (r *projectRepository) GetByID(projectID int) (*ent.Project, []*ent.Club, error) {
 	p, err := r.db.Project.Query().
-		Where(project.ID(projectID)).
-		WithCompany().
-		// WithProjectLog().
+		Where(project.ID(projectID)).WithCompany().
 		Only(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 
-	clubs, err := p.QueryProjectClub().QueryClub().WithLeader().All(context.Background())
+	clubs, err := p.QueryProjectClub().QueryClub().
+		WithLeader().All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 
-	projectLogs, err := p.QueryProjectLog().All(context.Background())
+	projectLogs, err := p.QueryProjectLog().
+		WithProjectLogFeedback().All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
+
 	p.Edges.ProjectLog = projectLogs
 
 	return p, clubs, nil
@@ -82,9 +70,7 @@ func (r *projectRepository) GetByID(projectID int) (*ent.Project, []*ent.Club, e
 
 func (r *projectRepository) GetAll(limit, offset int) ([]*ent.Project, [][]*ent.Club, error) {
 	p, err := r.db.Project.Query().
-		Offset(offset).Limit(limit).
-		WithCompany().
-		// WithProjectLog().
+		Offset(offset).Limit(limit).WithCompany().
 		All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
@@ -96,11 +82,12 @@ func (r *projectRepository) GetAll(limit, offset int) ([]*ent.Project, [][]*ent.
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}
-		projectLogs, err := project.QueryProjectLog().All(context.TODO())
+
+		projectLogs, err := project.QueryProjectLog().
+			WithProjectLogFeedback().All(context.Background())
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}
-
 		project.Edges.ProjectLog = projectLogs
 		allClubs[idx] = clubs
 	}
@@ -124,7 +111,6 @@ func (r *projectRepository) SaveProjectLog(reqPlog *ent.ProjectLog) (*ent.Projec
 		return nil, errors.WithStack(err)
 	}
 
-	log.Println(pl)
 	participants, err := pl.QueryProjectLogParticipant().All(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
