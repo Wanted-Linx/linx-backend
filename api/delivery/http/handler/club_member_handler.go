@@ -23,7 +23,7 @@ func (h *ClubMemberHandler) RegisterClubMember(c echo.Context) error {
 
 	reqClubMemberReg := new(domain.ClubMemberRegisterRequest)
 	if err := c.Bind(reqClubMemberReg); err != nil {
-		return errors.Wrap(err, "잘못된 동아리 json body 입니다.")
+		return errors.Wrap(err, "잘못된 json body 입니다.")
 	}
 
 	err = h.clubMemberService.RegisterClubMember(studentID, reqClubMemberReg.ClubID)
@@ -31,5 +31,5 @@ func (h *ClubMemberHandler) RegisterClubMember(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, "성공")
+	return c.JSON(200, map[string]string{"result": "동아리 가입 성공"})
 }

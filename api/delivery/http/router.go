@@ -7,12 +7,16 @@ func initRouter(
 	studentHandler *handler.StudentHandler,
 	companyHandler *handler.CompanyHandler,
 	clubHandler *handler.ClubHandler,
-	clubMemberHandler *handler.ClubMemberHandler) {
+	clubMemberHandler *handler.ClubMemberHandler,
+	projectHandler *handler.ProjectHandler,
+	projectClubHandler *handler.ProjectClubHandler) {
 	userRouter(userHandler)
 	studentRouter(studentHandler)
 	companyRouter(companyHandler)
 	clubRouter(clubHandler)
 	clubMemberRouter(clubMemberHandler)
+	projectRouter(projectHandler)
+	projectClubRouter(projectClubHandler)
 }
 
 func userRouter(userHandler *handler.UserHandler) {
@@ -56,4 +60,17 @@ func clubMemberRouter(clubMemberHandler *handler.ClubMemberHandler) {
 	// 동아리에 가입 API
 	group := e.Group("/clubs/members")
 	group.POST("", clubMemberHandler.RegisterClubMember)
+}
+
+func projectRouter(projectHandler *handler.ProjectHandler) {
+	group := e.Group("/projects")
+	group.POST("", projectHandler.CreateProject)
+	group.GET("", projectHandler.GetAllProjects)
+	group.GET("/:project_id", projectHandler.GetProjectByID)
+}
+
+// TODO: 그냥 projectRouter에 합쳐도 됨
+func projectClubRouter(projectClubHandler *handler.ProjectClubHandler) {
+	group := e.Group("/projects/clubs")
+	group.POST("", projectClubHandler.ApplyProjectClub)
 }

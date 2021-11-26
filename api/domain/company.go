@@ -51,7 +51,7 @@ type CompanyRepository interface {
 
 func CompanyToDto(src *ent.Company) *CompanyDto {
 	return &CompanyDto{
-		ID:             src.Edges.User.ID,
+		ID:             src.ID,
 		Name:           src.Name,
 		BusinessNumber: src.BusinessNumber,
 		Description:    src.Description,

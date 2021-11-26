@@ -49,6 +49,7 @@ func (s *clubService) CreateClub(clubLeaderID int, reqClub *domain.ClubCreateReq
 	if err != nil {
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
+	// TODO: repository layer로 변경하기(only 해도 될 듯 leader 한명만 있을거니까)
 	clubMembers, err := newClub.QueryClubMember().QueryStudent().All(context.Background())
 	if err != nil {
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
