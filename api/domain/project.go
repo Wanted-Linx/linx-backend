@@ -14,7 +14,7 @@ type ProjectDto struct {
 	StartDate         string           `json:"start_date"`
 	EndDate           string           `json:"end_date"`
 	ApplyingStartDate string           `json:"applying_start_date"`
-	AppylingEndDate   string           `json:"appyling_end_date"`
+	ApplyingEndDate   string           `json:"applying_end_date"`
 	Qualification     string           `json:"qualification"`
 	SponsorFee        int              `json:"sponsor_fee"`
 	TaskType          []string         `json:"task_type"`
@@ -102,7 +102,7 @@ func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
 		StartDate:         src.StartDate,
 		EndDate:           src.EndDate,
 		ApplyingStartDate: src.ApplyingStartDate,
-		AppylingEndDate:   src.ApplyingEndDate,
+		ApplyingEndDate:   src.ApplyingEndDate,
 		Qualification:     src.Qualification,
 		SponsorFee:        src.SponsorFee,
 		TaskType:          []string{"개발, 디자인"},
