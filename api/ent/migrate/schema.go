@@ -175,7 +175,7 @@ var (
 		{Name: "content", Type: field.TypeString, Size: 2147483647},
 		{Name: "start_date", Type: field.TypeString},
 		{Name: "end_date", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
+		{Name: "created_at", Type: field.TypeTime, Nullable: true},
 		{Name: "project_project_log", Type: field.TypeInt, Nullable: true},
 		{Name: "project_club_project_log", Type: field.TypeInt, Nullable: true},
 	}

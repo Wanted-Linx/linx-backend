@@ -7,10 +7,10 @@ const (
 	Label = "project_club"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldProjectID holds the string denoting the project_id field in the database.
-	FieldProjectID = "project_id"
 	// FieldClubID holds the string denoting the club_id field in the database.
 	FieldClubID = "club_id"
+	// FieldProjectID holds the string denoting the project_id field in the database.
+	FieldProjectID = "project_id"
 	// FieldStartDate holds the string denoting the start_date field in the database.
 	FieldStartDate = "start_date"
 	// EdgeClub holds the string denoting the club edge name in mutations.
@@ -47,8 +47,8 @@ const (
 // Columns holds all SQL columns for projectclub fields.
 var Columns = []string{
 	FieldID,
-	FieldProjectID,
 	FieldClubID,
+	FieldProjectID,
 	FieldStartDate,
 }
 

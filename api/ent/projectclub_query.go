@@ -363,12 +363,12 @@ func (pcq *ProjectClubQuery) WithProjectLog(opts ...func(*ProjectLogQuery)) *Pro
 // Example:
 //
 //	var v []struct {
-//		ProjectID int `json:"project_id,omitempty"`
+//		ClubID int `json:"club_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ProjectClub.Query().
-//		GroupBy(projectclub.FieldProjectID).
+//		GroupBy(projectclub.FieldClubID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -390,11 +390,11 @@ func (pcq *ProjectClubQuery) GroupBy(field string, fields ...string) *ProjectClu
 // Example:
 //
 //	var v []struct {
-//		ProjectID int `json:"project_id,omitempty"`
+//		ClubID int `json:"club_id,omitempty"`
 //	}
 //
 //	client.ProjectClub.Query().
-//		Select(projectclub.FieldProjectID).
+//		Select(projectclub.FieldClubID).
 //		Scan(ctx, &v)
 //
 func (pcq *ProjectClubQuery) Select(fields ...string) *ProjectClubSelect {

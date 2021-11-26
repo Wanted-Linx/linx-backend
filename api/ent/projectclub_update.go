@@ -30,15 +30,15 @@ func (pcu *ProjectClubUpdate) Where(ps ...predicate.ProjectClub) *ProjectClubUpd
 	return pcu
 }
 
-// SetProjectID sets the "project_id" field.
-func (pcu *ProjectClubUpdate) SetProjectID(i int) *ProjectClubUpdate {
-	pcu.mutation.SetProjectID(i)
-	return pcu
-}
-
 // SetClubID sets the "club_id" field.
 func (pcu *ProjectClubUpdate) SetClubID(i int) *ProjectClubUpdate {
 	pcu.mutation.SetClubID(i)
+	return pcu
+}
+
+// SetProjectID sets the "project_id" field.
+func (pcu *ProjectClubUpdate) SetProjectID(i int) *ProjectClubUpdate {
+	pcu.mutation.SetProjectID(i)
 	return pcu
 }
 
@@ -350,15 +350,15 @@ type ProjectClubUpdateOne struct {
 	mutation *ProjectClubMutation
 }
 
-// SetProjectID sets the "project_id" field.
-func (pcuo *ProjectClubUpdateOne) SetProjectID(i int) *ProjectClubUpdateOne {
-	pcuo.mutation.SetProjectID(i)
-	return pcuo
-}
-
 // SetClubID sets the "club_id" field.
 func (pcuo *ProjectClubUpdateOne) SetClubID(i int) *ProjectClubUpdateOne {
 	pcuo.mutation.SetClubID(i)
+	return pcuo
+}
+
+// SetProjectID sets the "project_id" field.
+func (pcuo *ProjectClubUpdateOne) SetProjectID(i int) *ProjectClubUpdateOne {
+	pcuo.mutation.SetProjectID(i)
 	return pcuo
 }
 

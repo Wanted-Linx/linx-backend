@@ -91,13 +91,6 @@ func IDLTE(id int) predicate.ProjectClub {
 	})
 }
 
-// ProjectID applies equality check predicate on the "project_id" field. It's identical to ProjectIDEQ.
-func ProjectID(v int) predicate.ProjectClub {
-	return predicate.ProjectClub(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldProjectID), v))
-	})
-}
-
 // ClubID applies equality check predicate on the "club_id" field. It's identical to ClubIDEQ.
 func ClubID(v int) predicate.ProjectClub {
 	return predicate.ProjectClub(func(s *sql.Selector) {
@@ -105,58 +98,17 @@ func ClubID(v int) predicate.ProjectClub {
 	})
 }
 
-// StartDate applies equality check predicate on the "start_date" field. It's identical to StartDateEQ.
-func StartDate(v string) predicate.ProjectClub {
-	return predicate.ProjectClub(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldStartDate), v))
-	})
-}
-
-// ProjectIDEQ applies the EQ predicate on the "project_id" field.
-func ProjectIDEQ(v int) predicate.ProjectClub {
+// ProjectID applies equality check predicate on the "project_id" field. It's identical to ProjectIDEQ.
+func ProjectID(v int) predicate.ProjectClub {
 	return predicate.ProjectClub(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldProjectID), v))
 	})
 }
 
-// ProjectIDNEQ applies the NEQ predicate on the "project_id" field.
-func ProjectIDNEQ(v int) predicate.ProjectClub {
+// StartDate applies equality check predicate on the "start_date" field. It's identical to StartDateEQ.
+func StartDate(v string) predicate.ProjectClub {
 	return predicate.ProjectClub(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldProjectID), v))
-	})
-}
-
-// ProjectIDIn applies the In predicate on the "project_id" field.
-func ProjectIDIn(vs ...int) predicate.ProjectClub {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.ProjectClub(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldProjectID), v...))
-	})
-}
-
-// ProjectIDNotIn applies the NotIn predicate on the "project_id" field.
-func ProjectIDNotIn(vs ...int) predicate.ProjectClub {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.ProjectClub(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldProjectID), v...))
+		s.Where(sql.EQ(s.C(FieldStartDate), v))
 	})
 }
 
@@ -205,6 +157,54 @@ func ClubIDNotIn(vs ...int) predicate.ProjectClub {
 			return
 		}
 		s.Where(sql.NotIn(s.C(FieldClubID), v...))
+	})
+}
+
+// ProjectIDEQ applies the EQ predicate on the "project_id" field.
+func ProjectIDEQ(v int) predicate.ProjectClub {
+	return predicate.ProjectClub(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldProjectID), v))
+	})
+}
+
+// ProjectIDNEQ applies the NEQ predicate on the "project_id" field.
+func ProjectIDNEQ(v int) predicate.ProjectClub {
+	return predicate.ProjectClub(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldProjectID), v))
+	})
+}
+
+// ProjectIDIn applies the In predicate on the "project_id" field.
+func ProjectIDIn(vs ...int) predicate.ProjectClub {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProjectClub(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldProjectID), v...))
+	})
+}
+
+// ProjectIDNotIn applies the NotIn predicate on the "project_id" field.
+func ProjectIDNotIn(vs ...int) predicate.ProjectClub {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ProjectClub(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldProjectID), v...))
 	})
 }
 

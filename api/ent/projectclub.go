@@ -17,10 +17,10 @@ type ProjectClub struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
-	// ProjectID holds the value of the "project_id" field.
-	ProjectID int `json:"project_id,omitempty"`
 	// ClubID holds the value of the "club_id" field.
 	ClubID int `json:"club_id,omitempty"`
+	// ProjectID holds the value of the "project_id" field.
+	ProjectID int `json:"project_id,omitempty"`
 	// StartDate holds the value of the "start_date" field.
 	StartDate string `json:"start_date,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -83,7 +83,7 @@ func (*ProjectClub) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case projectclub.FieldID, projectclub.FieldProjectID, projectclub.FieldClubID:
+		case projectclub.FieldID, projectclub.FieldClubID, projectclub.FieldProjectID:
 			values[i] = new(sql.NullInt64)
 		case projectclub.FieldStartDate:
 			values[i] = new(sql.NullString)
@@ -108,17 +108,17 @@ func (pc *ProjectClub) assignValues(columns []string, values []interface{}) erro
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			pc.ID = int(value.Int64)
-		case projectclub.FieldProjectID:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field project_id", values[i])
-			} else if value.Valid {
-				pc.ProjectID = int(value.Int64)
-			}
 		case projectclub.FieldClubID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field club_id", values[i])
 			} else if value.Valid {
 				pc.ClubID = int(value.Int64)
+			}
+		case projectclub.FieldProjectID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field project_id", values[i])
+			} else if value.Valid {
+				pc.ProjectID = int(value.Int64)
 			}
 		case projectclub.FieldStartDate:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -169,10 +169,10 @@ func (pc *ProjectClub) String() string {
 	var builder strings.Builder
 	builder.WriteString("ProjectClub(")
 	builder.WriteString(fmt.Sprintf("id=%v", pc.ID))
-	builder.WriteString(", project_id=")
-	builder.WriteString(fmt.Sprintf("%v", pc.ProjectID))
 	builder.WriteString(", club_id=")
 	builder.WriteString(fmt.Sprintf("%v", pc.ClubID))
+	builder.WriteString(", project_id=")
+	builder.WriteString(fmt.Sprintf("%v", pc.ProjectID))
 	builder.WriteString(", start_date=")
 	builder.WriteString(pc.StartDate)
 	builder.WriteByte(')')

@@ -22,15 +22,15 @@ type ProjectClubCreate struct {
 	hooks    []Hook
 }
 
-// SetProjectID sets the "project_id" field.
-func (pcc *ProjectClubCreate) SetProjectID(i int) *ProjectClubCreate {
-	pcc.mutation.SetProjectID(i)
-	return pcc
-}
-
 // SetClubID sets the "club_id" field.
 func (pcc *ProjectClubCreate) SetClubID(i int) *ProjectClubCreate {
 	pcc.mutation.SetClubID(i)
+	return pcc
+}
+
+// SetProjectID sets the "project_id" field.
+func (pcc *ProjectClubCreate) SetProjectID(i int) *ProjectClubCreate {
+	pcc.mutation.SetProjectID(i)
 	return pcc
 }
 
@@ -135,11 +135,11 @@ func (pcc *ProjectClubCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (pcc *ProjectClubCreate) check() error {
-	if _, ok := pcc.mutation.ProjectID(); !ok {
-		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "project_id"`)}
-	}
 	if _, ok := pcc.mutation.ClubID(); !ok {
 		return &ValidationError{Name: "club_id", err: errors.New(`ent: missing required field "club_id"`)}
+	}
+	if _, ok := pcc.mutation.ProjectID(); !ok {
+		return &ValidationError{Name: "project_id", err: errors.New(`ent: missing required field "project_id"`)}
 	}
 	if _, ok := pcc.mutation.StartDate(); !ok {
 		return &ValidationError{Name: "start_date", err: errors.New(`ent: missing required field "start_date"`)}

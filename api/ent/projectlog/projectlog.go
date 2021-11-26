@@ -2,10 +2,6 @@
 
 package projectlog
 
-import (
-	"time"
-)
-
 const (
 	// Label holds the string label denoting the projectlog type in the database.
 	Label = "project_log"
@@ -95,8 +91,3 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
-
-var (
-	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt func() time.Time
-)

@@ -766,6 +766,20 @@ func CreatedAtLTE(v time.Time) predicate.ProjectLog {
 	})
 }
 
+// CreatedAtIsNil applies the IsNil predicate on the "created_at" field.
+func CreatedAtIsNil() predicate.ProjectLog {
+	return predicate.ProjectLog(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCreatedAt)))
+	})
+}
+
+// CreatedAtNotNil applies the NotNil predicate on the "created_at" field.
+func CreatedAtNotNil() predicate.ProjectLog {
+	return predicate.ProjectLog(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCreatedAt)))
+	})
+}
+
 // HasProject applies the HasEdge predicate on the "project" edge.
 func HasProject() predicate.ProjectLog {
 	return predicate.ProjectLog(func(s *sql.Selector) {

@@ -131,7 +131,6 @@ func (plc *ProjectLogCreate) Save(ctx context.Context) (*ProjectLog, error) {
 		err  error
 		node *ProjectLog
 	)
-	plc.defaults()
 	if len(plc.hooks) == 0 {
 		if err = plc.check(); err != nil {
 			return nil, err
@@ -189,14 +188,6 @@ func (plc *ProjectLogCreate) ExecX(ctx context.Context) {
 	}
 }
 
-// defaults sets the default values of the builder before save.
-func (plc *ProjectLogCreate) defaults() {
-	if _, ok := plc.mutation.CreatedAt(); !ok {
-		v := projectlog.DefaultCreatedAt()
-		plc.mutation.SetCreatedAt(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (plc *ProjectLogCreate) check() error {
 	if _, ok := plc.mutation.Title(); !ok {
@@ -213,9 +204,6 @@ func (plc *ProjectLogCreate) check() error {
 	}
 	if _, ok := plc.mutation.EndDate(); !ok {
 		return &ValidationError{Name: "end_date", err: errors.New(`ent: missing required field "end_date"`)}
-	}
-	if _, ok := plc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "created_at"`)}
 	}
 	if _, ok := plc.mutation.ProjectID(); !ok {
 		return &ValidationError{Name: "project", err: errors.New("ent: missing required edge \"project\"")}
@@ -393,7 +381,6 @@ func (plcb *ProjectLogCreateBulk) Save(ctx context.Context) ([]*ProjectLog, erro
 	for i := range plcb.builders {
 		func(i int, root context.Context) {
 			builder := plcb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ProjectLogMutation)
 				if !ok {

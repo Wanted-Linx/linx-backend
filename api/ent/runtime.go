@@ -7,7 +7,6 @@ import (
 
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
-	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 	"github.com/Wanted-Linx/linx-backend/api/ent/schema"
 )
 
@@ -27,10 +26,4 @@ func init() {
 	projectDescCreatedAt := projectFields[7].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
-	projectlogFields := schema.ProjectLog{}.Fields()
-	_ = projectlogFields
-	// projectlogDescCreatedAt is the schema descriptor for created_at field.
-	projectlogDescCreatedAt := projectlogFields[5].Descriptor()
-	// projectlog.DefaultCreatedAt holds the default value on creation for the created_at field.
-	projectlog.DefaultCreatedAt = projectlogDescCreatedAt.Default.(func() time.Time)
 }

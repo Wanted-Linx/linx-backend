@@ -76,6 +76,12 @@ func (plu *ProjectLogUpdate) SetNillableCreatedAt(t *time.Time) *ProjectLogUpdat
 	return plu
 }
 
+// ClearCreatedAt clears the value of the "created_at" field.
+func (plu *ProjectLogUpdate) ClearCreatedAt() *ProjectLogUpdate {
+	plu.mutation.ClearCreatedAt()
+	return plu
+}
+
 // SetProjectID sets the "project" edge to the Project entity by ID.
 func (plu *ProjectLogUpdate) SetProjectID(id int) *ProjectLogUpdate {
 	plu.mutation.SetProjectID(id)
@@ -318,6 +324,12 @@ func (plu *ProjectLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: projectlog.FieldCreatedAt,
 		})
 	}
+	if plu.mutation.CreatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Column: projectlog.FieldCreatedAt,
+		})
+	}
 	if plu.mutation.ProjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -556,6 +568,12 @@ func (pluo *ProjectLogUpdateOne) SetNillableCreatedAt(t *time.Time) *ProjectLogU
 	if t != nil {
 		pluo.SetCreatedAt(*t)
 	}
+	return pluo
+}
+
+// ClearCreatedAt clears the value of the "created_at" field.
+func (pluo *ProjectLogUpdateOne) ClearCreatedAt() *ProjectLogUpdateOne {
+	pluo.mutation.ClearCreatedAt()
 	return pluo
 }
 
@@ -822,6 +840,12 @@ func (pluo *ProjectLogUpdateOne) sqlSave(ctx context.Context) (_node *ProjectLog
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
 			Value:  value,
+			Column: projectlog.FieldCreatedAt,
+		})
+	}
+	if pluo.mutation.CreatedAtCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
 			Column: projectlog.FieldCreatedAt,
 		})
 	}

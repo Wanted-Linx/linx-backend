@@ -15,8 +15,8 @@ type ProjectClub struct {
 // Fields of the ProjectClub.
 func (ProjectClub) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("project_id"),
 		field.Int("club_id"),
+		field.Int("project_id"),
 		field.String("start_date"),
 	}
 }

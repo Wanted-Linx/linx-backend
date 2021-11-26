@@ -3366,42 +3366,6 @@ func (m *ProjectClubMutation) ID() (id int, exists bool) {
 	return *m.id, true
 }
 
-// SetProjectID sets the "project_id" field.
-func (m *ProjectClubMutation) SetProjectID(i int) {
-	m.project = &i
-}
-
-// ProjectID returns the value of the "project_id" field in the mutation.
-func (m *ProjectClubMutation) ProjectID() (r int, exists bool) {
-	v := m.project
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProjectID returns the old "project_id" field's value of the ProjectClub entity.
-// If the ProjectClub object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProjectClubMutation) OldProjectID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldProjectID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldProjectID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProjectID: %w", err)
-	}
-	return oldValue.ProjectID, nil
-}
-
-// ResetProjectID resets all changes to the "project_id" field.
-func (m *ProjectClubMutation) ResetProjectID() {
-	m.project = nil
-}
-
 // SetClubID sets the "club_id" field.
 func (m *ProjectClubMutation) SetClubID(i int) {
 	m.club = &i
@@ -3436,6 +3400,42 @@ func (m *ProjectClubMutation) OldClubID(ctx context.Context) (v int, err error) 
 // ResetClubID resets all changes to the "club_id" field.
 func (m *ProjectClubMutation) ResetClubID() {
 	m.club = nil
+}
+
+// SetProjectID sets the "project_id" field.
+func (m *ProjectClubMutation) SetProjectID(i int) {
+	m.project = &i
+}
+
+// ProjectID returns the value of the "project_id" field in the mutation.
+func (m *ProjectClubMutation) ProjectID() (r int, exists bool) {
+	v := m.project
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProjectID returns the old "project_id" field's value of the ProjectClub entity.
+// If the ProjectClub object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectClubMutation) OldProjectID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProjectID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProjectID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProjectID: %w", err)
+	}
+	return oldValue.ProjectID, nil
+}
+
+// ResetProjectID resets all changes to the "project_id" field.
+func (m *ProjectClubMutation) ResetProjectID() {
+	m.project = nil
 }
 
 // SetStartDate sets the "start_date" field.
@@ -3600,11 +3600,11 @@ func (m *ProjectClubMutation) Type() string {
 // AddedFields().
 func (m *ProjectClubMutation) Fields() []string {
 	fields := make([]string, 0, 3)
-	if m.project != nil {
-		fields = append(fields, projectclub.FieldProjectID)
-	}
 	if m.club != nil {
 		fields = append(fields, projectclub.FieldClubID)
+	}
+	if m.project != nil {
+		fields = append(fields, projectclub.FieldProjectID)
 	}
 	if m.start_date != nil {
 		fields = append(fields, projectclub.FieldStartDate)
@@ -3617,10 +3617,10 @@ func (m *ProjectClubMutation) Fields() []string {
 // schema.
 func (m *ProjectClubMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case projectclub.FieldProjectID:
-		return m.ProjectID()
 	case projectclub.FieldClubID:
 		return m.ClubID()
+	case projectclub.FieldProjectID:
+		return m.ProjectID()
 	case projectclub.FieldStartDate:
 		return m.StartDate()
 	}
@@ -3632,10 +3632,10 @@ func (m *ProjectClubMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProjectClubMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case projectclub.FieldProjectID:
-		return m.OldProjectID(ctx)
 	case projectclub.FieldClubID:
 		return m.OldClubID(ctx)
+	case projectclub.FieldProjectID:
+		return m.OldProjectID(ctx)
 	case projectclub.FieldStartDate:
 		return m.OldStartDate(ctx)
 	}
@@ -3647,19 +3647,19 @@ func (m *ProjectClubMutation) OldField(ctx context.Context, name string) (ent.Va
 // type.
 func (m *ProjectClubMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case projectclub.FieldProjectID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProjectID(v)
-		return nil
 	case projectclub.FieldClubID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetClubID(v)
+		return nil
+	case projectclub.FieldProjectID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProjectID(v)
 		return nil
 	case projectclub.FieldStartDate:
 		v, ok := value.(string)
@@ -3720,11 +3720,11 @@ func (m *ProjectClubMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProjectClubMutation) ResetField(name string) error {
 	switch name {
-	case projectclub.FieldProjectID:
-		m.ResetProjectID()
-		return nil
 	case projectclub.FieldClubID:
 		m.ResetClubID()
+		return nil
+	case projectclub.FieldProjectID:
+		m.ResetProjectID()
 		return nil
 	case projectclub.FieldStartDate:
 		m.ResetStartDate()
@@ -4171,9 +4171,22 @@ func (m *ProjectLogMutation) OldCreatedAt(ctx context.Context) (v time.Time, err
 	return oldValue.CreatedAt, nil
 }
 
+// ClearCreatedAt clears the value of the "created_at" field.
+func (m *ProjectLogMutation) ClearCreatedAt() {
+	m.created_at = nil
+	m.clearedFields[projectlog.FieldCreatedAt] = struct{}{}
+}
+
+// CreatedAtCleared returns if the "created_at" field was cleared in this mutation.
+func (m *ProjectLogMutation) CreatedAtCleared() bool {
+	_, ok := m.clearedFields[projectlog.FieldCreatedAt]
+	return ok
+}
+
 // ResetCreatedAt resets all changes to the "created_at" field.
 func (m *ProjectLogMutation) ResetCreatedAt() {
 	m.created_at = nil
+	delete(m.clearedFields, projectlog.FieldCreatedAt)
 }
 
 // SetProjectID sets the "project" edge to the Project entity by id.
@@ -4521,7 +4534,11 @@ func (m *ProjectLogMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProjectLogMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(projectlog.FieldCreatedAt) {
+		fields = append(fields, projectlog.FieldCreatedAt)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -4534,6 +4551,11 @@ func (m *ProjectLogMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProjectLogMutation) ClearField(name string) error {
+	switch name {
+	case projectlog.FieldCreatedAt:
+		m.ClearCreatedAt()
+		return nil
+	}
 	return fmt.Errorf("unknown ProjectLog nullable field %s", name)
 }
 
