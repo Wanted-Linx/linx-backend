@@ -10,7 +10,7 @@ services:
     environment:
       LINX_CONFIG: $LINX_CONFIG
     working_dir: /linx/api
-    command: bash -c "./wait-for-it.sh postgres:5432 -- ./linx-api"
+    command: bash -c "./wait-for-it.sh postgres:5432 -t 15 -- ./linx-api"
 
   postgres:
     image: postgres:13.2
