@@ -171,6 +171,9 @@ func (s *studentService) GetProfileImage(studentID int) ([]byte, error) {
 		return nil, err
 	}
 
+	if getStudent.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
+	}
 	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./students/profile/%d/image/%s", studentID, *getStudent.ProfileImage))
 	if err != nil {
 		return nil, errors.Wrap(err, "프로필 이미지 조회 실패")
