@@ -14,6 +14,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 )
 
 // ProjectClubUpdate is the builder for updating ProjectClub entities.
@@ -57,6 +58,21 @@ func (pcu *ProjectClubUpdate) SetProject(p *Project) *ProjectClubUpdate {
 	return pcu.SetProjectID(p.ID)
 }
 
+// AddProjectLogIDs adds the "project_log" edge to the ProjectLog entity by IDs.
+func (pcu *ProjectClubUpdate) AddProjectLogIDs(ids ...int) *ProjectClubUpdate {
+	pcu.mutation.AddProjectLogIDs(ids...)
+	return pcu
+}
+
+// AddProjectLog adds the "project_log" edges to the ProjectLog entity.
+func (pcu *ProjectClubUpdate) AddProjectLog(p ...*ProjectLog) *ProjectClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pcu.AddProjectLogIDs(ids...)
+}
+
 // Mutation returns the ProjectClubMutation object of the builder.
 func (pcu *ProjectClubUpdate) Mutation() *ProjectClubMutation {
 	return pcu.mutation
@@ -72,6 +88,27 @@ func (pcu *ProjectClubUpdate) ClearClub() *ProjectClubUpdate {
 func (pcu *ProjectClubUpdate) ClearProject() *ProjectClubUpdate {
 	pcu.mutation.ClearProject()
 	return pcu
+}
+
+// ClearProjectLog clears all "project_log" edges to the ProjectLog entity.
+func (pcu *ProjectClubUpdate) ClearProjectLog() *ProjectClubUpdate {
+	pcu.mutation.ClearProjectLog()
+	return pcu
+}
+
+// RemoveProjectLogIDs removes the "project_log" edge to ProjectLog entities by IDs.
+func (pcu *ProjectClubUpdate) RemoveProjectLogIDs(ids ...int) *ProjectClubUpdate {
+	pcu.mutation.RemoveProjectLogIDs(ids...)
+	return pcu
+}
+
+// RemoveProjectLog removes "project_log" edges to ProjectLog entities.
+func (pcu *ProjectClubUpdate) RemoveProjectLog(p ...*ProjectLog) *ProjectClubUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pcu.RemoveProjectLogIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -240,6 +277,60 @@ func (pcu *ProjectClubUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pcu.mutation.ProjectLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pcu.mutation.RemovedProjectLogIDs(); len(nodes) > 0 && !pcu.mutation.ProjectLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pcu.mutation.ProjectLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pcu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{projectclub.Label}
@@ -287,6 +378,21 @@ func (pcuo *ProjectClubUpdateOne) SetProject(p *Project) *ProjectClubUpdateOne {
 	return pcuo.SetProjectID(p.ID)
 }
 
+// AddProjectLogIDs adds the "project_log" edge to the ProjectLog entity by IDs.
+func (pcuo *ProjectClubUpdateOne) AddProjectLogIDs(ids ...int) *ProjectClubUpdateOne {
+	pcuo.mutation.AddProjectLogIDs(ids...)
+	return pcuo
+}
+
+// AddProjectLog adds the "project_log" edges to the ProjectLog entity.
+func (pcuo *ProjectClubUpdateOne) AddProjectLog(p ...*ProjectLog) *ProjectClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pcuo.AddProjectLogIDs(ids...)
+}
+
 // Mutation returns the ProjectClubMutation object of the builder.
 func (pcuo *ProjectClubUpdateOne) Mutation() *ProjectClubMutation {
 	return pcuo.mutation
@@ -302,6 +408,27 @@ func (pcuo *ProjectClubUpdateOne) ClearClub() *ProjectClubUpdateOne {
 func (pcuo *ProjectClubUpdateOne) ClearProject() *ProjectClubUpdateOne {
 	pcuo.mutation.ClearProject()
 	return pcuo
+}
+
+// ClearProjectLog clears all "project_log" edges to the ProjectLog entity.
+func (pcuo *ProjectClubUpdateOne) ClearProjectLog() *ProjectClubUpdateOne {
+	pcuo.mutation.ClearProjectLog()
+	return pcuo
+}
+
+// RemoveProjectLogIDs removes the "project_log" edge to ProjectLog entities by IDs.
+func (pcuo *ProjectClubUpdateOne) RemoveProjectLogIDs(ids ...int) *ProjectClubUpdateOne {
+	pcuo.mutation.RemoveProjectLogIDs(ids...)
+	return pcuo
+}
+
+// RemoveProjectLog removes "project_log" edges to ProjectLog entities.
+func (pcuo *ProjectClubUpdateOne) RemoveProjectLog(p ...*ProjectLog) *ProjectClubUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pcuo.RemoveProjectLogIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -486,6 +613,60 @@ func (pcuo *ProjectClubUpdateOne) sqlSave(ctx context.Context) (_node *ProjectCl
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pcuo.mutation.ProjectLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pcuo.mutation.RemovedProjectLogIDs(); len(nodes) > 0 && !pcuo.mutation.ProjectLogCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pcuo.mutation.ProjectLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
 				},
 			},
 		}

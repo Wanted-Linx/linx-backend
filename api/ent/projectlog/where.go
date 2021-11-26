@@ -794,6 +794,34 @@ func HasProjectWith(preds ...predicate.Project) predicate.ProjectLog {
 	})
 }
 
+// HasProjectClub applies the HasEdge predicate on the "project_club" edge.
+func HasProjectClub() predicate.ProjectLog {
+	return predicate.ProjectLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectClubTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProjectClubTable, ProjectClubColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectClubWith applies the HasEdge predicate on the "project_club" edge with a given conditions (other predicates).
+func HasProjectClubWith(preds ...predicate.ProjectClub) predicate.ProjectLog {
+	return predicate.ProjectLog(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ProjectClubInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProjectClubTable, ProjectClubColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasProjectLogParticipant applies the HasEdge predicate on the "project_log_participant" edge.
 func HasProjectLogParticipant() predicate.ProjectLog {
 	return predicate.ProjectLog(func(s *sql.Selector) {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -15,6 +16,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 )
 
 // ProjectClubQuery is the builder for querying ProjectClub entities.
@@ -27,8 +29,9 @@ type ProjectClubQuery struct {
 	fields     []string
 	predicates []predicate.ProjectClub
 	// eager-loading edges.
-	withClub    *ClubQuery
-	withProject *ProjectQuery
+	withClub       *ClubQuery
+	withProject    *ProjectQuery
+	withProjectLog *ProjectLogQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +105,28 @@ func (pcq *ProjectClubQuery) QueryProject() *ProjectQuery {
 			sqlgraph.From(projectclub.Table, projectclub.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, projectclub.ProjectTable, projectclub.ProjectColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pcq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjectLog chains the current query on the "project_log" edge.
+func (pcq *ProjectClubQuery) QueryProjectLog() *ProjectLogQuery {
+	query := &ProjectLogQuery{config: pcq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pcq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pcq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectclub.Table, projectclub.FieldID, selector),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectclub.ProjectLogTable, projectclub.ProjectLogColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pcq.driver.Dialect(), step)
 		return fromU, nil
@@ -285,13 +310,14 @@ func (pcq *ProjectClubQuery) Clone() *ProjectClubQuery {
 		return nil
 	}
 	return &ProjectClubQuery{
-		config:      pcq.config,
-		limit:       pcq.limit,
-		offset:      pcq.offset,
-		order:       append([]OrderFunc{}, pcq.order...),
-		predicates:  append([]predicate.ProjectClub{}, pcq.predicates...),
-		withClub:    pcq.withClub.Clone(),
-		withProject: pcq.withProject.Clone(),
+		config:         pcq.config,
+		limit:          pcq.limit,
+		offset:         pcq.offset,
+		order:          append([]OrderFunc{}, pcq.order...),
+		predicates:     append([]predicate.ProjectClub{}, pcq.predicates...),
+		withClub:       pcq.withClub.Clone(),
+		withProject:    pcq.withProject.Clone(),
+		withProjectLog: pcq.withProjectLog.Clone(),
 		// clone intermediate query.
 		sql:  pcq.sql.Clone(),
 		path: pcq.path,
@@ -317,6 +343,17 @@ func (pcq *ProjectClubQuery) WithProject(opts ...func(*ProjectQuery)) *ProjectCl
 		opt(query)
 	}
 	pcq.withProject = query
+	return pcq
+}
+
+// WithProjectLog tells the query-builder to eager-load the nodes that are connected to
+// the "project_log" edge. The optional arguments are used to configure the query builder of the edge.
+func (pcq *ProjectClubQuery) WithProjectLog(opts ...func(*ProjectLogQuery)) *ProjectClubQuery {
+	query := &ProjectLogQuery{config: pcq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pcq.withProjectLog = query
 	return pcq
 }
 
@@ -385,9 +422,10 @@ func (pcq *ProjectClubQuery) sqlAll(ctx context.Context) ([]*ProjectClub, error)
 	var (
 		nodes       = []*ProjectClub{}
 		_spec       = pcq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			pcq.withClub != nil,
 			pcq.withProject != nil,
+			pcq.withProjectLog != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
@@ -459,6 +497,35 @@ func (pcq *ProjectClubQuery) sqlAll(ctx context.Context) ([]*ProjectClub, error)
 			for i := range nodes {
 				nodes[i].Edges.Project = n
 			}
+		}
+	}
+
+	if query := pcq.withProjectLog; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*ProjectClub)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.ProjectLog = []*ProjectLog{}
+		}
+		query.withFKs = true
+		query.Where(predicate.ProjectLog(func(s *sql.Selector) {
+			s.Where(sql.InValues(projectclub.ProjectLogColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_club_project_log
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_club_project_log" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_club_project_log" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.ProjectLog = append(node.Edges.ProjectLog, n)
 		}
 	}
 

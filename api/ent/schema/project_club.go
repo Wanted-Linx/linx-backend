@@ -34,6 +34,7 @@ func (ProjectClub) Edges() []ent.Edge {
 			Field("project_id").
 			Required().
 			Unique(),
+		edge.To("project_log", ProjectLog.Type),
 	}
 }
 

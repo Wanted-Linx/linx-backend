@@ -854,6 +854,22 @@ func (c *ProjectClubClient) QueryProject(pc *ProjectClub) *ProjectQuery {
 	return query
 }
 
+// QueryProjectLog queries the project_log edge of a ProjectClub.
+func (c *ProjectClubClient) QueryProjectLog(pc *ProjectClub) *ProjectLogQuery {
+	query := &ProjectLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectclub.Table, projectclub.FieldID, id),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectclub.ProjectLogTable, projectclub.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(pc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectClubClient) Hooks() []Hook {
 	return c.hooks.ProjectClub
@@ -953,6 +969,22 @@ func (c *ProjectLogClient) QueryProject(pl *ProjectLog) *ProjectQuery {
 			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, projectlog.ProjectTable, projectlog.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectClub queries the project_club edge of a ProjectLog.
+func (c *ProjectLogClient) QueryProjectClub(pl *ProjectLog) *ProjectClubQuery {
+	query := &ProjectClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
+			sqlgraph.To(projectclub.Table, projectclub.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectlog.ProjectClubTable, projectlog.ProjectClubColumn),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil

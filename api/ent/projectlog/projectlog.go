@@ -25,6 +25,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeProject holds the string denoting the project edge name in mutations.
 	EdgeProject = "project"
+	// EdgeProjectClub holds the string denoting the project_club edge name in mutations.
+	EdgeProjectClub = "project_club"
 	// EdgeProjectLogParticipant holds the string denoting the project_log_participant edge name in mutations.
 	EdgeProjectLogParticipant = "project_log_participant"
 	// EdgeProjectLogFeedback holds the string denoting the project_log_feedback edge name in mutations.
@@ -38,6 +40,13 @@ const (
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_project_log"
+	// ProjectClubTable is the table that holds the project_club relation/edge.
+	ProjectClubTable = "project_logs"
+	// ProjectClubInverseTable is the table name for the ProjectClub entity.
+	// It exists in this package in order to avoid circular dependency with the "projectclub" package.
+	ProjectClubInverseTable = "project_clubs"
+	// ProjectClubColumn is the table column denoting the project_club relation/edge.
+	ProjectClubColumn = "project_club_project_log"
 	// ProjectLogParticipantTable is the table that holds the project_log_participant relation/edge.
 	ProjectLogParticipantTable = "project_log_participants"
 	// ProjectLogParticipantInverseTable is the table name for the ProjectLogParticipant entity.
@@ -69,6 +78,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"project_project_log",
+	"project_club_project_log",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

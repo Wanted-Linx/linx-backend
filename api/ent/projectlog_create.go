@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
@@ -76,6 +77,17 @@ func (plc *ProjectLogCreate) SetProjectID(id int) *ProjectLogCreate {
 // SetProject sets the "project" edge to the Project entity.
 func (plc *ProjectLogCreate) SetProject(p *Project) *ProjectLogCreate {
 	return plc.SetProjectID(p.ID)
+}
+
+// SetProjectClubID sets the "project_club" edge to the ProjectClub entity by ID.
+func (plc *ProjectLogCreate) SetProjectClubID(id int) *ProjectLogCreate {
+	plc.mutation.SetProjectClubID(id)
+	return plc
+}
+
+// SetProjectClub sets the "project_club" edge to the ProjectClub entity.
+func (plc *ProjectLogCreate) SetProjectClub(p *ProjectClub) *ProjectLogCreate {
+	return plc.SetProjectClubID(p.ID)
 }
 
 // AddProjectLogParticipantIDs adds the "project_log_participant" edge to the ProjectLogParticipant entity by IDs.
@@ -208,6 +220,9 @@ func (plc *ProjectLogCreate) check() error {
 	if _, ok := plc.mutation.ProjectID(); !ok {
 		return &ValidationError{Name: "project", err: errors.New("ent: missing required edge \"project\"")}
 	}
+	if _, ok := plc.mutation.ProjectClubID(); !ok {
+		return &ValidationError{Name: "project_club", err: errors.New("ent: missing required edge \"project_club\"")}
+	}
 	return nil
 }
 
@@ -301,6 +316,26 @@ func (plc *ProjectLogCreate) createSpec() (*ProjectLog, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.project_project_log = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := plc.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectlog.ProjectClubTable,
+			Columns: []string{projectlog.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.project_club_project_log = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := plc.mutation.ProjectLogParticipantIDs(); len(nodes) > 0 {

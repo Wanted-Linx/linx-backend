@@ -3270,18 +3270,21 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 // ProjectClubMutation represents an operation that mutates the ProjectClub nodes in the graph.
 type ProjectClubMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	start_date     *string
-	clearedFields  map[string]struct{}
-	club           *int
-	clearedclub    bool
-	project        *int
-	clearedproject bool
-	done           bool
-	oldValue       func(context.Context) (*ProjectClub, error)
-	predicates     []predicate.ProjectClub
+	op                 Op
+	typ                string
+	id                 *int
+	start_date         *string
+	clearedFields      map[string]struct{}
+	club               *int
+	clearedclub        bool
+	project            *int
+	clearedproject     bool
+	project_log        map[int]struct{}
+	removedproject_log map[int]struct{}
+	clearedproject_log bool
+	done               bool
+	oldValue           func(context.Context) (*ProjectClub, error)
+	predicates         []predicate.ProjectClub
 }
 
 var _ ent.Mutation = (*ProjectClubMutation)(nil)
@@ -3523,6 +3526,60 @@ func (m *ProjectClubMutation) ResetProject() {
 	m.clearedproject = false
 }
 
+// AddProjectLogIDs adds the "project_log" edge to the ProjectLog entity by ids.
+func (m *ProjectClubMutation) AddProjectLogIDs(ids ...int) {
+	if m.project_log == nil {
+		m.project_log = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.project_log[ids[i]] = struct{}{}
+	}
+}
+
+// ClearProjectLog clears the "project_log" edge to the ProjectLog entity.
+func (m *ProjectClubMutation) ClearProjectLog() {
+	m.clearedproject_log = true
+}
+
+// ProjectLogCleared reports if the "project_log" edge to the ProjectLog entity was cleared.
+func (m *ProjectClubMutation) ProjectLogCleared() bool {
+	return m.clearedproject_log
+}
+
+// RemoveProjectLogIDs removes the "project_log" edge to the ProjectLog entity by IDs.
+func (m *ProjectClubMutation) RemoveProjectLogIDs(ids ...int) {
+	if m.removedproject_log == nil {
+		m.removedproject_log = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.project_log, ids[i])
+		m.removedproject_log[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedProjectLog returns the removed IDs of the "project_log" edge to the ProjectLog entity.
+func (m *ProjectClubMutation) RemovedProjectLogIDs() (ids []int) {
+	for id := range m.removedproject_log {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ProjectLogIDs returns the "project_log" edge IDs in the mutation.
+func (m *ProjectClubMutation) ProjectLogIDs() (ids []int) {
+	for id := range m.project_log {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetProjectLog resets all changes to the "project_log" edge.
+func (m *ProjectClubMutation) ResetProjectLog() {
+	m.project_log = nil
+	m.clearedproject_log = false
+	m.removedproject_log = nil
+}
+
 // Where appends a list predicates to the ProjectClubMutation builder.
 func (m *ProjectClubMutation) Where(ps ...predicate.ProjectClub) {
 	m.predicates = append(m.predicates, ps...)
@@ -3678,12 +3735,15 @@ func (m *ProjectClubMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectClubMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.club != nil {
 		edges = append(edges, projectclub.EdgeClub)
 	}
 	if m.project != nil {
 		edges = append(edges, projectclub.EdgeProject)
+	}
+	if m.project_log != nil {
+		edges = append(edges, projectclub.EdgeProjectLog)
 	}
 	return edges
 }
@@ -3700,13 +3760,22 @@ func (m *ProjectClubMutation) AddedIDs(name string) []ent.Value {
 		if id := m.project; id != nil {
 			return []ent.Value{*id}
 		}
+	case projectclub.EdgeProjectLog:
+		ids := make([]ent.Value, 0, len(m.project_log))
+		for id := range m.project_log {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectClubMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedproject_log != nil {
+		edges = append(edges, projectclub.EdgeProjectLog)
+	}
 	return edges
 }
 
@@ -3714,18 +3783,27 @@ func (m *ProjectClubMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ProjectClubMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case projectclub.EdgeProjectLog:
+		ids := make([]ent.Value, 0, len(m.removedproject_log))
+		for id := range m.removedproject_log {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectClubMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedclub {
 		edges = append(edges, projectclub.EdgeClub)
 	}
 	if m.clearedproject {
 		edges = append(edges, projectclub.EdgeProject)
+	}
+	if m.clearedproject_log {
+		edges = append(edges, projectclub.EdgeProjectLog)
 	}
 	return edges
 }
@@ -3738,6 +3816,8 @@ func (m *ProjectClubMutation) EdgeCleared(name string) bool {
 		return m.clearedclub
 	case projectclub.EdgeProject:
 		return m.clearedproject
+	case projectclub.EdgeProjectLog:
+		return m.clearedproject_log
 	}
 	return false
 }
@@ -3766,6 +3846,9 @@ func (m *ProjectClubMutation) ResetEdge(name string) error {
 	case projectclub.EdgeProject:
 		m.ResetProject()
 		return nil
+	case projectclub.EdgeProjectLog:
+		m.ResetProjectLog()
+		return nil
 	}
 	return fmt.Errorf("unknown ProjectClub edge %s", name)
 }
@@ -3785,6 +3868,8 @@ type ProjectLogMutation struct {
 	clearedFields                  map[string]struct{}
 	project                        *int
 	clearedproject                 bool
+	project_club                   *int
+	clearedproject_club            bool
 	project_log_participant        map[int]struct{}
 	removedproject_log_participant map[int]struct{}
 	clearedproject_log_participant bool
@@ -4130,6 +4215,45 @@ func (m *ProjectLogMutation) ResetProject() {
 	m.clearedproject = false
 }
 
+// SetProjectClubID sets the "project_club" edge to the ProjectClub entity by id.
+func (m *ProjectLogMutation) SetProjectClubID(id int) {
+	m.project_club = &id
+}
+
+// ClearProjectClub clears the "project_club" edge to the ProjectClub entity.
+func (m *ProjectLogMutation) ClearProjectClub() {
+	m.clearedproject_club = true
+}
+
+// ProjectClubCleared reports if the "project_club" edge to the ProjectClub entity was cleared.
+func (m *ProjectLogMutation) ProjectClubCleared() bool {
+	return m.clearedproject_club
+}
+
+// ProjectClubID returns the "project_club" edge ID in the mutation.
+func (m *ProjectLogMutation) ProjectClubID() (id int, exists bool) {
+	if m.project_club != nil {
+		return *m.project_club, true
+	}
+	return
+}
+
+// ProjectClubIDs returns the "project_club" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectClubID instead. It exists only for internal usage by the builders.
+func (m *ProjectLogMutation) ProjectClubIDs() (ids []int) {
+	if id := m.project_club; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProjectClub resets all changes to the "project_club" edge.
+func (m *ProjectLogMutation) ResetProjectClub() {
+	m.project_club = nil
+	m.clearedproject_club = false
+}
+
 // AddProjectLogParticipantIDs adds the "project_log_participant" edge to the ProjectLogParticipant entity by ids.
 func (m *ProjectLogMutation) AddProjectLogParticipantIDs(ids ...int) {
 	if m.project_log_participant == nil {
@@ -4441,9 +4565,12 @@ func (m *ProjectLogMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectLogMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.project != nil {
 		edges = append(edges, projectlog.EdgeProject)
+	}
+	if m.project_club != nil {
+		edges = append(edges, projectlog.EdgeProjectClub)
 	}
 	if m.project_log_participant != nil {
 		edges = append(edges, projectlog.EdgeProjectLogParticipant)
@@ -4460,6 +4587,10 @@ func (m *ProjectLogMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case projectlog.EdgeProject:
 		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	case projectlog.EdgeProjectClub:
+		if id := m.project_club; id != nil {
 			return []ent.Value{*id}
 		}
 	case projectlog.EdgeProjectLogParticipant:
@@ -4480,7 +4611,7 @@ func (m *ProjectLogMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectLogMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedproject_log_participant != nil {
 		edges = append(edges, projectlog.EdgeProjectLogParticipant)
 	}
@@ -4512,9 +4643,12 @@ func (m *ProjectLogMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectLogMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedproject {
 		edges = append(edges, projectlog.EdgeProject)
+	}
+	if m.clearedproject_club {
+		edges = append(edges, projectlog.EdgeProjectClub)
 	}
 	if m.clearedproject_log_participant {
 		edges = append(edges, projectlog.EdgeProjectLogParticipant)
@@ -4531,6 +4665,8 @@ func (m *ProjectLogMutation) EdgeCleared(name string) bool {
 	switch name {
 	case projectlog.EdgeProject:
 		return m.clearedproject
+	case projectlog.EdgeProjectClub:
+		return m.clearedproject_club
 	case projectlog.EdgeProjectLogParticipant:
 		return m.clearedproject_log_participant
 	case projectlog.EdgeProjectLogFeedback:
@@ -4546,6 +4682,9 @@ func (m *ProjectLogMutation) ClearEdge(name string) error {
 	case projectlog.EdgeProject:
 		m.ClearProject()
 		return nil
+	case projectlog.EdgeProjectClub:
+		m.ClearProjectClub()
+		return nil
 	}
 	return fmt.Errorf("unknown ProjectLog unique edge %s", name)
 }
@@ -4556,6 +4695,9 @@ func (m *ProjectLogMutation) ResetEdge(name string) error {
 	switch name {
 	case projectlog.EdgeProject:
 		m.ResetProject()
+		return nil
+	case projectlog.EdgeProjectClub:
+		m.ResetProjectClub()
 		return nil
 	case projectlog.EdgeProjectLogParticipant:
 		m.ResetProjectLogParticipant()

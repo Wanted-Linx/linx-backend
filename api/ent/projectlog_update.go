@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
@@ -86,6 +87,17 @@ func (plu *ProjectLogUpdate) SetProject(p *Project) *ProjectLogUpdate {
 	return plu.SetProjectID(p.ID)
 }
 
+// SetProjectClubID sets the "project_club" edge to the ProjectClub entity by ID.
+func (plu *ProjectLogUpdate) SetProjectClubID(id int) *ProjectLogUpdate {
+	plu.mutation.SetProjectClubID(id)
+	return plu
+}
+
+// SetProjectClub sets the "project_club" edge to the ProjectClub entity.
+func (plu *ProjectLogUpdate) SetProjectClub(p *ProjectClub) *ProjectLogUpdate {
+	return plu.SetProjectClubID(p.ID)
+}
+
 // AddProjectLogParticipantIDs adds the "project_log_participant" edge to the ProjectLogParticipant entity by IDs.
 func (plu *ProjectLogUpdate) AddProjectLogParticipantIDs(ids ...int) *ProjectLogUpdate {
 	plu.mutation.AddProjectLogParticipantIDs(ids...)
@@ -124,6 +136,12 @@ func (plu *ProjectLogUpdate) Mutation() *ProjectLogMutation {
 // ClearProject clears the "project" edge to the Project entity.
 func (plu *ProjectLogUpdate) ClearProject() *ProjectLogUpdate {
 	plu.mutation.ClearProject()
+	return plu
+}
+
+// ClearProjectClub clears the "project_club" edge to the ProjectClub entity.
+func (plu *ProjectLogUpdate) ClearProjectClub() *ProjectLogUpdate {
+	plu.mutation.ClearProjectClub()
 	return plu
 }
 
@@ -234,6 +252,9 @@ func (plu *ProjectLogUpdate) check() error {
 	if _, ok := plu.mutation.ProjectID(); plu.mutation.ProjectCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"project\"")
 	}
+	if _, ok := plu.mutation.ProjectClubID(); plu.mutation.ProjectClubCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project_club\"")
+	}
 	return nil
 }
 
@@ -324,6 +345,41 @@ func (plu *ProjectLogUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if plu.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectlog.ProjectClubTable,
+			Columns: []string{projectlog.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := plu.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectlog.ProjectClubTable,
+			Columns: []string{projectlog.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
 				},
 			},
 		}
@@ -514,6 +570,17 @@ func (pluo *ProjectLogUpdateOne) SetProject(p *Project) *ProjectLogUpdateOne {
 	return pluo.SetProjectID(p.ID)
 }
 
+// SetProjectClubID sets the "project_club" edge to the ProjectClub entity by ID.
+func (pluo *ProjectLogUpdateOne) SetProjectClubID(id int) *ProjectLogUpdateOne {
+	pluo.mutation.SetProjectClubID(id)
+	return pluo
+}
+
+// SetProjectClub sets the "project_club" edge to the ProjectClub entity.
+func (pluo *ProjectLogUpdateOne) SetProjectClub(p *ProjectClub) *ProjectLogUpdateOne {
+	return pluo.SetProjectClubID(p.ID)
+}
+
 // AddProjectLogParticipantIDs adds the "project_log_participant" edge to the ProjectLogParticipant entity by IDs.
 func (pluo *ProjectLogUpdateOne) AddProjectLogParticipantIDs(ids ...int) *ProjectLogUpdateOne {
 	pluo.mutation.AddProjectLogParticipantIDs(ids...)
@@ -552,6 +619,12 @@ func (pluo *ProjectLogUpdateOne) Mutation() *ProjectLogMutation {
 // ClearProject clears the "project" edge to the Project entity.
 func (pluo *ProjectLogUpdateOne) ClearProject() *ProjectLogUpdateOne {
 	pluo.mutation.ClearProject()
+	return pluo
+}
+
+// ClearProjectClub clears the "project_club" edge to the ProjectClub entity.
+func (pluo *ProjectLogUpdateOne) ClearProjectClub() *ProjectLogUpdateOne {
+	pluo.mutation.ClearProjectClub()
 	return pluo
 }
 
@@ -669,6 +742,9 @@ func (pluo *ProjectLogUpdateOne) check() error {
 	if _, ok := pluo.mutation.ProjectID(); pluo.mutation.ProjectCleared() && !ok {
 		return errors.New("ent: clearing a required unique edge \"project\"")
 	}
+	if _, ok := pluo.mutation.ProjectClubID(); pluo.mutation.ProjectClubCleared() && !ok {
+		return errors.New("ent: clearing a required unique edge \"project_club\"")
+	}
 	return nil
 }
 
@@ -776,6 +852,41 @@ func (pluo *ProjectLogUpdateOne) sqlSave(ctx context.Context) (_node *ProjectLog
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pluo.mutation.ProjectClubCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectlog.ProjectClubTable,
+			Columns: []string{projectlog.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pluo.mutation.ProjectClubIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectlog.ProjectClubTable,
+			Columns: []string{projectlog.ProjectClubColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectclub.FieldID,
 				},
 			},
 		}

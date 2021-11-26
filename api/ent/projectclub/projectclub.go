@@ -17,6 +17,8 @@ const (
 	EdgeClub = "club"
 	// EdgeProject holds the string denoting the project edge name in mutations.
 	EdgeProject = "project"
+	// EdgeProjectLog holds the string denoting the project_log edge name in mutations.
+	EdgeProjectLog = "project_log"
 	// Table holds the table name of the projectclub in the database.
 	Table = "project_clubs"
 	// ClubTable is the table that holds the club relation/edge.
@@ -33,6 +35,13 @@ const (
 	ProjectInverseTable = "projects"
 	// ProjectColumn is the table column denoting the project relation/edge.
 	ProjectColumn = "project_id"
+	// ProjectLogTable is the table that holds the project_log relation/edge.
+	ProjectLogTable = "project_logs"
+	// ProjectLogInverseTable is the table name for the ProjectLog entity.
+	// It exists in this package in order to avoid circular dependency with the "projectlog" package.
+	ProjectLogInverseTable = "project_logs"
+	// ProjectLogColumn is the table column denoting the project_log relation/edge.
+	ProjectLogColumn = "project_club_project_log"
 )
 
 // Columns holds all SQL columns for projectclub fields.

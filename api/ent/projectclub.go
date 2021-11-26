@@ -34,9 +34,11 @@ type ProjectClubEdges struct {
 	Club *Club `json:"club,omitempty"`
 	// Project holds the value of the project edge.
 	Project *Project `json:"project,omitempty"`
+	// ProjectLog holds the value of the project_log edge.
+	ProjectLog []*ProjectLog `json:"project_log,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ClubOrErr returns the Club value or an error if the edge
@@ -65,6 +67,15 @@ func (e ProjectClubEdges) ProjectOrErr() (*Project, error) {
 		return e.Project, nil
 	}
 	return nil, &NotLoadedError{edge: "project"}
+}
+
+// ProjectLogOrErr returns the ProjectLog value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectClubEdges) ProjectLogOrErr() ([]*ProjectLog, error) {
+	if e.loadedTypes[2] {
+		return e.ProjectLog, nil
+	}
+	return nil, &NotLoadedError{edge: "project_log"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -128,6 +139,11 @@ func (pc *ProjectClub) QueryClub() *ClubQuery {
 // QueryProject queries the "project" edge of the ProjectClub entity.
 func (pc *ProjectClub) QueryProject() *ProjectQuery {
 	return (&ProjectClubClient{config: pc.config}).QueryProject(pc)
+}
+
+// QueryProjectLog queries the "project_log" edge of the ProjectClub entity.
+func (pc *ProjectClub) QueryProjectLog() *ProjectLogQuery {
+	return (&ProjectClubClient{config: pc.config}).QueryProjectLog(pc)
 }
 
 // Update returns a builder for updating this ProjectClub.

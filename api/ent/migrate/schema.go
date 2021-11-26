@@ -177,6 +177,7 @@ var (
 		{Name: "end_date", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "project_project_log", Type: field.TypeInt, Nullable: true},
+		{Name: "project_club_project_log", Type: field.TypeInt, Nullable: true},
 	}
 	// ProjectLogsTable holds the schema information for the "project_logs" table.
 	ProjectLogsTable = &schema.Table{
@@ -188,6 +189,12 @@ var (
 				Symbol:     "project_logs_projects_project_log",
 				Columns:    []*schema.Column{ProjectLogsColumns[7]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "project_logs_project_clubs_project_log",
+				Columns:    []*schema.Column{ProjectLogsColumns[8]},
+				RefColumns: []*schema.Column{ProjectClubsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -295,6 +302,7 @@ func init() {
 	ProjectClubsTable.ForeignKeys[0].RefTable = ClubsTable
 	ProjectClubsTable.ForeignKeys[1].RefTable = ProjectsTable
 	ProjectLogsTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectLogsTable.ForeignKeys[1].RefTable = ProjectClubsTable
 	ProjectLogFeedbacksTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	ProjectLogParticipantsTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	StudentsTable.ForeignKeys[0].RefTable = UsersTable

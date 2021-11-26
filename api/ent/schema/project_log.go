@@ -34,6 +34,10 @@ func (ProjectLog) Edges() []ent.Edge {
 			Ref("project_log").
 			Required().
 			Unique(),
+		edge.From("project_club", ProjectClub.Type).
+			Ref("project_log").
+			Required().
+			Unique(),
 		edge.To("project_log_participant", ProjectLogParticipant.Type),
 		edge.To("project_log_feedback", ProjectLogFeedback.Type),
 	}

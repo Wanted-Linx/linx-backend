@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 )
 
@@ -31,21 +32,24 @@ type ProjectLog struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectLogQuery when eager-loading is set.
-	Edges               ProjectLogEdges `json:"edges"`
-	project_project_log *int
+	Edges                    ProjectLogEdges `json:"edges"`
+	project_project_log      *int
+	project_club_project_log *int
 }
 
 // ProjectLogEdges holds the relations/edges for other nodes in the graph.
 type ProjectLogEdges struct {
 	// Project holds the value of the project edge.
 	Project *Project `json:"project,omitempty"`
+	// ProjectClub holds the value of the project_club edge.
+	ProjectClub *ProjectClub `json:"project_club,omitempty"`
 	// ProjectLogParticipant holds the value of the project_log_participant edge.
 	ProjectLogParticipant []*ProjectLogParticipant `json:"project_log_participant,omitempty"`
 	// ProjectLogFeedback holds the value of the project_log_feedback edge.
 	ProjectLogFeedback []*ProjectLogFeedback `json:"project_log_feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // ProjectOrErr returns the Project value or an error if the edge
@@ -62,10 +66,24 @@ func (e ProjectLogEdges) ProjectOrErr() (*Project, error) {
 	return nil, &NotLoadedError{edge: "project"}
 }
 
+// ProjectClubOrErr returns the ProjectClub value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectLogEdges) ProjectClubOrErr() (*ProjectClub, error) {
+	if e.loadedTypes[1] {
+		if e.ProjectClub == nil {
+			// The edge project_club was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: projectclub.Label}
+		}
+		return e.ProjectClub, nil
+	}
+	return nil, &NotLoadedError{edge: "project_club"}
+}
+
 // ProjectLogParticipantOrErr returns the ProjectLogParticipant value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectLogEdges) ProjectLogParticipantOrErr() ([]*ProjectLogParticipant, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.ProjectLogParticipant, nil
 	}
 	return nil, &NotLoadedError{edge: "project_log_participant"}
@@ -74,7 +92,7 @@ func (e ProjectLogEdges) ProjectLogParticipantOrErr() ([]*ProjectLogParticipant,
 // ProjectLogFeedbackOrErr returns the ProjectLogFeedback value or an error if the edge
 // was not loaded in eager-loading.
 func (e ProjectLogEdges) ProjectLogFeedbackOrErr() ([]*ProjectLogFeedback, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.ProjectLogFeedback, nil
 	}
 	return nil, &NotLoadedError{edge: "project_log_feedback"}
@@ -92,6 +110,8 @@ func (*ProjectLog) scanValues(columns []string) ([]interface{}, error) {
 		case projectlog.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case projectlog.ForeignKeys[0]: // project_project_log
+			values[i] = new(sql.NullInt64)
+		case projectlog.ForeignKeys[1]: // project_club_project_log
 			values[i] = new(sql.NullInt64)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ProjectLog", columns[i])
@@ -157,6 +177,13 @@ func (pl *ProjectLog) assignValues(columns []string, values []interface{}) error
 				pl.project_project_log = new(int)
 				*pl.project_project_log = int(value.Int64)
 			}
+		case projectlog.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for edge-field project_club_project_log", value)
+			} else if value.Valid {
+				pl.project_club_project_log = new(int)
+				*pl.project_club_project_log = int(value.Int64)
+			}
 		}
 	}
 	return nil
@@ -165,6 +192,11 @@ func (pl *ProjectLog) assignValues(columns []string, values []interface{}) error
 // QueryProject queries the "project" edge of the ProjectLog entity.
 func (pl *ProjectLog) QueryProject() *ProjectQuery {
 	return (&ProjectLogClient{config: pl.config}).QueryProject(pl)
+}
+
+// QueryProjectClub queries the "project_club" edge of the ProjectLog entity.
+func (pl *ProjectLog) QueryProjectClub() *ProjectClubQuery {
+	return (&ProjectLogClient{config: pl.config}).QueryProjectClub(pl)
 }
 
 // QueryProjectLogParticipant queries the "project_log_participant" edge of the ProjectLog entity.

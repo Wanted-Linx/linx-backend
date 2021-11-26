@@ -12,6 +12,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
 )
 
 // ProjectClubCreate is the builder for creating a ProjectClub entity.
@@ -47,6 +48,21 @@ func (pcc *ProjectClubCreate) SetClub(c *Club) *ProjectClubCreate {
 // SetProject sets the "project" edge to the Project entity.
 func (pcc *ProjectClubCreate) SetProject(p *Project) *ProjectClubCreate {
 	return pcc.SetProjectID(p.ID)
+}
+
+// AddProjectLogIDs adds the "project_log" edge to the ProjectLog entity by IDs.
+func (pcc *ProjectClubCreate) AddProjectLogIDs(ids ...int) *ProjectClubCreate {
+	pcc.mutation.AddProjectLogIDs(ids...)
+	return pcc
+}
+
+// AddProjectLog adds the "project_log" edges to the ProjectLog entity.
+func (pcc *ProjectClubCreate) AddProjectLog(p ...*ProjectLog) *ProjectClubCreate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return pcc.AddProjectLogIDs(ids...)
 }
 
 // Mutation returns the ProjectClubMutation object of the builder.
@@ -207,6 +223,25 @@ func (pcc *ProjectClubCreate) createSpec() (*ProjectClub, *sqlgraph.CreateSpec) 
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ProjectID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pcc.mutation.ProjectLogIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   projectclub.ProjectLogTable,
+			Columns: []string{projectclub.ProjectLogColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
