@@ -34,7 +34,7 @@ func (r *projectClubRepository) Apply(clubID, projectID int, startDate string) (
 func (r *projectClubRepository) Get(projectID, clubID int) (*ent.ProjectClub, error) {
 	pc, err := r.db.ProjectClub.Query().
 		Where(projectclub.And(projectclub.ProjectID(projectID), projectclub.ClubID(clubID))).
-		Only(context.TODO())
+		Only(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

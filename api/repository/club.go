@@ -49,12 +49,14 @@ func (r *clubRepository) GetByID(clubID int) (*ent.Club, []*ent.Student, error) 
 		return nil, nil, errors.WithStack(err)
 	}
 
-	members, err := c.QueryClubMember().QueryStudent().All(context.Background())
+	members, err := c.QueryClubMember().QueryStudent().
+		All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 
-	projects, err := c.QueryProjectClub().QueryProject().WithProjectLog().All(context.Background())
+	projects, err := c.QueryProjectClub().QueryProject().
+		WithProjectLog().All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
@@ -83,12 +85,14 @@ func (r *clubRepository) GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Studen
 	allMembers := make([][]*ent.Student, len(c))
 	// allProjects
 	for idx, club := range c {
-		members, err := club.QueryClubMember().QueryStudent().All(context.Background())
+		members, err := club.QueryClubMember().
+			QueryStudent().All(context.Background())
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}
 
-		club.Edges.Project, err = club.QueryProjectClub().QueryProject().WithCompany().WithProjectLog().All(context.Background())
+		club.Edges.Project, err = club.QueryProjectClub().QueryProject().
+			WithCompany().WithProjectLog().All(context.Background())
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}
