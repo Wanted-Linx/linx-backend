@@ -83,3 +83,45 @@ func (h *ProjectHandler) GetAllProjects(c echo.Context) error {
 
 	return c.JSON(200, projects)
 }
+
+func (h *ProjectHandler) CreateProjectLog(c echo.Context) error {
+	userID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	log.Info("조회 요청한 유저 id:", userID)
+
+	reqPl := new(domain.ProjectLogCreateRequest)
+	if err := c.Bind(reqPl); err != nil {
+		return errors.Wrap(err, "잘못된 json body 입니다.")
+	}
+
+	pl, err := h.projectService.CreateProjectLog(reqPl)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, pl)
+}
+
+func (h *ProjectHandler) CreateProjectLogFeedback(c echo.Context) error {
+	userID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	log.Info("조회 요청한 유저 id:", userID)
+
+	reqPlf := new(domain.ProjectLogFeedbackRequest)
+	if err := c.Bind(reqPlf); err != nil {
+		return errors.Wrap(err, "잘못된 json body 입니다.")
+	}
+
+	pl, err := h.projectService.CreateProjectLogFeedback(userID, reqPlf)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, pl)
+}

@@ -26,7 +26,7 @@ func main() {
 	companyService := service.NewCompanyService(companyRepo)
 	clubService := service.NewClubService(clubRepo, clubMemberRepo)
 	clubMemberService := service.NewClubMemberService(clubMemberRepo)
-	projectService := service.NewProjectService(projectRepo)
+	projectService := service.NewProjectService(projectRepo, projectClubRepo)
 	projectClubService := service.NewProjectClubService(projectClubRepo)
 
 	userHandler := handler.NewUserHandler(userService, studentService, companyService)

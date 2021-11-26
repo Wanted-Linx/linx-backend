@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
@@ -45,18 +44,15 @@ func (s *clubService) CreateClub(clubLeaderID int, reqClub *domain.ClubCreateReq
 	}
 
 	log.Println(newClub, clubLeaderID, newClub.Edges.Leader)
+	// 동아리 생성한 사람은 기본적으로 동아리에 가입이 되어야 함(leader)
 	_, err = s.clubMemberRepo.Register(clubLeaderID, newClub.ID)
 	if err != nil {
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
-	// TODO: repository layer로 변경하기(only 해도 될 듯 leader 한명만 있을거니까)
-	clubMembers, err := newClub.QueryClubMember().QueryStudent().All(context.Background())
-	if err != nil {
-		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
-	}
 
-	log.Info("동아리 생성 완료", newClub, clubMembers)
-	return domain.ClubToDto(newClub, clubMembers), nil
+	// club.QueryProjectClub().QueryProjects().All
+	log.Info("동아리 생성 완료", newClub)
+	return domain.ClubToDto(newClub, nil), nil
 }
 
 func (s *clubService) GetClubByID(clubID int) (*domain.ClubDto, error) {

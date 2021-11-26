@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/pkg/errors"
 )
 
@@ -27,4 +29,16 @@ func (r *projectClubRepository) Apply(clubID, projectID int, startDate string) (
 	}
 
 	return pc, nil
+}
+
+func (r *projectClubRepository) Get(projectID, clubID int) (*ent.ProjectClub, error) {
+	pc, err := r.db.ProjectClub.Query().
+		Where(projectclub.And(projectclub.ProjectID(projectID), projectclub.ClubID(clubID))).
+		Only(context.TODO())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	log.Println(pc)
+	return pc, err
 }

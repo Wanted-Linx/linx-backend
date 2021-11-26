@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"log"
 	"time"
 
 	"github.com/Wanted-Linx/linx-backend/api/ent"
@@ -53,7 +54,7 @@ type ProjectCreateRequest struct {
 	StartDate         string   `json:"start_date"`
 	EndDate           string   `json:"end_date"`
 	ApplyingStartDate string   `json:"applying_start_date"`
-	AppylingEndDate   string   `json:"appyling_end_date"`
+	AppylingEndDate   string   `json:"applying_end_date"`
 	Qualification     string   `json:"qualification"`
 	SponsorFee        int      `json:"sponsor_fee"`
 	TaskType          []string `json:"task_type"`
@@ -66,33 +67,41 @@ type ProjectLogCreateRequest struct {
 	StartDate    string   `json:"start_date"`
 	EndDate      string   `json:"end_date"`
 	Participants []string `json:"participants"`
-	Feedbacks    []string `json:"feedbacks"`
+	ClubID       int      `json:"club_id"`
+	ProjectID    int      `json:"project_id"`
 }
 
 type ProjectLogFeedbackRequest struct {
-	Feedbacks []string `json:"feedbacks"`
+	ProjectLogID int    `json:"project_log_id"`
+	Author       string `json:"author"` // company name
+	Content      string `json:"content"`
 }
 
 type ProjectService interface {
 	CreateProject(companyID int, reqProject *ProjectCreateRequest) (*ProjectDto, error)
+	CreateProjectLog(reqPlog *ProjectLogCreateRequest) (*ProjectLogDto, error)
+	CreateProjectLogFeedback(companyID int, reqPlfeedback *ProjectLogFeedbackRequest) (*ProjectLogFeedbackDto, error)
 	GetProjectByID(projectID int) (*ProjectDto, error)
 	GetAllProjects(limit, offset int) ([]*ProjectDto, error)
 }
 
 type ProjectRepository interface {
 	Save(reqProject *ent.Project) (*ent.Project, error)
+	SaveProjectLog(reqPlog *ent.ProjectLog) (*ent.ProjectLog, error)
+	SaveProjectLogFeedback(reqPfeedback *ent.ProjectLogFeedback) (*ent.ProjectLogFeedback, error)
 	GetByID(projectID int) (*ent.Project, []*ent.Club, error)
 	GetAll(limit, offset int) ([]*ent.Project, [][]*ent.Club, error)
 }
 
 func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
+	log.Println(src.Edges.ProjectLog)
 	return &ProjectDto{
 		ID:                src.ID,
 		Name:              src.Name,
 		Content:           src.Content,
 		StartDate:         src.StartDate,
 		EndDate:           src.EndDate,
-		ApplyingStartDate: src.ApplyingEndDate,
+		ApplyingStartDate: src.ApplyingStartDate,
 		AppylingEndDate:   src.ApplyingEndDate,
 		Qualification:     src.Qualification,
 		SponsorFee:        src.SponsorFee,

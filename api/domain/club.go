@@ -4,6 +4,7 @@ import (
 	"mime/multipart"
 
 	"github.com/Wanted-Linx/linx-backend/api/ent"
+	log "github.com/sirupsen/logrus"
 )
 
 type ClubDto struct {
@@ -43,6 +44,7 @@ type ClubRepository interface {
 
 func ClubToDto(srcClub *ent.Club, srcClubMembers []*ent.Student) *ClubDto {
 	clubMembersDto := ClubMembersToDto(srcClubMembers)
+	log.Info(srcClub.Edges.Project)
 	clubProjectsDto := ClubProjectsToDto(srcClub.Edges.Project)
 
 	return &ClubDto{

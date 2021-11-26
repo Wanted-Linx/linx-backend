@@ -33,6 +33,7 @@ type ProjectClubService interface {
 
 type ProjectClubRepository interface {
 	Apply(clubID, projectID int, startDate string) (*ent.ProjectClub, error)
+	Get(projectID, clubID int) (*ent.ProjectClub, error)
 	// FindbyClubID(clubID int) ([]*ent.ClubMember, error)
 	// FindByStudentIDAndClubID(studentID, clubID int) (*ent.ClubMember, error)
 }
@@ -57,13 +58,13 @@ func ClubProjectsToDto(srcClubProject []*ent.Project) []*ClubProject {
 	projects := make([]*ClubProject, 0)
 
 	for _, clubProject := range srcClubProject {
-		var project *ClubProject
+		var project ClubProject
 		project.ProjectID = clubProject.ID
 		project.ProjectName = clubProject.Name
 		project.CompanyName = clubProject.Edges.Company.Name
 		project.ProjectLogs = ProjectLogsToDto(clubProject.Edges.ProjectLog)
 
-		projects = append(projects, project)
+		projects = append(projects, &project)
 	}
 
 	return projects

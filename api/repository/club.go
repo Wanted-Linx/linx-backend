@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
@@ -53,6 +54,20 @@ func (r *clubRepository) GetByID(clubID int) (*ent.Club, []*ent.Student, error) 
 		return nil, nil, errors.WithStack(err)
 	}
 
+	projects, err := c.QueryProjectClub().QueryProject().WithProjectLog().All(context.Background())
+	if err != nil {
+		return nil, nil, errors.WithStack(err)
+	}
+
+	for _, project := range projects {
+		project.Edges.Company, err = project.QueryCompany().First(context.TODO())
+		if err != nil {
+			return nil, nil, errors.WithStack(err)
+		}
+	}
+
+	c.Edges.Project = projects
+	log.Println(c.Edges, members)
 	return c, members, nil
 }
 
@@ -66,8 +81,14 @@ func (r *clubRepository) GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Studen
 	}
 
 	allMembers := make([][]*ent.Student, len(c))
+	// allProjects
 	for idx, club := range c {
 		members, err := club.QueryClubMember().QueryStudent().All(context.Background())
+		if err != nil {
+			return nil, nil, errors.WithStack(err)
+		}
+
+		club.Edges.Project, err = club.QueryProjectClub().QueryProject().WithCompany().WithProjectLog().All(context.Background())
 		if err != nil {
 			return nil, nil, errors.WithStack(err)
 		}

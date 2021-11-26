@@ -67,6 +67,8 @@ func projectRouter(projectHandler *handler.ProjectHandler) {
 	group.POST("", projectHandler.CreateProject)
 	group.GET("", projectHandler.GetAllProjects)
 	group.GET("/:project_id", projectHandler.GetProjectByID)
+	group.POST("/logs", projectHandler.CreateProjectLog)
+	group.POST("/feedbacks", projectHandler.CreateProjectLogFeedback)
 }
 
 // TODO: 그냥 projectRouter에 합쳐도 됨

@@ -1,11 +1,8 @@
 package handler
 
 import (
-	"log"
-
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	restErr "github.com/Wanted-Linx/linx-backend/api/errors"
-	"github.com/Wanted-Linx/linx-backend/api/util"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 )
@@ -55,11 +52,11 @@ func (h *UserHandler) SignUp(c echo.Context) error {
 }
 
 func (h *UserHandler) Login(c echo.Context) error {
-	userID, err := util.GetRequestUserID(c)
-	if err != nil {
-		return errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
-	}
-	log.Println(userID)
+	// // userID, err := util.GetRequestUserID(c)
+	// if err != nil {
+	// 	return errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	// }
+	// log.Println(userID)
 
 	reqLogin := new(domain.LoginRequest)
 	if err := c.Bind(reqLogin); err != nil {
