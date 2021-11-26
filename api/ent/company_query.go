@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -26,8 +28,9 @@ type CompanyQuery struct {
 	fields     []string
 	predicates []predicate.Company
 	// eager-loading edges.
-	withUser *UserQuery
-	withFKs  bool
+	withUser    *UserQuery
+	withProject *ProjectQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,6 +82,28 @@ func (cq *CompanyQuery) QueryUser() *UserQuery {
 			sqlgraph.From(company.Table, company.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, company.UserTable, company.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProject chains the current query on the "project" edge.
+func (cq *CompanyQuery) QueryProject() *ProjectQuery {
+	query := &ProjectQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(company.Table, company.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, company.ProjectTable, company.ProjectColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -262,12 +287,13 @@ func (cq *CompanyQuery) Clone() *CompanyQuery {
 		return nil
 	}
 	return &CompanyQuery{
-		config:     cq.config,
-		limit:      cq.limit,
-		offset:     cq.offset,
-		order:      append([]OrderFunc{}, cq.order...),
-		predicates: append([]predicate.Company{}, cq.predicates...),
-		withUser:   cq.withUser.Clone(),
+		config:      cq.config,
+		limit:       cq.limit,
+		offset:      cq.offset,
+		order:       append([]OrderFunc{}, cq.order...),
+		predicates:  append([]predicate.Company{}, cq.predicates...),
+		withUser:    cq.withUser.Clone(),
+		withProject: cq.withProject.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -282,6 +308,17 @@ func (cq *CompanyQuery) WithUser(opts ...func(*UserQuery)) *CompanyQuery {
 		opt(query)
 	}
 	cq.withUser = query
+	return cq
+}
+
+// WithProject tells the query-builder to eager-load the nodes that are connected to
+// the "project" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CompanyQuery) WithProject(opts ...func(*ProjectQuery)) *CompanyQuery {
+	query := &ProjectQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withProject = query
 	return cq
 }
 
@@ -351,8 +388,9 @@ func (cq *CompanyQuery) sqlAll(ctx context.Context) ([]*Company, error) {
 		nodes       = []*Company{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			cq.withUser != nil,
+			cq.withProject != nil,
 		}
 	)
 	if cq.withUser != nil {
@@ -407,6 +445,35 @@ func (cq *CompanyQuery) sqlAll(ctx context.Context) ([]*Company, error) {
 			for i := range nodes {
 				nodes[i].Edges.User = n
 			}
+		}
+	}
+
+	if query := cq.withProject; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Company)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.Project = []*Project{}
+		}
+		query.withFKs = true
+		query.Where(predicate.Project(func(s *sql.Selector) {
+			s.Where(sql.InValues(company.ProjectColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.company_project
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "company_project" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "company_project" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.Project = append(node.Edges.Project, n)
 		}
 	}
 

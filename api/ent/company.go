@@ -38,9 +38,11 @@ type Company struct {
 type CompanyEdges struct {
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
+	// Project holds the value of the project edge.
+	Project []*Project `json:"project,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -55,6 +57,15 @@ func (e CompanyEdges) UserOrErr() (*User, error) {
 		return e.User, nil
 	}
 	return nil, &NotLoadedError{edge: "user"}
+}
+
+// ProjectOrErr returns the Project value or an error if the edge
+// was not loaded in eager-loading.
+func (e CompanyEdges) ProjectOrErr() ([]*Project, error) {
+	if e.loadedTypes[1] {
+		return e.Project, nil
+	}
+	return nil, &NotLoadedError{edge: "project"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -144,6 +155,11 @@ func (c *Company) assignValues(columns []string, values []interface{}) error {
 // QueryUser queries the "user" edge of the Company entity.
 func (c *Company) QueryUser() *UserQuery {
 	return (&CompanyClient{config: c.config}).QueryUser(c)
+}
+
+// QueryProject queries the "project" edge of the Company entity.
+func (c *Company) QueryProject() *ProjectQuery {
+	return (&CompanyClient{config: c.config}).QueryProject(c)
 }
 
 // Update returns a builder for updating this Company.

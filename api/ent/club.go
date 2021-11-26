@@ -41,9 +41,13 @@ type ClubEdges struct {
 	Leader *Student `json:"leader,omitempty"`
 	// ClubMember holds the value of the club_member edge.
 	ClubMember []*ClubMember `json:"club_member,omitempty"`
+	// Project holds the value of the project edge.
+	Project []*Project `json:"project,omitempty"`
+	// ProjectClub holds the value of the project_club edge.
+	ProjectClub []*ProjectClub `json:"project_club,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // LeaderOrErr returns the Leader value or an error if the edge
@@ -67,6 +71,24 @@ func (e ClubEdges) ClubMemberOrErr() ([]*ClubMember, error) {
 		return e.ClubMember, nil
 	}
 	return nil, &NotLoadedError{edge: "club_member"}
+}
+
+// ProjectOrErr returns the Project value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClubEdges) ProjectOrErr() ([]*Project, error) {
+	if e.loadedTypes[2] {
+		return e.Project, nil
+	}
+	return nil, &NotLoadedError{edge: "project"}
+}
+
+// ProjectClubOrErr returns the ProjectClub value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClubEdges) ProjectClubOrErr() ([]*ProjectClub, error) {
+	if e.loadedTypes[3] {
+		return e.ProjectClub, nil
+	}
+	return nil, &NotLoadedError{edge: "project_club"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -161,6 +183,16 @@ func (c *Club) QueryLeader() *StudentQuery {
 // QueryClubMember queries the "club_member" edge of the Club entity.
 func (c *Club) QueryClubMember() *ClubMemberQuery {
 	return (&ClubClient{config: c.config}).QueryClubMember(c)
+}
+
+// QueryProject queries the "project" edge of the Club entity.
+func (c *Club) QueryProject() *ProjectQuery {
+	return (&ClubClient{config: c.config}).QueryProject(c)
+}
+
+// QueryProjectClub queries the "project_club" edge of the Club entity.
+func (c *Club) QueryProjectClub() *ProjectClubQuery {
+	return (&ClubClient{config: c.config}).QueryProjectClub(c)
 }
 
 // Update returns a builder for updating this Club.

@@ -18,6 +18,16 @@ type Tx struct {
 	ClubMember *ClubMemberClient
 	// Company is the client for interacting with the Company builders.
 	Company *CompanyClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
+	// ProjectClub is the client for interacting with the ProjectClub builders.
+	ProjectClub *ProjectClubClient
+	// ProjectLog is the client for interacting with the ProjectLog builders.
+	ProjectLog *ProjectLogClient
+	// ProjectLogFeedback is the client for interacting with the ProjectLogFeedback builders.
+	ProjectLogFeedback *ProjectLogFeedbackClient
+	// ProjectLogParticipant is the client for interacting with the ProjectLogParticipant builders.
+	ProjectLogParticipant *ProjectLogParticipantClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
 	// User is the client for interacting with the User builders.
@@ -160,6 +170,11 @@ func (tx *Tx) init() {
 	tx.Club = NewClubClient(tx.config)
 	tx.ClubMember = NewClubMemberClient(tx.config)
 	tx.Company = NewCompanyClient(tx.config)
+	tx.Project = NewProjectClient(tx.config)
+	tx.ProjectClub = NewProjectClubClient(tx.config)
+	tx.ProjectLog = NewProjectLogClient(tx.config)
+	tx.ProjectLogFeedback = NewProjectLogFeedbackClient(tx.config)
+	tx.ProjectLogParticipant = NewProjectLogParticipantClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

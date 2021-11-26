@@ -52,7 +52,7 @@ func StudentToDto(src *ent.Student, srcJoinedClubs []*ent.Club) *StudentDto {
 	joinedclubsDto := MemberClubsToDto(src.Edges.Club)
 
 	return &StudentDto{
-		ID:           src.Edges.User.ID,
+		ID:           src.ID,
 		Name:         src.Name,
 		University:   src.University,
 		ProfileLink:  src.ProfileLink,

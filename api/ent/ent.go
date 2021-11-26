@@ -11,6 +11,11 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
@@ -33,11 +38,16 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		club.Table:       club.ValidColumn,
-		clubmember.Table: clubmember.ValidColumn,
-		company.Table:    company.ValidColumn,
-		student.Table:    student.ValidColumn,
-		user.Table:       user.ValidColumn,
+		club.Table:                  club.ValidColumn,
+		clubmember.Table:            clubmember.ValidColumn,
+		company.Table:               company.ValidColumn,
+		project.Table:               project.ValidColumn,
+		projectclub.Table:           projectclub.ValidColumn,
+		projectlog.Table:            projectlog.ValidColumn,
+		projectlogfeedback.Table:    projectlogfeedback.ValidColumn,
+		projectlogparticipant.Table: projectlogparticipant.ValidColumn,
+		student.Table:               student.ValidColumn,
+		user.Table:                  user.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

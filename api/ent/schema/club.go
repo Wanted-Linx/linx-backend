@@ -35,5 +35,7 @@ func (Club) Edges() []ent.Edge {
 			Required().
 			Unique(),
 		edge.To("club_member", ClubMember.Type),
+		edge.To("project", Project.Type),
+		edge.To("project_club", ProjectClub.Type),
 	}
 }

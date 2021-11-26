@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -131,6 +132,21 @@ func (cu *CompanyUpdate) SetUser(u *User) *CompanyUpdate {
 	return cu.SetUserID(u.ID)
 }
 
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cu *CompanyUpdate) AddProjectIDs(ids ...int) *CompanyUpdate {
+	cu.mutation.AddProjectIDs(ids...)
+	return cu
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cu *CompanyUpdate) AddProject(p ...*Project) *CompanyUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.AddProjectIDs(ids...)
+}
+
 // Mutation returns the CompanyMutation object of the builder.
 func (cu *CompanyUpdate) Mutation() *CompanyMutation {
 	return cu.mutation
@@ -140,6 +156,27 @@ func (cu *CompanyUpdate) Mutation() *CompanyMutation {
 func (cu *CompanyUpdate) ClearUser() *CompanyUpdate {
 	cu.mutation.ClearUser()
 	return cu
+}
+
+// ClearProject clears all "project" edges to the Project entity.
+func (cu *CompanyUpdate) ClearProject() *CompanyUpdate {
+	cu.mutation.ClearProject()
+	return cu
+}
+
+// RemoveProjectIDs removes the "project" edge to Project entities by IDs.
+func (cu *CompanyUpdate) RemoveProjectIDs(ids ...int) *CompanyUpdate {
+	cu.mutation.RemoveProjectIDs(ids...)
+	return cu
+}
+
+// RemoveProject removes "project" edges to Project entities.
+func (cu *CompanyUpdate) RemoveProject(p ...*Project) *CompanyUpdate {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cu.RemoveProjectIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -329,6 +366,60 @@ func (cu *CompanyUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedProjectIDs(); len(nodes) > 0 && !cu.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{company.Label}
@@ -451,6 +542,21 @@ func (cuo *CompanyUpdateOne) SetUser(u *User) *CompanyUpdateOne {
 	return cuo.SetUserID(u.ID)
 }
 
+// AddProjectIDs adds the "project" edge to the Project entity by IDs.
+func (cuo *CompanyUpdateOne) AddProjectIDs(ids ...int) *CompanyUpdateOne {
+	cuo.mutation.AddProjectIDs(ids...)
+	return cuo
+}
+
+// AddProject adds the "project" edges to the Project entity.
+func (cuo *CompanyUpdateOne) AddProject(p ...*Project) *CompanyUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.AddProjectIDs(ids...)
+}
+
 // Mutation returns the CompanyMutation object of the builder.
 func (cuo *CompanyUpdateOne) Mutation() *CompanyMutation {
 	return cuo.mutation
@@ -460,6 +566,27 @@ func (cuo *CompanyUpdateOne) Mutation() *CompanyMutation {
 func (cuo *CompanyUpdateOne) ClearUser() *CompanyUpdateOne {
 	cuo.mutation.ClearUser()
 	return cuo
+}
+
+// ClearProject clears all "project" edges to the Project entity.
+func (cuo *CompanyUpdateOne) ClearProject() *CompanyUpdateOne {
+	cuo.mutation.ClearProject()
+	return cuo
+}
+
+// RemoveProjectIDs removes the "project" edge to Project entities by IDs.
+func (cuo *CompanyUpdateOne) RemoveProjectIDs(ids ...int) *CompanyUpdateOne {
+	cuo.mutation.RemoveProjectIDs(ids...)
+	return cuo
+}
+
+// RemoveProject removes "project" edges to Project entities.
+func (cuo *CompanyUpdateOne) RemoveProject(p ...*Project) *CompanyUpdateOne {
+	ids := make([]int, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return cuo.RemoveProjectIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -665,6 +792,60 @@ func (cuo *CompanyUpdateOne) sqlSave(ctx context.Context) (_node *Company, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedProjectIDs(); len(nodes) > 0 && !cuo.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   company.ProjectTable,
+			Columns: []string{company.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: project.FieldID,
 				},
 			},
 		}

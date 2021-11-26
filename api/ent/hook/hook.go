@@ -48,6 +48,71 @@ func (f CompanyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The ProjectFunc type is an adapter to allow the use of ordinary
+// function as Project mutator.
+type ProjectFunc func(context.Context, *ent.ProjectMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ProjectClubFunc type is an adapter to allow the use of ordinary
+// function as ProjectClub mutator.
+type ProjectClubFunc func(context.Context, *ent.ProjectClubMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectClubFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectClubMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectClubMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ProjectLogFunc type is an adapter to allow the use of ordinary
+// function as ProjectLog mutator.
+type ProjectLogFunc func(context.Context, *ent.ProjectLogMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectLogFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectLogMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectLogMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ProjectLogFeedbackFunc type is an adapter to allow the use of ordinary
+// function as ProjectLogFeedback mutator.
+type ProjectLogFeedbackFunc func(context.Context, *ent.ProjectLogFeedbackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectLogFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectLogFeedbackMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectLogFeedbackMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The ProjectLogParticipantFunc type is an adapter to allow the use of ordinary
+// function as ProjectLogParticipant mutator.
+type ProjectLogParticipantFunc func(context.Context, *ent.ProjectLogParticipantMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProjectLogParticipantFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ProjectLogParticipantMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProjectLogParticipantMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The StudentFunc type is an adapter to allow the use of ordinary
 // function as Student mutator.
 type StudentFunc func(context.Context, *ent.StudentMutation) (ent.Value, error)

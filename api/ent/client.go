@@ -12,6 +12,11 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
+	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
+	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 
@@ -31,6 +36,16 @@ type Client struct {
 	ClubMember *ClubMemberClient
 	// Company is the client for interacting with the Company builders.
 	Company *CompanyClient
+	// Project is the client for interacting with the Project builders.
+	Project *ProjectClient
+	// ProjectClub is the client for interacting with the ProjectClub builders.
+	ProjectClub *ProjectClubClient
+	// ProjectLog is the client for interacting with the ProjectLog builders.
+	ProjectLog *ProjectLogClient
+	// ProjectLogFeedback is the client for interacting with the ProjectLogFeedback builders.
+	ProjectLogFeedback *ProjectLogFeedbackClient
+	// ProjectLogParticipant is the client for interacting with the ProjectLogParticipant builders.
+	ProjectLogParticipant *ProjectLogParticipantClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
 	// User is the client for interacting with the User builders.
@@ -51,6 +66,11 @@ func (c *Client) init() {
 	c.Club = NewClubClient(c.config)
 	c.ClubMember = NewClubMemberClient(c.config)
 	c.Company = NewCompanyClient(c.config)
+	c.Project = NewProjectClient(c.config)
+	c.ProjectClub = NewProjectClubClient(c.config)
+	c.ProjectLog = NewProjectLogClient(c.config)
+	c.ProjectLogFeedback = NewProjectLogFeedbackClient(c.config)
+	c.ProjectLogParticipant = NewProjectLogParticipantClient(c.config)
 	c.Student = NewStudentClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -84,13 +104,18 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		Club:       NewClubClient(cfg),
-		ClubMember: NewClubMemberClient(cfg),
-		Company:    NewCompanyClient(cfg),
-		Student:    NewStudentClient(cfg),
-		User:       NewUserClient(cfg),
+		ctx:                   ctx,
+		config:                cfg,
+		Club:                  NewClubClient(cfg),
+		ClubMember:            NewClubMemberClient(cfg),
+		Company:               NewCompanyClient(cfg),
+		Project:               NewProjectClient(cfg),
+		ProjectClub:           NewProjectClubClient(cfg),
+		ProjectLog:            NewProjectLogClient(cfg),
+		ProjectLogFeedback:    NewProjectLogFeedbackClient(cfg),
+		ProjectLogParticipant: NewProjectLogParticipantClient(cfg),
+		Student:               NewStudentClient(cfg),
+		User:                  NewUserClient(cfg),
 	}, nil
 }
 
@@ -108,12 +133,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		config:     cfg,
-		Club:       NewClubClient(cfg),
-		ClubMember: NewClubMemberClient(cfg),
-		Company:    NewCompanyClient(cfg),
-		Student:    NewStudentClient(cfg),
-		User:       NewUserClient(cfg),
+		config:                cfg,
+		Club:                  NewClubClient(cfg),
+		ClubMember:            NewClubMemberClient(cfg),
+		Company:               NewCompanyClient(cfg),
+		Project:               NewProjectClient(cfg),
+		ProjectClub:           NewProjectClubClient(cfg),
+		ProjectLog:            NewProjectLogClient(cfg),
+		ProjectLogFeedback:    NewProjectLogFeedbackClient(cfg),
+		ProjectLogParticipant: NewProjectLogParticipantClient(cfg),
+		Student:               NewStudentClient(cfg),
+		User:                  NewUserClient(cfg),
 	}, nil
 }
 
@@ -146,6 +176,11 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Club.Use(hooks...)
 	c.ClubMember.Use(hooks...)
 	c.Company.Use(hooks...)
+	c.Project.Use(hooks...)
+	c.ProjectClub.Use(hooks...)
+	c.ProjectLog.Use(hooks...)
+	c.ProjectLogFeedback.Use(hooks...)
+	c.ProjectLogParticipant.Use(hooks...)
 	c.Student.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -260,6 +295,38 @@ func (c *ClubClient) QueryClubMember(cl *Club) *ClubMemberQuery {
 			sqlgraph.From(club.Table, club.FieldID, id),
 			sqlgraph.To(clubmember.Table, clubmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, club.ClubMemberTable, club.ClubMemberColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a Club.
+func (c *ClubClient) QueryProject(cl *Club) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.ProjectTable, club.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectClub queries the project_club edge of a Club.
+func (c *ClubClient) QueryProjectClub(cl *Club) *ProjectClubQuery {
+	query := &ProjectClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, id),
+			sqlgraph.To(projectclub.Table, projectclub.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.ProjectClubTable, club.ProjectClubColumn),
 		)
 		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
 		return fromV, nil
@@ -495,9 +562,683 @@ func (c *CompanyClient) QueryUser(co *Company) *UserQuery {
 	return query
 }
 
+// QueryProject queries the project edge of a Company.
+func (c *CompanyClient) QueryProject(co *Company) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(company.Table, company.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, company.ProjectTable, company.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CompanyClient) Hooks() []Hook {
 	return c.hooks.Company
+}
+
+// ProjectClient is a client for the Project schema.
+type ProjectClient struct {
+	config
+}
+
+// NewProjectClient returns a client for the Project from the given config.
+func NewProjectClient(c config) *ProjectClient {
+	return &ProjectClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `project.Hooks(f(g(h())))`.
+func (c *ProjectClient) Use(hooks ...Hook) {
+	c.hooks.Project = append(c.hooks.Project, hooks...)
+}
+
+// Create returns a create builder for Project.
+func (c *ProjectClient) Create() *ProjectCreate {
+	mutation := newProjectMutation(c.config, OpCreate)
+	return &ProjectCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Project entities.
+func (c *ProjectClient) CreateBulk(builders ...*ProjectCreate) *ProjectCreateBulk {
+	return &ProjectCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Project.
+func (c *ProjectClient) Update() *ProjectUpdate {
+	mutation := newProjectMutation(c.config, OpUpdate)
+	return &ProjectUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectClient) UpdateOne(pr *Project) *ProjectUpdateOne {
+	mutation := newProjectMutation(c.config, OpUpdateOne, withProject(pr))
+	return &ProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectClient) UpdateOneID(id int) *ProjectUpdateOne {
+	mutation := newProjectMutation(c.config, OpUpdateOne, withProjectID(id))
+	return &ProjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Project.
+func (c *ProjectClient) Delete() *ProjectDelete {
+	mutation := newProjectMutation(c.config, OpDelete)
+	return &ProjectDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectClient) DeleteOne(pr *Project) *ProjectDeleteOne {
+	return c.DeleteOneID(pr.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectClient) DeleteOneID(id int) *ProjectDeleteOne {
+	builder := c.Delete().Where(project.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectDeleteOne{builder}
+}
+
+// Query returns a query builder for Project.
+func (c *ProjectClient) Query() *ProjectQuery {
+	return &ProjectQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Project entity by its id.
+func (c *ProjectClient) Get(ctx context.Context, id int) (*Project, error) {
+	return c.Query().Where(project.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectClient) GetX(ctx context.Context, id int) *Project {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryCompany queries the company edge of a Project.
+func (c *ProjectClient) QueryCompany(pr *Project) *CompanyQuery {
+	query := &CompanyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(company.Table, company.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.CompanyTable, project.CompanyColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClub queries the club edge of a Project.
+func (c *ProjectClient) QueryClub(pr *Project) *ClubQuery {
+	query := &ClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.ClubTable, project.ClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectClub queries the project_club edge of a Project.
+func (c *ProjectClient) QueryProjectClub(pr *Project) *ProjectClubQuery {
+	query := &ProjectClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectclub.Table, projectclub.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectClubTable, project.ProjectClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectLog queries the project_log edge of a Project.
+func (c *ProjectClient) QueryProjectLog(pr *Project) *ProjectLogQuery {
+	query := &ProjectLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectLogTable, project.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectClient) Hooks() []Hook {
+	return c.hooks.Project
+}
+
+// ProjectClubClient is a client for the ProjectClub schema.
+type ProjectClubClient struct {
+	config
+}
+
+// NewProjectClubClient returns a client for the ProjectClub from the given config.
+func NewProjectClubClient(c config) *ProjectClubClient {
+	return &ProjectClubClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectclub.Hooks(f(g(h())))`.
+func (c *ProjectClubClient) Use(hooks ...Hook) {
+	c.hooks.ProjectClub = append(c.hooks.ProjectClub, hooks...)
+}
+
+// Create returns a create builder for ProjectClub.
+func (c *ProjectClubClient) Create() *ProjectClubCreate {
+	mutation := newProjectClubMutation(c.config, OpCreate)
+	return &ProjectClubCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectClub entities.
+func (c *ProjectClubClient) CreateBulk(builders ...*ProjectClubCreate) *ProjectClubCreateBulk {
+	return &ProjectClubCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectClub.
+func (c *ProjectClubClient) Update() *ProjectClubUpdate {
+	mutation := newProjectClubMutation(c.config, OpUpdate)
+	return &ProjectClubUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectClubClient) UpdateOne(pc *ProjectClub) *ProjectClubUpdateOne {
+	mutation := newProjectClubMutation(c.config, OpUpdateOne, withProjectClub(pc))
+	return &ProjectClubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectClubClient) UpdateOneID(id int) *ProjectClubUpdateOne {
+	mutation := newProjectClubMutation(c.config, OpUpdateOne, withProjectClubID(id))
+	return &ProjectClubUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectClub.
+func (c *ProjectClubClient) Delete() *ProjectClubDelete {
+	mutation := newProjectClubMutation(c.config, OpDelete)
+	return &ProjectClubDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectClubClient) DeleteOne(pc *ProjectClub) *ProjectClubDeleteOne {
+	return c.DeleteOneID(pc.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectClubClient) DeleteOneID(id int) *ProjectClubDeleteOne {
+	builder := c.Delete().Where(projectclub.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectClubDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectClub.
+func (c *ProjectClubClient) Query() *ProjectClubQuery {
+	return &ProjectClubQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectClub entity by its id.
+func (c *ProjectClubClient) Get(ctx context.Context, id int) (*ProjectClub, error) {
+	return c.Query().Where(projectclub.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectClubClient) GetX(ctx context.Context, id int) *ProjectClub {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryClub queries the club edge of a ProjectClub.
+func (c *ProjectClubClient) QueryClub(pc *ProjectClub) *ClubQuery {
+	query := &ClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectclub.Table, projectclub.FieldID, id),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectclub.ClubTable, projectclub.ClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(pc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a ProjectClub.
+func (c *ProjectClubClient) QueryProject(pc *ProjectClub) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectclub.Table, projectclub.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectclub.ProjectTable, projectclub.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectLog queries the project_log edge of a ProjectClub.
+func (c *ProjectClubClient) QueryProjectLog(pc *ProjectClub) *ProjectLogQuery {
+	query := &ProjectLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectclub.Table, projectclub.FieldID, id),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectclub.ProjectLogTable, projectclub.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(pc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectClubClient) Hooks() []Hook {
+	return c.hooks.ProjectClub
+}
+
+// ProjectLogClient is a client for the ProjectLog schema.
+type ProjectLogClient struct {
+	config
+}
+
+// NewProjectLogClient returns a client for the ProjectLog from the given config.
+func NewProjectLogClient(c config) *ProjectLogClient {
+	return &ProjectLogClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectlog.Hooks(f(g(h())))`.
+func (c *ProjectLogClient) Use(hooks ...Hook) {
+	c.hooks.ProjectLog = append(c.hooks.ProjectLog, hooks...)
+}
+
+// Create returns a create builder for ProjectLog.
+func (c *ProjectLogClient) Create() *ProjectLogCreate {
+	mutation := newProjectLogMutation(c.config, OpCreate)
+	return &ProjectLogCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectLog entities.
+func (c *ProjectLogClient) CreateBulk(builders ...*ProjectLogCreate) *ProjectLogCreateBulk {
+	return &ProjectLogCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectLog.
+func (c *ProjectLogClient) Update() *ProjectLogUpdate {
+	mutation := newProjectLogMutation(c.config, OpUpdate)
+	return &ProjectLogUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectLogClient) UpdateOne(pl *ProjectLog) *ProjectLogUpdateOne {
+	mutation := newProjectLogMutation(c.config, OpUpdateOne, withProjectLog(pl))
+	return &ProjectLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectLogClient) UpdateOneID(id int) *ProjectLogUpdateOne {
+	mutation := newProjectLogMutation(c.config, OpUpdateOne, withProjectLogID(id))
+	return &ProjectLogUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectLog.
+func (c *ProjectLogClient) Delete() *ProjectLogDelete {
+	mutation := newProjectLogMutation(c.config, OpDelete)
+	return &ProjectLogDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectLogClient) DeleteOne(pl *ProjectLog) *ProjectLogDeleteOne {
+	return c.DeleteOneID(pl.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectLogClient) DeleteOneID(id int) *ProjectLogDeleteOne {
+	builder := c.Delete().Where(projectlog.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectLogDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectLog.
+func (c *ProjectLogClient) Query() *ProjectLogQuery {
+	return &ProjectLogQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectLog entity by its id.
+func (c *ProjectLogClient) Get(ctx context.Context, id int) (*ProjectLog, error) {
+	return c.Query().Where(projectlog.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectLogClient) GetX(ctx context.Context, id int) *ProjectLog {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProject queries the project edge of a ProjectLog.
+func (c *ProjectLogClient) QueryProject(pl *ProjectLog) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectlog.ProjectTable, projectlog.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectClub queries the project_club edge of a ProjectLog.
+func (c *ProjectLogClient) QueryProjectClub(pl *ProjectLog) *ProjectClubQuery {
+	query := &ProjectClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
+			sqlgraph.To(projectclub.Table, projectclub.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectlog.ProjectClubTable, projectlog.ProjectClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectLogParticipant queries the project_log_participant edge of a ProjectLog.
+func (c *ProjectLogClient) QueryProjectLogParticipant(pl *ProjectLog) *ProjectLogParticipantQuery {
+	query := &ProjectLogParticipantQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
+			sqlgraph.To(projectlogparticipant.Table, projectlogparticipant.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectlog.ProjectLogParticipantTable, projectlog.ProjectLogParticipantColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectLogFeedback queries the project_log_feedback edge of a ProjectLog.
+func (c *ProjectLogClient) QueryProjectLogFeedback(pl *ProjectLog) *ProjectLogFeedbackQuery {
+	query := &ProjectLogFeedbackQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlog.Table, projectlog.FieldID, id),
+			sqlgraph.To(projectlogfeedback.Table, projectlogfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, projectlog.ProjectLogFeedbackTable, projectlog.ProjectLogFeedbackColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectLogClient) Hooks() []Hook {
+	return c.hooks.ProjectLog
+}
+
+// ProjectLogFeedbackClient is a client for the ProjectLogFeedback schema.
+type ProjectLogFeedbackClient struct {
+	config
+}
+
+// NewProjectLogFeedbackClient returns a client for the ProjectLogFeedback from the given config.
+func NewProjectLogFeedbackClient(c config) *ProjectLogFeedbackClient {
+	return &ProjectLogFeedbackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectlogfeedback.Hooks(f(g(h())))`.
+func (c *ProjectLogFeedbackClient) Use(hooks ...Hook) {
+	c.hooks.ProjectLogFeedback = append(c.hooks.ProjectLogFeedback, hooks...)
+}
+
+// Create returns a create builder for ProjectLogFeedback.
+func (c *ProjectLogFeedbackClient) Create() *ProjectLogFeedbackCreate {
+	mutation := newProjectLogFeedbackMutation(c.config, OpCreate)
+	return &ProjectLogFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectLogFeedback entities.
+func (c *ProjectLogFeedbackClient) CreateBulk(builders ...*ProjectLogFeedbackCreate) *ProjectLogFeedbackCreateBulk {
+	return &ProjectLogFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectLogFeedback.
+func (c *ProjectLogFeedbackClient) Update() *ProjectLogFeedbackUpdate {
+	mutation := newProjectLogFeedbackMutation(c.config, OpUpdate)
+	return &ProjectLogFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectLogFeedbackClient) UpdateOne(plf *ProjectLogFeedback) *ProjectLogFeedbackUpdateOne {
+	mutation := newProjectLogFeedbackMutation(c.config, OpUpdateOne, withProjectLogFeedback(plf))
+	return &ProjectLogFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectLogFeedbackClient) UpdateOneID(id int) *ProjectLogFeedbackUpdateOne {
+	mutation := newProjectLogFeedbackMutation(c.config, OpUpdateOne, withProjectLogFeedbackID(id))
+	return &ProjectLogFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectLogFeedback.
+func (c *ProjectLogFeedbackClient) Delete() *ProjectLogFeedbackDelete {
+	mutation := newProjectLogFeedbackMutation(c.config, OpDelete)
+	return &ProjectLogFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectLogFeedbackClient) DeleteOne(plf *ProjectLogFeedback) *ProjectLogFeedbackDeleteOne {
+	return c.DeleteOneID(plf.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectLogFeedbackClient) DeleteOneID(id int) *ProjectLogFeedbackDeleteOne {
+	builder := c.Delete().Where(projectlogfeedback.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectLogFeedbackDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectLogFeedback.
+func (c *ProjectLogFeedbackClient) Query() *ProjectLogFeedbackQuery {
+	return &ProjectLogFeedbackQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectLogFeedback entity by its id.
+func (c *ProjectLogFeedbackClient) Get(ctx context.Context, id int) (*ProjectLogFeedback, error) {
+	return c.Query().Where(projectlogfeedback.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectLogFeedbackClient) GetX(ctx context.Context, id int) *ProjectLogFeedback {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProjectLog queries the project_log edge of a ProjectLogFeedback.
+func (c *ProjectLogFeedbackClient) QueryProjectLog(plf *ProjectLogFeedback) *ProjectLogQuery {
+	query := &ProjectLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := plf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlogfeedback.Table, projectlogfeedback.FieldID, id),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectlogfeedback.ProjectLogTable, projectlogfeedback.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(plf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectLogFeedbackClient) Hooks() []Hook {
+	return c.hooks.ProjectLogFeedback
+}
+
+// ProjectLogParticipantClient is a client for the ProjectLogParticipant schema.
+type ProjectLogParticipantClient struct {
+	config
+}
+
+// NewProjectLogParticipantClient returns a client for the ProjectLogParticipant from the given config.
+func NewProjectLogParticipantClient(c config) *ProjectLogParticipantClient {
+	return &ProjectLogParticipantClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `projectlogparticipant.Hooks(f(g(h())))`.
+func (c *ProjectLogParticipantClient) Use(hooks ...Hook) {
+	c.hooks.ProjectLogParticipant = append(c.hooks.ProjectLogParticipant, hooks...)
+}
+
+// Create returns a create builder for ProjectLogParticipant.
+func (c *ProjectLogParticipantClient) Create() *ProjectLogParticipantCreate {
+	mutation := newProjectLogParticipantMutation(c.config, OpCreate)
+	return &ProjectLogParticipantCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProjectLogParticipant entities.
+func (c *ProjectLogParticipantClient) CreateBulk(builders ...*ProjectLogParticipantCreate) *ProjectLogParticipantCreateBulk {
+	return &ProjectLogParticipantCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProjectLogParticipant.
+func (c *ProjectLogParticipantClient) Update() *ProjectLogParticipantUpdate {
+	mutation := newProjectLogParticipantMutation(c.config, OpUpdate)
+	return &ProjectLogParticipantUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProjectLogParticipantClient) UpdateOne(plp *ProjectLogParticipant) *ProjectLogParticipantUpdateOne {
+	mutation := newProjectLogParticipantMutation(c.config, OpUpdateOne, withProjectLogParticipant(plp))
+	return &ProjectLogParticipantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProjectLogParticipantClient) UpdateOneID(id int) *ProjectLogParticipantUpdateOne {
+	mutation := newProjectLogParticipantMutation(c.config, OpUpdateOne, withProjectLogParticipantID(id))
+	return &ProjectLogParticipantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProjectLogParticipant.
+func (c *ProjectLogParticipantClient) Delete() *ProjectLogParticipantDelete {
+	mutation := newProjectLogParticipantMutation(c.config, OpDelete)
+	return &ProjectLogParticipantDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *ProjectLogParticipantClient) DeleteOne(plp *ProjectLogParticipant) *ProjectLogParticipantDeleteOne {
+	return c.DeleteOneID(plp.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *ProjectLogParticipantClient) DeleteOneID(id int) *ProjectLogParticipantDeleteOne {
+	builder := c.Delete().Where(projectlogparticipant.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProjectLogParticipantDeleteOne{builder}
+}
+
+// Query returns a query builder for ProjectLogParticipant.
+func (c *ProjectLogParticipantClient) Query() *ProjectLogParticipantQuery {
+	return &ProjectLogParticipantQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ProjectLogParticipant entity by its id.
+func (c *ProjectLogParticipantClient) Get(ctx context.Context, id int) (*ProjectLogParticipant, error) {
+	return c.Query().Where(projectlogparticipant.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProjectLogParticipantClient) GetX(ctx context.Context, id int) *ProjectLogParticipant {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryProjectLog queries the project_log edge of a ProjectLogParticipant.
+func (c *ProjectLogParticipantClient) QueryProjectLog(plp *ProjectLogParticipant) *ProjectLogQuery {
+	query := &ProjectLogQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := plp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectlogparticipant.Table, projectlogparticipant.FieldID, id),
+			sqlgraph.To(projectlog.Table, projectlog.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectlogparticipant.ProjectLogTable, projectlogparticipant.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(plp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProjectLogParticipantClient) Hooks() []Hook {
+	return c.hooks.ProjectLogParticipant
 }
 
 // StudentClient is a client for the Student schema.
