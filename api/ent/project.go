@@ -55,9 +55,11 @@ type ProjectEdges struct {
 	ProjectClub []*ProjectClub `json:"project_club,omitempty"`
 	// ProjectLog holds the value of the project_log edge.
 	ProjectLog []*ProjectLog `json:"project_log,omitempty"`
+	// TaskType holds the value of the task_type edge.
+	TaskType []*TaskType `json:"task_type,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // CompanyOrErr returns the Company value or an error if the edge
@@ -104,6 +106,15 @@ func (e ProjectEdges) ProjectLogOrErr() ([]*ProjectLog, error) {
 		return e.ProjectLog, nil
 	}
 	return nil, &NotLoadedError{edge: "project_log"}
+}
+
+// TaskTypeOrErr returns the TaskType value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) TaskTypeOrErr() ([]*TaskType, error) {
+	if e.loadedTypes[4] {
+		return e.TaskType, nil
+	}
+	return nil, &NotLoadedError{edge: "task_type"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -240,6 +251,11 @@ func (pr *Project) QueryProjectClub() *ProjectClubQuery {
 // QueryProjectLog queries the "project_log" edge of the Project entity.
 func (pr *Project) QueryProjectLog() *ProjectLogQuery {
 	return (&ProjectClient{config: pr.config}).QueryProjectLog(pr)
+}
+
+// QueryTaskType queries the "task_type" edge of the Project entity.
+func (pr *Project) QueryTaskType() *TaskTypeQuery {
+	return (&ProjectClient{config: pr.config}).QueryTaskType(pr)
 }
 
 // Update returns a builder for updating this Project.

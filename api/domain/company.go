@@ -44,10 +44,17 @@ type CompanyRepository interface {
 	GetAll(limit, offset int) ([]*ent.Company, error)
 	UpdateProfile(reqCompany *ent.Company) (*ent.Company, error)
 	UploadProfileImage(reqCompany *ent.Company) (*ent.Company, error)
+	GetAllTasks(companyID int) ([]*ent.TaskType, error)
+	SaveTasks(c *ent.Company, taskType *ent.TaskType) (*ent.TaskType, error)
 	// GetAll(clubID int) ([]*ent.Student, error)
 }
 
 func CompanyToDto(src *ent.Company) *CompanyDto {
+	taskTypes := make([]string, len(src.Edges.TaskType))
+	for i := 0; i < len(src.Edges.TaskType); i++ {
+		taskTypes[i] = src.Edges.TaskType[i].Type
+	}
+
 	return &CompanyDto{
 		ID:             src.ID,
 		Name:           src.Name,
@@ -55,7 +62,7 @@ func CompanyToDto(src *ent.Company) *CompanyDto {
 		Description:    src.Description,
 		ProfileImage:   src.ProfileImage,
 		Homepage:       src.Hompage,
-		BusinessType:   []string{"개발", "디자인"}, // TODO: default로 이렇게 잡아뒀지만 추후 businesstype 테이블 생성 후 그에 맞게 수정...
+		BusinessType:   taskTypes, // TODO: default로 이렇게 잡아뒀지만 추후 businesstype 테이블 생성 후 그에 맞게 수정...
 	}
 }
 

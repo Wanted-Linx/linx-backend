@@ -15,12 +15,15 @@ import (
 type projectService struct {
 	projectRepo     domain.ProjectRepository
 	projcetClubRepo domain.ProjectClubRepository
+	taskTypeRepo    domain.TaskTypeRepository
 }
 
-func NewProjectService(projectRepo domain.ProjectRepository, projcetClubRepo domain.ProjectClubRepository) domain.ProjectService {
+func NewProjectService(projectRepo domain.ProjectRepository,
+	projcetClubRepo domain.ProjectClubRepository, taskTypeRepo domain.TaskTypeRepository) domain.ProjectService {
 	return &projectService{
 		projectRepo:     projectRepo,
 		projcetClubRepo: projcetClubRepo,
+		taskTypeRepo:    taskTypeRepo,
 	}
 }
 
@@ -47,12 +50,27 @@ func (s *projectService) CreateProject(companyID int, reqProject *domain.Project
 
 	newProject, err := s.projectRepo.Save(project)
 	if err != nil {
-		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
-	// log.Println(newClub, clubLeaderID, newClub.Edges.Leader)
+	tasks := make([]*ent.TaskType, len(reqProject.TaskType))
+	for i := 0; i < len(reqProject.TaskType); i++ {
+		taskType := &ent.TaskType{
+			Type: reqProject.TaskType[i],
+			Edges: ent.TaskTypeEdges{
+				Project: &ent.Project{ID: newProject.ID},
+			},
+		}
+		task, err := s.projectRepo.SaveTasks(newProject, taskType)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
 
-	log.Info("프로젝트 생성 완료", newProject)
+		tasks[i] = task
+	}
+
+	newProject.Edges.TaskType = tasks
+	log.Info("프로젝트 생성 완료", newProject, tasks, newProject.Edges.TaskType)
 	return domain.ProjectToDto(newProject, nil), nil
 }
 
@@ -65,6 +83,13 @@ func (s *projectService) GetProjectByID(projectID int) (*domain.ProjectDto, erro
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
+	tasks, err := s.projectRepo.GetAllTasks(project.ID)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	project.Edges.TaskType = tasks
+	log.Println(project.Edges.TaskType, tasks)
 	log.Info("프로젝트 조회 완료", project, clubs)
 	return domain.ProjectToDto(project, clubs), nil
 }
@@ -78,6 +103,12 @@ func (s *projectService) GetAllProjects(limit, offset int) ([]*domain.ProjectDto
 	projectsDto := make([]*domain.ProjectDto, len(projects))
 
 	for idx, project := range projects {
+		tasks, err := s.projectRepo.GetAllTasks(project.ID)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+
+		project.Edges.TaskType = tasks
 		projectDto := domain.ProjectToDto(project, allClubs[idx])
 		projectsDto[idx] = projectDto
 	}

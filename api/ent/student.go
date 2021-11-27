@@ -38,9 +38,11 @@ type StudentEdges struct {
 	Club []*Club `json:"club,omitempty"`
 	// ClubMember holds the value of the club_member edge.
 	ClubMember []*ClubMember `json:"club_member,omitempty"`
+	// TaskType holds the value of the task_type edge.
+	TaskType []*TaskType `json:"task_type,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -73,6 +75,15 @@ func (e StudentEdges) ClubMemberOrErr() ([]*ClubMember, error) {
 		return e.ClubMember, nil
 	}
 	return nil, &NotLoadedError{edge: "club_member"}
+}
+
+// TaskTypeOrErr returns the TaskType value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) TaskTypeOrErr() ([]*TaskType, error) {
+	if e.loadedTypes[3] {
+		return e.TaskType, nil
+	}
+	return nil, &NotLoadedError{edge: "task_type"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -158,6 +169,11 @@ func (s *Student) QueryClub() *ClubQuery {
 // QueryClubMember queries the "club_member" edge of the Student entity.
 func (s *Student) QueryClubMember() *ClubMemberQuery {
 	return (&StudentClient{config: s.config}).QueryClubMember(s)
+}
+
+// QueryTaskType queries the "task_type" edge of the Student entity.
+func (s *Student) QueryTaskType() *TaskTypeQuery {
+	return (&StudentClient{config: s.config}).QueryTaskType(s)
 }
 
 // Update returns a builder for updating this Student.

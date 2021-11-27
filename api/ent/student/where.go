@@ -675,6 +675,34 @@ func HasClubMemberWith(preds ...predicate.ClubMember) predicate.Student {
 	})
 }
 
+// HasTaskType applies the HasEdge predicate on the "task_type" edge.
+func HasTaskType() predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TaskTypeTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TaskTypeTable, TaskTypeColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTaskTypeWith applies the HasEdge predicate on the "task_type" edge with a given conditions (other predicates).
+func HasTaskTypeWith(preds ...predicate.TaskType) predicate.Student {
+	return predicate.Student(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TaskTypeInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TaskTypeTable, TaskTypeColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Student) predicate.Student {
 	return predicate.Student(func(s *sql.Selector) {

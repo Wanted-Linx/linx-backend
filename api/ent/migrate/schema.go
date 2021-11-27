@@ -264,6 +264,47 @@ var (
 			},
 		},
 	}
+	// TaskTypesColumns holds the columns for the "task_types" table.
+	TaskTypesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeString},
+		{Name: "club_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "company_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "project_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "student_task_type", Type: field.TypeInt, Nullable: true},
+	}
+	// TaskTypesTable holds the schema information for the "task_types" table.
+	TaskTypesTable = &schema.Table{
+		Name:       "task_types",
+		Columns:    TaskTypesColumns,
+		PrimaryKey: []*schema.Column{TaskTypesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_types_clubs_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[2]},
+				RefColumns: []*schema.Column{ClubsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_companies_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[3]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_projects_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[4]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_students_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[5]},
+				RefColumns: []*schema.Column{StudentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -288,6 +329,7 @@ var (
 		ProjectLogFeedbacksTable,
 		ProjectLogParticipantsTable,
 		StudentsTable,
+		TaskTypesTable,
 		UsersTable,
 	}
 )
@@ -307,4 +349,8 @@ func init() {
 	ProjectLogFeedbacksTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	ProjectLogParticipantsTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	StudentsTable.ForeignKeys[0].RefTable = UsersTable
+	TaskTypesTable.ForeignKeys[0].RefTable = ClubsTable
+	TaskTypesTable.ForeignKeys[1].RefTable = CompaniesTable
+	TaskTypesTable.ForeignKeys[2].RefTable = ProjectsTable
+	TaskTypesTable.ForeignKeys[3].RefTable = StudentsTable
 }

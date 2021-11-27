@@ -20,13 +20,14 @@ func main() {
 	clubMemberRepo := repository.NewClubMemberRepository(dbClient)
 	projectRepo := repository.NewProjectRepository(dbClient)
 	projectClubRepo := repository.NewProjectClubRepository(dbClient)
+	taskTypeRepo := repository.NewTaskTypeRepository(dbClient)
 
 	userService := service.NewUserSerivce(userRepo, studentRepo)
-	studentService := service.NewStudentService(studentRepo, clubMemberRepo)
-	companyService := service.NewCompanyService(companyRepo)
-	clubService := service.NewClubService(clubRepo, clubMemberRepo)
+	studentService := service.NewStudentService(studentRepo, clubMemberRepo, taskTypeRepo)
+	companyService := service.NewCompanyService(companyRepo, taskTypeRepo)
+	clubService := service.NewClubService(clubRepo, clubMemberRepo, taskTypeRepo)
 	clubMemberService := service.NewClubMemberService(clubMemberRepo)
-	projectService := service.NewProjectService(projectRepo, projectClubRepo)
+	projectService := service.NewProjectService(projectRepo, projectClubRepo, taskTypeRepo)
 	projectClubService := service.NewProjectClubService(projectClubRepo)
 
 	userHandler := handler.NewUserHandler(userService, studentService, companyService)

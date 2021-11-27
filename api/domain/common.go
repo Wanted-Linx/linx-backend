@@ -1,6 +1,8 @@
 package domain
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+)
 
 type ProfileImageRequest struct {
 	Image []*multipart.FileHeader

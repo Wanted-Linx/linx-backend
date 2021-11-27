@@ -6,6 +6,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/pkg/errors"
 )
 
@@ -88,4 +89,26 @@ func (r *studentRepository) UpdateProfile(reqStudent *ent.Student) (*ent.Student
 	s.Edges.Club = clubs
 	s.Edges.User = user
 	return s, nil
+}
+
+func (r *studentRepository) GetAllTasks(studentID int) ([]*ent.TaskType, error) {
+	tasks, err := r.db.TaskType.Query().
+		Where(tasktype.HasStudentWith(student.ID(studentID))).All(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return tasks, nil
+}
+
+func (r *studentRepository) SaveTasks(s *ent.Student, taskType *ent.TaskType) (*ent.TaskType, error) {
+	task, err := r.db.TaskType.Create().
+		SetType(taskType.Type).
+		SetStudent(s).
+		Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return task, nil
 }

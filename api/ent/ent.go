@@ -17,6 +17,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -47,6 +48,7 @@ func columnChecker(table string) func(string) error {
 		projectlogfeedback.Table:    projectlogfeedback.ValidColumn,
 		projectlogparticipant.Table: projectlogparticipant.ValidColumn,
 		student.Table:               student.ValidColumn,
+		tasktype.Table:              tasktype.ValidColumn,
 		user.Table:                  user.ValidColumn,
 	}
 	check, ok := checks[table]

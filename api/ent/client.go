@@ -18,6 +18,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -48,6 +49,8 @@ type Client struct {
 	ProjectLogParticipant *ProjectLogParticipantClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
+	// TaskType is the client for interacting with the TaskType builders.
+	TaskType *TaskTypeClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -72,6 +75,7 @@ func (c *Client) init() {
 	c.ProjectLogFeedback = NewProjectLogFeedbackClient(c.config)
 	c.ProjectLogParticipant = NewProjectLogParticipantClient(c.config)
 	c.Student = NewStudentClient(c.config)
+	c.TaskType = NewTaskTypeClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -115,6 +119,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ProjectLogFeedback:    NewProjectLogFeedbackClient(cfg),
 		ProjectLogParticipant: NewProjectLogParticipantClient(cfg),
 		Student:               NewStudentClient(cfg),
+		TaskType:              NewTaskTypeClient(cfg),
 		User:                  NewUserClient(cfg),
 	}, nil
 }
@@ -143,6 +148,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ProjectLogFeedback:    NewProjectLogFeedbackClient(cfg),
 		ProjectLogParticipant: NewProjectLogParticipantClient(cfg),
 		Student:               NewStudentClient(cfg),
+		TaskType:              NewTaskTypeClient(cfg),
 		User:                  NewUserClient(cfg),
 	}, nil
 }
@@ -182,6 +188,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ProjectLogFeedback.Use(hooks...)
 	c.ProjectLogParticipant.Use(hooks...)
 	c.Student.Use(hooks...)
+	c.TaskType.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -327,6 +334,22 @@ func (c *ClubClient) QueryProjectClub(cl *Club) *ProjectClubQuery {
 			sqlgraph.From(club.Table, club.FieldID, id),
 			sqlgraph.To(projectclub.Table, projectclub.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, club.ProjectClubTable, club.ProjectClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTaskType queries the task_type edge of a Club.
+func (c *ClubClient) QueryTaskType(cl *Club) *TaskTypeQuery {
+	query := &TaskTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := cl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(club.Table, club.FieldID, id),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, club.TaskTypeTable, club.TaskTypeColumn),
 		)
 		fromV = sqlgraph.Neighbors(cl.driver.Dialect(), step)
 		return fromV, nil
@@ -578,6 +601,22 @@ func (c *CompanyClient) QueryProject(co *Company) *ProjectQuery {
 	return query
 }
 
+// QueryTaskType queries the task_type edge of a Company.
+func (c *CompanyClient) QueryTaskType(co *Company) *TaskTypeQuery {
+	query := &TaskTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := co.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(company.Table, company.FieldID, id),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, company.TaskTypeTable, company.TaskTypeColumn),
+		)
+		fromV = sqlgraph.Neighbors(co.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *CompanyClient) Hooks() []Hook {
 	return c.hooks.Company
@@ -725,6 +764,22 @@ func (c *ProjectClient) QueryProjectLog(pr *Project) *ProjectLogQuery {
 			sqlgraph.From(project.Table, project.FieldID, id),
 			sqlgraph.To(projectlog.Table, projectlog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectLogTable, project.ProjectLogColumn),
+		)
+		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTaskType queries the task_type edge of a Project.
+func (c *ProjectClient) QueryTaskType(pr *Project) *TaskTypeQuery {
+	query := &TaskTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := pr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.TaskTypeTable, project.TaskTypeColumn),
 		)
 		fromV = sqlgraph.Neighbors(pr.driver.Dialect(), step)
 		return fromV, nil
@@ -1374,9 +1429,179 @@ func (c *StudentClient) QueryClubMember(s *Student) *ClubMemberQuery {
 	return query
 }
 
+// QueryTaskType queries the task_type edge of a Student.
+func (c *StudentClient) QueryTaskType(s *Student) *TaskTypeQuery {
+	query := &TaskTypeQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, id),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.TaskTypeTable, student.TaskTypeColumn),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *StudentClient) Hooks() []Hook {
 	return c.hooks.Student
+}
+
+// TaskTypeClient is a client for the TaskType schema.
+type TaskTypeClient struct {
+	config
+}
+
+// NewTaskTypeClient returns a client for the TaskType from the given config.
+func NewTaskTypeClient(c config) *TaskTypeClient {
+	return &TaskTypeClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tasktype.Hooks(f(g(h())))`.
+func (c *TaskTypeClient) Use(hooks ...Hook) {
+	c.hooks.TaskType = append(c.hooks.TaskType, hooks...)
+}
+
+// Create returns a create builder for TaskType.
+func (c *TaskTypeClient) Create() *TaskTypeCreate {
+	mutation := newTaskTypeMutation(c.config, OpCreate)
+	return &TaskTypeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of TaskType entities.
+func (c *TaskTypeClient) CreateBulk(builders ...*TaskTypeCreate) *TaskTypeCreateBulk {
+	return &TaskTypeCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for TaskType.
+func (c *TaskTypeClient) Update() *TaskTypeUpdate {
+	mutation := newTaskTypeMutation(c.config, OpUpdate)
+	return &TaskTypeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TaskTypeClient) UpdateOne(tt *TaskType) *TaskTypeUpdateOne {
+	mutation := newTaskTypeMutation(c.config, OpUpdateOne, withTaskType(tt))
+	return &TaskTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TaskTypeClient) UpdateOneID(id int) *TaskTypeUpdateOne {
+	mutation := newTaskTypeMutation(c.config, OpUpdateOne, withTaskTypeID(id))
+	return &TaskTypeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for TaskType.
+func (c *TaskTypeClient) Delete() *TaskTypeDelete {
+	mutation := newTaskTypeMutation(c.config, OpDelete)
+	return &TaskTypeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a delete builder for the given entity.
+func (c *TaskTypeClient) DeleteOne(tt *TaskType) *TaskTypeDeleteOne {
+	return c.DeleteOneID(tt.ID)
+}
+
+// DeleteOneID returns a delete builder for the given id.
+func (c *TaskTypeClient) DeleteOneID(id int) *TaskTypeDeleteOne {
+	builder := c.Delete().Where(tasktype.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TaskTypeDeleteOne{builder}
+}
+
+// Query returns a query builder for TaskType.
+func (c *TaskTypeClient) Query() *TaskTypeQuery {
+	return &TaskTypeQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a TaskType entity by its id.
+func (c *TaskTypeClient) Get(ctx context.Context, id int) (*TaskType, error) {
+	return c.Query().Where(tasktype.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TaskTypeClient) GetX(ctx context.Context, id int) *TaskType {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryStudent queries the student edge of a TaskType.
+func (c *TaskTypeClient) QueryStudent(tt *TaskType) *StudentQuery {
+	query := &StudentQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tasktype.Table, tasktype.FieldID, id),
+			sqlgraph.To(student.Table, student.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, tasktype.StudentTable, tasktype.StudentColumn),
+		)
+		fromV = sqlgraph.Neighbors(tt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryClub queries the club edge of a TaskType.
+func (c *TaskTypeClient) QueryClub(tt *TaskType) *ClubQuery {
+	query := &ClubQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tasktype.Table, tasktype.FieldID, id),
+			sqlgraph.To(club.Table, club.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, tasktype.ClubTable, tasktype.ClubColumn),
+		)
+		fromV = sqlgraph.Neighbors(tt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCompany queries the company edge of a TaskType.
+func (c *TaskTypeClient) QueryCompany(tt *TaskType) *CompanyQuery {
+	query := &CompanyQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tasktype.Table, tasktype.FieldID, id),
+			sqlgraph.To(company.Table, company.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, tasktype.CompanyTable, tasktype.CompanyColumn),
+		)
+		fromV = sqlgraph.Neighbors(tt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProject queries the project edge of a TaskType.
+func (c *TaskTypeClient) QueryProject(tt *TaskType) *ProjectQuery {
+	query := &ProjectQuery{config: c.config}
+	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
+		id := tt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tasktype.Table, tasktype.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, tasktype.ProjectTable, tasktype.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(tt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TaskTypeClient) Hooks() []Hook {
+	return c.hooks.TaskType
 }
 
 // UserClient is a client for the User schema.

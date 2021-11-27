@@ -31,6 +31,8 @@ const (
 	EdgeProject = "project"
 	// EdgeProjectClub holds the string denoting the project_club edge name in mutations.
 	EdgeProjectClub = "project_club"
+	// EdgeTaskType holds the string denoting the task_type edge name in mutations.
+	EdgeTaskType = "task_type"
 	// Table holds the table name of the club in the database.
 	Table = "clubs"
 	// LeaderTable is the table that holds the leader relation/edge.
@@ -61,6 +63,13 @@ const (
 	ProjectClubInverseTable = "project_clubs"
 	// ProjectClubColumn is the table column denoting the project_club relation/edge.
 	ProjectClubColumn = "club_id"
+	// TaskTypeTable is the table that holds the task_type relation/edge.
+	TaskTypeTable = "task_types"
+	// TaskTypeInverseTable is the table name for the TaskType entity.
+	// It exists in this package in order to avoid circular dependency with the "tasktype" package.
+	TaskTypeInverseTable = "task_types"
+	// TaskTypeColumn is the table column denoting the task_type relation/edge.
+	TaskTypeColumn = "club_task_type"
 )
 
 // Columns holds all SQL columns for club fields.
