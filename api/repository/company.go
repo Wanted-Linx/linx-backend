@@ -65,6 +65,7 @@ func (r *companyRepository) UploadProfileImage(reqCompany *ent.Company) (*ent.Co
 
 func (r *companyRepository) UpdateProfile(reqCompany *ent.Company) (*ent.Company, error) {
 	c, err := r.db.Company.UpdateOneID(reqCompany.ID).
+		SetNillableAddress(reqCompany.Address).
 		SetNillableHompage(reqCompany.Hompage).
 		SetNillableDescription(reqCompany.Description).Save(context.Background())
 	if err != nil {

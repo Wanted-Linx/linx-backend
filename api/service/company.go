@@ -95,6 +95,7 @@ func (s *companyService) UpdateProfile(companyID int, reqCompany *domain.Company
 		ID:          companyID,
 		Hompage:     &reqCompany.Homepage,
 		Description: &reqCompany.Description,
+		Address:     &reqCompany.Address,
 	}
 
 	// TODO: business type에 대한 처리도 추후에...

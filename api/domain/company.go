@@ -7,6 +7,7 @@ import (
 type CompanyDto struct {
 	ID             int      `json:"id"`
 	Name           string   `json:"name"`
+	Address        *string  `json:"address"`
 	BusinessType   []string `json:"business_type"`
 	Description    *string  `json:"description"`
 	BusinessNumber string   `json:"business_number"`
@@ -23,6 +24,7 @@ type CompanyProfileUpdate struct {
 	BusinessType []string `json:"business_type"`
 	Homepage     string   `json:"homepage"`
 	Description  string   `json:"description"`
+	Address      string   `json:"address"`
 }
 
 // type CompanyProfileImage struct {
@@ -58,6 +60,7 @@ func CompanyToDto(src *ent.Company) *CompanyDto {
 	return &CompanyDto{
 		ID:             src.ID,
 		Name:           src.Name,
+		Address:        src.Address,
 		BusinessNumber: src.BusinessNumber,
 		Description:    src.Description,
 		ProfileImage:   src.ProfileImage,
