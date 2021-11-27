@@ -32,5 +32,6 @@ func (Company) Edges() []ent.Edge {
 			Required().
 			Unique(),
 		edge.To("project", Project.Type),
+		edge.To("task_type", TaskType.Type),
 	}
 }

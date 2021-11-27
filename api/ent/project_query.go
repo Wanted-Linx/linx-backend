@@ -18,6 +18,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 )
 
 // ProjectQuery is the builder for querying Project entities.
@@ -34,6 +35,7 @@ type ProjectQuery struct {
 	withClub        *ClubQuery
 	withProjectClub *ProjectClubQuery
 	withProjectLog  *ProjectLogQuery
+	withTaskType    *TaskTypeQuery
 	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -152,6 +154,28 @@ func (pq *ProjectQuery) QueryProjectLog() *ProjectLogQuery {
 			sqlgraph.From(project.Table, project.FieldID, selector),
 			sqlgraph.To(projectlog.Table, projectlog.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, project.ProjectLogTable, project.ProjectLogColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTaskType chains the current query on the "task_type" edge.
+func (pq *ProjectQuery) QueryTaskType() *TaskTypeQuery {
+	query := &TaskTypeQuery{config: pq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.TaskTypeTable, project.TaskTypeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -344,6 +368,7 @@ func (pq *ProjectQuery) Clone() *ProjectQuery {
 		withClub:        pq.withClub.Clone(),
 		withProjectClub: pq.withProjectClub.Clone(),
 		withProjectLog:  pq.withProjectLog.Clone(),
+		withTaskType:    pq.withTaskType.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
@@ -391,6 +416,17 @@ func (pq *ProjectQuery) WithProjectLog(opts ...func(*ProjectLogQuery)) *ProjectQ
 		opt(query)
 	}
 	pq.withProjectLog = query
+	return pq
+}
+
+// WithTaskType tells the query-builder to eager-load the nodes that are connected to
+// the "task_type" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *ProjectQuery) WithTaskType(opts ...func(*TaskTypeQuery)) *ProjectQuery {
+	query := &TaskTypeQuery{config: pq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withTaskType = query
 	return pq
 }
 
@@ -460,11 +496,12 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 		nodes       = []*Project{}
 		withFKs     = pq.withFKs
 		_spec       = pq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			pq.withCompany != nil,
 			pq.withClub != nil,
 			pq.withProjectClub != nil,
 			pq.withProjectLog != nil,
+			pq.withTaskType != nil,
 		}
 	)
 	if pq.withCompany != nil || pq.withClub != nil {
@@ -602,6 +639,35 @@ func (pq *ProjectQuery) sqlAll(ctx context.Context) ([]*Project, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "project_project_log" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.ProjectLog = append(node.Edges.ProjectLog, n)
+		}
+	}
+
+	if query := pq.withTaskType; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Project)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.TaskType = []*TaskType{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TaskType(func(s *sql.Selector) {
+			s.Where(sql.InValues(project.TaskTypeColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.project_task_type
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "project_task_type" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "project_task_type" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.TaskType = append(node.Edges.TaskType, n)
 		}
 	}
 

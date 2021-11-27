@@ -31,5 +31,6 @@ func (Student) Edges() []ent.Edge {
 			Unique(),
 		edge.To("club", Club.Type),
 		edge.To("club_member", ClubMember.Type),
+		edge.To("task_type", TaskType.Type),
 	}
 }

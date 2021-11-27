@@ -15,6 +15,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 )
 
 // ClubCreate is the builder for creating a Club entity.
@@ -138,6 +139,21 @@ func (cc *ClubCreate) AddProjectClub(p ...*ProjectClub) *ClubCreate {
 		ids[i] = p[i].ID
 	}
 	return cc.AddProjectClubIDs(ids...)
+}
+
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (cc *ClubCreate) AddTaskTypeIDs(ids ...int) *ClubCreate {
+	cc.mutation.AddTaskTypeIDs(ids...)
+	return cc
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (cc *ClubCreate) AddTaskType(t ...*TaskType) *ClubCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cc.AddTaskTypeIDs(ids...)
 }
 
 // Mutation returns the ClubMutation object of the builder.
@@ -378,6 +394,25 @@ func (cc *ClubCreate) createSpec() (*Club, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := cc.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
 				},
 			},
 		}

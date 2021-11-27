@@ -17,6 +17,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 )
 
 // ClubUpdate is the builder for updating Club entities.
@@ -160,6 +161,21 @@ func (cu *ClubUpdate) AddProjectClub(p ...*ProjectClub) *ClubUpdate {
 	return cu.AddProjectClubIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (cu *ClubUpdate) AddTaskTypeIDs(ids ...int) *ClubUpdate {
+	cu.mutation.AddTaskTypeIDs(ids...)
+	return cu
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (cu *ClubUpdate) AddTaskType(t ...*TaskType) *ClubUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the ClubMutation object of the builder.
 func (cu *ClubUpdate) Mutation() *ClubMutation {
 	return cu.mutation
@@ -232,6 +248,27 @@ func (cu *ClubUpdate) RemoveProjectClub(p ...*ProjectClub) *ClubUpdate {
 		ids[i] = p[i].ID
 	}
 	return cu.RemoveProjectClubIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (cu *ClubUpdate) ClearTaskType() *ClubUpdate {
+	cu.mutation.ClearTaskType()
+	return cu
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (cu *ClubUpdate) RemoveTaskTypeIDs(ids ...int) *ClubUpdate {
+	cu.mutation.RemoveTaskTypeIDs(ids...)
+	return cu
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (cu *ClubUpdate) RemoveTaskType(t ...*TaskType) *ClubUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cu.RemoveTaskTypeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -571,6 +608,60 @@ func (cu *ClubUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if cu.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !cu.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cu.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, cu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{club.Label}
@@ -718,6 +809,21 @@ func (cuo *ClubUpdateOne) AddProjectClub(p ...*ProjectClub) *ClubUpdateOne {
 	return cuo.AddProjectClubIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (cuo *ClubUpdateOne) AddTaskTypeIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.AddTaskTypeIDs(ids...)
+	return cuo
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (cuo *ClubUpdateOne) AddTaskType(t ...*TaskType) *ClubUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the ClubMutation object of the builder.
 func (cuo *ClubUpdateOne) Mutation() *ClubMutation {
 	return cuo.mutation
@@ -790,6 +896,27 @@ func (cuo *ClubUpdateOne) RemoveProjectClub(p ...*ProjectClub) *ClubUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return cuo.RemoveProjectClubIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (cuo *ClubUpdateOne) ClearTaskType() *ClubUpdateOne {
+	cuo.mutation.ClearTaskType()
+	return cuo
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (cuo *ClubUpdateOne) RemoveTaskTypeIDs(ids ...int) *ClubUpdateOne {
+	cuo.mutation.RemoveTaskTypeIDs(ids...)
+	return cuo
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (cuo *ClubUpdateOne) RemoveTaskType(t ...*TaskType) *ClubUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return cuo.RemoveTaskTypeIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1145,6 +1272,60 @@ func (cuo *ClubUpdateOne) sqlSave(ctx context.Context) (_node *Club, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectclub.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if cuo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !cuo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := cuo.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   club.TaskTypeTable,
+			Columns: []string{club.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
 				},
 			},
 		}

@@ -33,6 +33,7 @@ type hooks struct {
 	ProjectLogFeedback    []ent.Hook
 	ProjectLogParticipant []ent.Hook
 	Student               []ent.Hook
+	TaskType              []ent.Hook
 	User                  []ent.Hook
 }
 
