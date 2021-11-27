@@ -16,6 +16,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -32,6 +33,7 @@ type StudentQuery struct {
 	withUser       *UserQuery
 	withClub       *ClubQuery
 	withClubMember *ClubMemberQuery
+	withTaskType   *TaskTypeQuery
 	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -128,6 +130,28 @@ func (sq *StudentQuery) QueryClubMember() *ClubMemberQuery {
 			sqlgraph.From(student.Table, student.FieldID, selector),
 			sqlgraph.To(clubmember.Table, clubmember.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, student.ClubMemberTable, student.ClubMemberColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTaskType chains the current query on the "task_type" edge.
+func (sq *StudentQuery) QueryTaskType() *TaskTypeQuery {
+	query := &TaskTypeQuery{config: sq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(student.Table, student.FieldID, selector),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, student.TaskTypeTable, student.TaskTypeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -319,6 +343,7 @@ func (sq *StudentQuery) Clone() *StudentQuery {
 		withUser:       sq.withUser.Clone(),
 		withClub:       sq.withClub.Clone(),
 		withClubMember: sq.withClubMember.Clone(),
+		withTaskType:   sq.withTaskType.Clone(),
 		// clone intermediate query.
 		sql:  sq.sql.Clone(),
 		path: sq.path,
@@ -355,6 +380,17 @@ func (sq *StudentQuery) WithClubMember(opts ...func(*ClubMemberQuery)) *StudentQ
 		opt(query)
 	}
 	sq.withClubMember = query
+	return sq
+}
+
+// WithTaskType tells the query-builder to eager-load the nodes that are connected to
+// the "task_type" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *StudentQuery) WithTaskType(opts ...func(*TaskTypeQuery)) *StudentQuery {
+	query := &TaskTypeQuery{config: sq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	sq.withTaskType = query
 	return sq
 }
 
@@ -424,10 +460,11 @@ func (sq *StudentQuery) sqlAll(ctx context.Context) ([]*Student, error) {
 		nodes       = []*Student{}
 		withFKs     = sq.withFKs
 		_spec       = sq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			sq.withUser != nil,
 			sq.withClub != nil,
 			sq.withClubMember != nil,
+			sq.withTaskType != nil,
 		}
 	)
 	if sq.withUser != nil {
@@ -537,6 +574,35 @@ func (sq *StudentQuery) sqlAll(ctx context.Context) ([]*Student, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "student_id" returned %v for node %v`, fk, n.ID)
 			}
 			node.Edges.ClubMember = append(node.Edges.ClubMember, n)
+		}
+	}
+
+	if query := sq.withTaskType; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Student)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.TaskType = []*TaskType{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TaskType(func(s *sql.Selector) {
+			s.Where(sql.InValues(student.TaskTypeColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.student_task_type
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "student_task_type" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "student_task_type" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.TaskType = append(node.Edges.TaskType, n)
 		}
 	}
 

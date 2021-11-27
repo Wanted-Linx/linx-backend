@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"mime/multipart"
-
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 )
 
@@ -16,9 +14,9 @@ type CompanyDto struct {
 	Homepage       *string  `json:"hompage"`
 }
 
-type CompanyProfileImageDto struct {
-	Image []byte `json:"image"`
-}
+// type CompanyProfileImageDto struct {
+// 	Image []byte `json:"image"`
+// }
 
 // Multipart form-data로 이미지랑 같이 받을까...?
 type CompanyProfileUpdate struct {
@@ -27,16 +25,16 @@ type CompanyProfileUpdate struct {
 	Description  string   `json:"description"`
 }
 
-type CompanyProfileImage struct {
-	Image []*multipart.FileHeader `json:"image"`
-}
+// type CompanyProfileImage struct {
+// 	Image []*multipart.FileHeader `json:"image"`
+// }
 
 type CompanyService interface {
 	Save(userID int, reqSignup *SignUpRequest) (*CompanyDto, error)
 	GetCompanyByID(companyID int) (*CompanyDto, error)
 	GetAllCompanies(limit, offset int) ([]*CompanyDto, error)
 	UpdateProfile(companyID int, reqCompany *CompanyProfileUpdate) (*CompanyDto, error)
-	UploadProfileImage(companyID int, reqImage *CompanyProfileImage) ([]byte, error)
+	UploadProfileImage(companyID int, reqImage *ProfileImageRequest) ([]byte, error)
 	GetProfileImage(companyID int) ([]byte, error)
 }
 
@@ -46,10 +44,17 @@ type CompanyRepository interface {
 	GetAll(limit, offset int) ([]*ent.Company, error)
 	UpdateProfile(reqCompany *ent.Company) (*ent.Company, error)
 	UploadProfileImage(reqCompany *ent.Company) (*ent.Company, error)
+	GetAllTasks(companyID int) ([]*ent.TaskType, error)
+	SaveTasks(c *ent.Company, taskType *ent.TaskType) (*ent.TaskType, error)
 	// GetAll(clubID int) ([]*ent.Student, error)
 }
 
 func CompanyToDto(src *ent.Company) *CompanyDto {
+	taskTypes := make([]string, len(src.Edges.TaskType))
+	for i := 0; i < len(src.Edges.TaskType); i++ {
+		taskTypes[i] = src.Edges.TaskType[i].Type
+	}
+
 	return &CompanyDto{
 		ID:             src.ID,
 		Name:           src.Name,
@@ -57,7 +62,7 @@ func CompanyToDto(src *ent.Company) *CompanyDto {
 		Description:    src.Description,
 		ProfileImage:   src.ProfileImage,
 		Homepage:       src.Hompage,
-		BusinessType:   []string{"개발", "디자인"}, // TODO: default로 이렇게 잡아뒀지만 추후 businesstype 테이블 생성 후 그에 맞게 수정...
+		BusinessType:   taskTypes, // TODO: default로 이렇게 잡아뒀지만 추후 businesstype 테이블 생성 후 그에 맞게 수정...
 	}
 }
 

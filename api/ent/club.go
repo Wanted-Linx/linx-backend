@@ -45,9 +45,11 @@ type ClubEdges struct {
 	Project []*Project `json:"project,omitempty"`
 	// ProjectClub holds the value of the project_club edge.
 	ProjectClub []*ProjectClub `json:"project_club,omitempty"`
+	// TaskType holds the value of the task_type edge.
+	TaskType []*TaskType `json:"task_type,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // LeaderOrErr returns the Leader value or an error if the edge
@@ -89,6 +91,15 @@ func (e ClubEdges) ProjectClubOrErr() ([]*ProjectClub, error) {
 		return e.ProjectClub, nil
 	}
 	return nil, &NotLoadedError{edge: "project_club"}
+}
+
+// TaskTypeOrErr returns the TaskType value or an error if the edge
+// was not loaded in eager-loading.
+func (e ClubEdges) TaskTypeOrErr() ([]*TaskType, error) {
+	if e.loadedTypes[4] {
+		return e.TaskType, nil
+	}
+	return nil, &NotLoadedError{edge: "task_type"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -193,6 +204,11 @@ func (c *Club) QueryProject() *ProjectQuery {
 // QueryProjectClub queries the "project_club" edge of the Club entity.
 func (c *Club) QueryProjectClub() *ProjectClubQuery {
 	return (&ClubClient{config: c.config}).QueryProjectClub(c)
+}
+
+// QueryTaskType queries the "task_type" edge of the Club entity.
+func (c *Club) QueryTaskType() *TaskTypeQuery {
+	return (&ClubClient{config: c.config}).QueryTaskType(c)
 }
 
 // Update returns a builder for updating this Club.

@@ -11,6 +11,8 @@ const (
 	FieldName = "name"
 	// FieldUniversity holds the string denoting the university field in the database.
 	FieldUniversity = "university"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// FieldProfileLink holds the string denoting the profile_link field in the database.
 	FieldProfileLink = "profile_link"
 	// FieldProfileImage holds the string denoting the profile_image field in the database.
@@ -21,6 +23,8 @@ const (
 	EdgeClub = "club"
 	// EdgeClubMember holds the string denoting the club_member edge name in mutations.
 	EdgeClubMember = "club_member"
+	// EdgeTaskType holds the string denoting the task_type edge name in mutations.
+	EdgeTaskType = "task_type"
 	// Table holds the table name of the student in the database.
 	Table = "students"
 	// UserTable is the table that holds the user relation/edge.
@@ -44,6 +48,13 @@ const (
 	ClubMemberInverseTable = "club_members"
 	// ClubMemberColumn is the table column denoting the club_member relation/edge.
 	ClubMemberColumn = "student_id"
+	// TaskTypeTable is the table that holds the task_type relation/edge.
+	TaskTypeTable = "task_types"
+	// TaskTypeInverseTable is the table name for the TaskType entity.
+	// It exists in this package in order to avoid circular dependency with the "tasktype" package.
+	TaskTypeInverseTable = "task_types"
+	// TaskTypeColumn is the table column denoting the task_type relation/edge.
+	TaskTypeColumn = "student_task_type"
 )
 
 // Columns holds all SQL columns for student fields.
@@ -51,6 +62,7 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldUniversity,
+	FieldDescription,
 	FieldProfileLink,
 	FieldProfileImage,
 }

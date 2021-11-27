@@ -71,7 +71,7 @@ func (h *StudentHandler) UploadProfileImage(c echo.Context) error {
 		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
-	reqImage := &domain.StudentProfileImage{
+	reqImage := &domain.ProfileImageRequest{
 		Image: form.File["image"],
 	}
 

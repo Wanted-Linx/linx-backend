@@ -1,14 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
@@ -18,11 +13,15 @@ import (
 )
 
 type companyService struct {
-	companyRepo domain.CompanyRepository
+	companyRepo  domain.CompanyRepository
+	taskTypeRepo domain.TaskTypeRepository
 }
 
-func NewCompanyService(companyRepo domain.CompanyRepository) domain.CompanyService {
-	return &companyService{companyRepo: companyRepo}
+func NewCompanyService(companyRepo domain.CompanyRepository, taskTypeRepo domain.TaskTypeRepository) domain.CompanyService {
+	return &companyService{
+		companyRepo:  companyRepo,
+		taskTypeRepo: taskTypeRepo,
+	}
 }
 
 func (s *companyService) Save(userID int, reqSignup *domain.SignUpRequest) (*domain.CompanyDto, error) {
@@ -40,6 +39,12 @@ func (s *companyService) Save(userID int, reqSignup *domain.SignUpRequest) (*dom
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
+	// tasks, err := s.companyRepo.GetAllTasks(newCompany.ID)
+	// if err != nil {
+	// 	return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	// }
+
+	// newCompany.Edges.TaskType = tasks
 	log.Info("회원가입(기업) 완료", newCompany)
 	return domain.CompanyToDto(newCompany), nil
 }
@@ -57,6 +62,12 @@ func (s *companyService) GetCompanyByID(companyID int) (*domain.CompanyDto, erro
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
+	tasks, err := s.companyRepo.GetAllTasks(c.ID)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	c.Edges.TaskType = tasks
 	log.Info("해당하는 기업 조회 완료", c)
 	return domain.CompanyToDto(c), nil
 }
@@ -65,6 +76,14 @@ func (s *companyService) GetAllCompanies(limit, offset int) ([]*domain.CompanyDt
 	companies, err := s.companyRepo.GetAll(limit, offset)
 	if err != nil {
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	for _, company := range companies {
+		tasks, err := s.companyRepo.GetAllTasks(company.ID)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+		company.Edges.TaskType = tasks
 	}
 
 	log.Info("기업들 조회 완료", companies)
@@ -85,70 +104,50 @@ func (s *companyService) UpdateProfile(companyID int, reqCompany *domain.Company
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
+	tasks := make([]*ent.TaskType, len(reqCompany.BusinessType))
+	for i := 0; i < len(reqCompany.BusinessType); i++ {
+		businessTypes := &ent.TaskType{
+			Type: reqCompany.BusinessType[i],
+		}
+
+		task, err := s.companyRepo.SaveTasks(updatedCompany, businessTypes)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+		tasks[i] = task
+	}
+
+	updatedCompany.Edges.TaskType = tasks
+
 	return domain.CompanyToDto(updatedCompany), nil
 }
-func (s *companyService) UploadProfileImage(companyID int, reqImage *domain.CompanyProfileImage) ([]byte, error) {
-	var fileBytes []byte
 
-	// TODO: profile upload 함수 공통이므로 따로 빼기...
-	for _, imageFile := range reqImage.Image {
-		// Source
-		src, err := imageFile.Open()
+func (s *companyService) UploadProfileImage(companyID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	dir := fmt.Sprintf("./companies/profile/%d/image", companyID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
 		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
 		}
-		defer src.Close()
-
-		fileBytes, err = ioutil.ReadAll(src)
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		// Destination
-		dir := fmt.Sprintf("./companies/profile/%d/image", companyID)
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			os.MkdirAll(dir, 0700) // Create your file
-		}
-
-		// image 저장 위치 uuid 값을 key로...
-		key := uuid.New().String()
-		dst, err := os.Create(filepath.Join(dir, filepath.Base(key)))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-		defer dst.Close()
-
-		img, fileType, err := image.Decode(bytes.NewReader(fileBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		switch fileType {
-		case "jpeg":
-			log.Println(fileType)
-			err = jpeg.Encode(dst, img, nil)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		default:
-			err = png.Encode(dst, img)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		}
-
-		company := &ent.Company{
-			ID:           companyID,
-			ProfileImage: &key,
-		}
-
-		c, err := s.companyRepo.UploadProfileImage(company)
-		if err != nil {
-			return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
-		}
-
-		log.Info("프로필 이미지 업로드 성공", c)
 	}
+
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(companyID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
+
+	company := &ent.Company{
+		ID:           companyID,
+		ProfileImage: &key,
+	}
+
+	c, err := s.companyRepo.UploadProfileImage(company)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", c)
 
 	return fileBytes, nil
 }
@@ -157,6 +156,10 @@ func (s *companyService) GetProfileImage(companyID int) ([]byte, error) {
 	company, err := s.GetCompanyByID(companyID)
 	if err != nil {
 		return nil, err
+	}
+
+	if company.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
 	}
 
 	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./companies/profile/%d/image/%s", companyID, *company.ProfileImage))

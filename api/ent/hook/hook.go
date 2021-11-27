@@ -126,6 +126,19 @@ func (f StudentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The TaskTypeFunc type is an adapter to allow the use of ordinary
+// function as TaskType mutator.
+type TaskTypeFunc func(context.Context, *ent.TaskTypeMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TaskTypeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.TaskTypeMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TaskTypeMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The UserFunc type is an adapter to allow the use of ordinary
 // function as User mutator.
 type UserFunc func(context.Context, *ent.UserMutation) (ent.Value, error)

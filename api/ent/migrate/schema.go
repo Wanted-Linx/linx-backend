@@ -108,6 +108,7 @@ var (
 		{Name: "applying_start_date", Type: field.TypeString},
 		{Name: "applying_end_date", Type: field.TypeString},
 		{Name: "qualification", Type: field.TypeString},
+		{Name: "profile_image", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "sponsor_fee", Type: field.TypeInt},
 		{Name: "club_project", Type: field.TypeInt, Nullable: true},
@@ -121,13 +122,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "projects_clubs_project",
-				Columns:    []*schema.Column{ProjectsColumns[10]},
+				Columns:    []*schema.Column{ProjectsColumns[11]},
 				RefColumns: []*schema.Column{ClubsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "projects_companies_project",
-				Columns:    []*schema.Column{ProjectsColumns[11]},
+				Columns:    []*schema.Column{ProjectsColumns[12]},
 				RefColumns: []*schema.Column{CompaniesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -245,6 +246,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "university", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "profile_link", Type: field.TypeString, Nullable: true},
 		{Name: "profile_image", Type: field.TypeString, Nullable: true},
 		{Name: "user_student", Type: field.TypeInt, Nullable: true},
@@ -257,8 +259,49 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "students_users_student",
-				Columns:    []*schema.Column{StudentsColumns[5]},
+				Columns:    []*schema.Column{StudentsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// TaskTypesColumns holds the columns for the "task_types" table.
+	TaskTypesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "type", Type: field.TypeString},
+		{Name: "club_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "company_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "project_task_type", Type: field.TypeInt, Nullable: true},
+		{Name: "student_task_type", Type: field.TypeInt, Nullable: true},
+	}
+	// TaskTypesTable holds the schema information for the "task_types" table.
+	TaskTypesTable = &schema.Table{
+		Name:       "task_types",
+		Columns:    TaskTypesColumns,
+		PrimaryKey: []*schema.Column{TaskTypesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_types_clubs_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[2]},
+				RefColumns: []*schema.Column{ClubsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_companies_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[3]},
+				RefColumns: []*schema.Column{CompaniesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_projects_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[4]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "task_types_students_task_type",
+				Columns:    []*schema.Column{TaskTypesColumns[5]},
+				RefColumns: []*schema.Column{StudentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -287,6 +330,7 @@ var (
 		ProjectLogFeedbacksTable,
 		ProjectLogParticipantsTable,
 		StudentsTable,
+		TaskTypesTable,
 		UsersTable,
 	}
 )
@@ -306,4 +350,8 @@ func init() {
 	ProjectLogFeedbacksTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	ProjectLogParticipantsTable.ForeignKeys[0].RefTable = ProjectLogsTable
 	StudentsTable.ForeignKeys[0].RefTable = UsersTable
+	TaskTypesTable.ForeignKeys[0].RefTable = ClubsTable
+	TaskTypesTable.ForeignKeys[1].RefTable = CompaniesTable
+	TaskTypesTable.ForeignKeys[2].RefTable = ProjectsTable
+	TaskTypesTable.ForeignKeys[3].RefTable = StudentsTable
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/clubmember"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -39,6 +40,26 @@ func (su *StudentUpdate) SetName(s string) *StudentUpdate {
 // SetUniversity sets the "university" field.
 func (su *StudentUpdate) SetUniversity(s string) *StudentUpdate {
 	su.mutation.SetUniversity(s)
+	return su
+}
+
+// SetDescription sets the "description" field.
+func (su *StudentUpdate) SetDescription(s string) *StudentUpdate {
+	su.mutation.SetDescription(s)
+	return su
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (su *StudentUpdate) SetNillableDescription(s *string) *StudentUpdate {
+	if s != nil {
+		su.SetDescription(*s)
+	}
+	return su
+}
+
+// ClearDescription clears the value of the "description" field.
+func (su *StudentUpdate) ClearDescription() *StudentUpdate {
+	su.mutation.ClearDescription()
 	return su
 }
 
@@ -123,6 +144,21 @@ func (su *StudentUpdate) AddClubMember(c ...*ClubMember) *StudentUpdate {
 	return su.AddClubMemberIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (su *StudentUpdate) AddTaskTypeIDs(ids ...int) *StudentUpdate {
+	su.mutation.AddTaskTypeIDs(ids...)
+	return su
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (su *StudentUpdate) AddTaskType(t ...*TaskType) *StudentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return su.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the StudentMutation object of the builder.
 func (su *StudentUpdate) Mutation() *StudentMutation {
 	return su.mutation
@@ -174,6 +210,27 @@ func (su *StudentUpdate) RemoveClubMember(c ...*ClubMember) *StudentUpdate {
 		ids[i] = c[i].ID
 	}
 	return su.RemoveClubMemberIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (su *StudentUpdate) ClearTaskType() *StudentUpdate {
+	su.mutation.ClearTaskType()
+	return su
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (su *StudentUpdate) RemoveTaskTypeIDs(ids ...int) *StudentUpdate {
+	su.mutation.RemoveTaskTypeIDs(ids...)
+	return su
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (su *StudentUpdate) RemoveTaskType(t ...*TaskType) *StudentUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return su.RemoveTaskTypeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -274,6 +331,19 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: student.FieldUniversity,
+		})
+	}
+	if value, ok := su.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldDescription,
+		})
+	}
+	if su.mutation.DescriptionCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: student.FieldDescription,
 		})
 	}
 	if value, ok := su.mutation.ProfileLink(); ok {
@@ -445,6 +515,60 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !su.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{student.Label}
@@ -473,6 +597,26 @@ func (suo *StudentUpdateOne) SetName(s string) *StudentUpdateOne {
 // SetUniversity sets the "university" field.
 func (suo *StudentUpdateOne) SetUniversity(s string) *StudentUpdateOne {
 	suo.mutation.SetUniversity(s)
+	return suo
+}
+
+// SetDescription sets the "description" field.
+func (suo *StudentUpdateOne) SetDescription(s string) *StudentUpdateOne {
+	suo.mutation.SetDescription(s)
+	return suo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (suo *StudentUpdateOne) SetNillableDescription(s *string) *StudentUpdateOne {
+	if s != nil {
+		suo.SetDescription(*s)
+	}
+	return suo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (suo *StudentUpdateOne) ClearDescription() *StudentUpdateOne {
+	suo.mutation.ClearDescription()
 	return suo
 }
 
@@ -557,6 +701,21 @@ func (suo *StudentUpdateOne) AddClubMember(c ...*ClubMember) *StudentUpdateOne {
 	return suo.AddClubMemberIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (suo *StudentUpdateOne) AddTaskTypeIDs(ids ...int) *StudentUpdateOne {
+	suo.mutation.AddTaskTypeIDs(ids...)
+	return suo
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (suo *StudentUpdateOne) AddTaskType(t ...*TaskType) *StudentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return suo.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the StudentMutation object of the builder.
 func (suo *StudentUpdateOne) Mutation() *StudentMutation {
 	return suo.mutation
@@ -608,6 +767,27 @@ func (suo *StudentUpdateOne) RemoveClubMember(c ...*ClubMember) *StudentUpdateOn
 		ids[i] = c[i].ID
 	}
 	return suo.RemoveClubMemberIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (suo *StudentUpdateOne) ClearTaskType() *StudentUpdateOne {
+	suo.mutation.ClearTaskType()
+	return suo
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (suo *StudentUpdateOne) RemoveTaskTypeIDs(ids ...int) *StudentUpdateOne {
+	suo.mutation.RemoveTaskTypeIDs(ids...)
+	return suo
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (suo *StudentUpdateOne) RemoveTaskType(t ...*TaskType) *StudentUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return suo.RemoveTaskTypeIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -732,6 +912,19 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: student.FieldUniversity,
+		})
+	}
+	if value, ok := suo.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldDescription,
+		})
+	}
+	if suo.mutation.DescriptionCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: student.FieldDescription,
 		})
 	}
 	if value, ok := suo.mutation.ProfileLink(); ok {
@@ -895,6 +1088,60 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: clubmember.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !suo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   student.TaskTypeTable,
+			Columns: []string{student.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
 				},
 			},
 		}

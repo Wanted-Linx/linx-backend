@@ -15,6 +15,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
 	"github.com/Wanted-Linx/linx-backend/api/ent/predicate"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 )
 
@@ -28,9 +29,10 @@ type CompanyQuery struct {
 	fields     []string
 	predicates []predicate.Company
 	// eager-loading edges.
-	withUser    *UserQuery
-	withProject *ProjectQuery
-	withFKs     bool
+	withUser     *UserQuery
+	withProject  *ProjectQuery
+	withTaskType *TaskTypeQuery
+	withFKs      bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -104,6 +106,28 @@ func (cq *CompanyQuery) QueryProject() *ProjectQuery {
 			sqlgraph.From(company.Table, company.FieldID, selector),
 			sqlgraph.To(project.Table, project.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, company.ProjectTable, company.ProjectColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTaskType chains the current query on the "task_type" edge.
+func (cq *CompanyQuery) QueryTaskType() *TaskTypeQuery {
+	query := &TaskTypeQuery{config: cq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(company.Table, company.FieldID, selector),
+			sqlgraph.To(tasktype.Table, tasktype.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, company.TaskTypeTable, company.TaskTypeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -287,13 +311,14 @@ func (cq *CompanyQuery) Clone() *CompanyQuery {
 		return nil
 	}
 	return &CompanyQuery{
-		config:      cq.config,
-		limit:       cq.limit,
-		offset:      cq.offset,
-		order:       append([]OrderFunc{}, cq.order...),
-		predicates:  append([]predicate.Company{}, cq.predicates...),
-		withUser:    cq.withUser.Clone(),
-		withProject: cq.withProject.Clone(),
+		config:       cq.config,
+		limit:        cq.limit,
+		offset:       cq.offset,
+		order:        append([]OrderFunc{}, cq.order...),
+		predicates:   append([]predicate.Company{}, cq.predicates...),
+		withUser:     cq.withUser.Clone(),
+		withProject:  cq.withProject.Clone(),
+		withTaskType: cq.withTaskType.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
@@ -319,6 +344,17 @@ func (cq *CompanyQuery) WithProject(opts ...func(*ProjectQuery)) *CompanyQuery {
 		opt(query)
 	}
 	cq.withProject = query
+	return cq
+}
+
+// WithTaskType tells the query-builder to eager-load the nodes that are connected to
+// the "task_type" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CompanyQuery) WithTaskType(opts ...func(*TaskTypeQuery)) *CompanyQuery {
+	query := &TaskTypeQuery{config: cq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withTaskType = query
 	return cq
 }
 
@@ -388,9 +424,10 @@ func (cq *CompanyQuery) sqlAll(ctx context.Context) ([]*Company, error) {
 		nodes       = []*Company{}
 		withFKs     = cq.withFKs
 		_spec       = cq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			cq.withUser != nil,
 			cq.withProject != nil,
+			cq.withTaskType != nil,
 		}
 	)
 	if cq.withUser != nil {
@@ -474,6 +511,35 @@ func (cq *CompanyQuery) sqlAll(ctx context.Context) ([]*Company, error) {
 				return nil, fmt.Errorf(`unexpected foreign-key "company_project" returned %v for node %v`, *fk, n.ID)
 			}
 			node.Edges.Project = append(node.Edges.Project, n)
+		}
+	}
+
+	if query := cq.withTaskType; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[int]*Company)
+		for i := range nodes {
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
+			nodes[i].Edges.TaskType = []*TaskType{}
+		}
+		query.withFKs = true
+		query.Where(predicate.TaskType(func(s *sql.Selector) {
+			s.Where(sql.InValues(company.TaskTypeColumn, fks...))
+		}))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			fk := n.company_task_type
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "company_task_type" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "company_task_type" returned %v for node %v`, *fk, n.ID)
+			}
+			node.Edges.TaskType = append(node.Edges.TaskType, n)
 		}
 	}
 

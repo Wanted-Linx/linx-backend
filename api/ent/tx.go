@@ -30,6 +30,8 @@ type Tx struct {
 	ProjectLogParticipant *ProjectLogParticipantClient
 	// Student is the client for interacting with the Student builders.
 	Student *StudentClient
+	// TaskType is the client for interacting with the TaskType builders.
+	TaskType *TaskTypeClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -176,6 +178,7 @@ func (tx *Tx) init() {
 	tx.ProjectLogFeedback = NewProjectLogFeedbackClient(tx.config)
 	tx.ProjectLogParticipant = NewProjectLogParticipantClient(tx.config)
 	tx.Student = NewStudentClient(tx.config)
+	tx.TaskType = NewTaskTypeClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

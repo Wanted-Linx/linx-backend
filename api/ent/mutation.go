@@ -18,6 +18,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogfeedback"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlogparticipant"
 	"github.com/Wanted-Linx/linx-backend/api/ent/student"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/Wanted-Linx/linx-backend/api/ent/user"
 
 	"entgo.io/ent"
@@ -41,6 +42,7 @@ const (
 	TypeProjectLogFeedback    = "ProjectLogFeedback"
 	TypeProjectLogParticipant = "ProjectLogParticipant"
 	TypeStudent               = "Student"
+	TypeTaskType              = "TaskType"
 	TypeUser                  = "User"
 )
 
@@ -68,6 +70,9 @@ type ClubMutation struct {
 	project_club        map[int]struct{}
 	removedproject_club map[int]struct{}
 	clearedproject_club bool
+	task_type           map[int]struct{}
+	removedtask_type    map[int]struct{}
+	clearedtask_type    bool
 	done                bool
 	oldValue            func(context.Context) (*Club, error)
 	predicates          []predicate.Club
@@ -595,6 +600,60 @@ func (m *ClubMutation) ResetProjectClub() {
 	m.removedproject_club = nil
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by ids.
+func (m *ClubMutation) AddTaskTypeIDs(ids ...int) {
+	if m.task_type == nil {
+		m.task_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.task_type[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTaskType clears the "task_type" edge to the TaskType entity.
+func (m *ClubMutation) ClearTaskType() {
+	m.clearedtask_type = true
+}
+
+// TaskTypeCleared reports if the "task_type" edge to the TaskType entity was cleared.
+func (m *ClubMutation) TaskTypeCleared() bool {
+	return m.clearedtask_type
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to the TaskType entity by IDs.
+func (m *ClubMutation) RemoveTaskTypeIDs(ids ...int) {
+	if m.removedtask_type == nil {
+		m.removedtask_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.task_type, ids[i])
+		m.removedtask_type[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTaskType returns the removed IDs of the "task_type" edge to the TaskType entity.
+func (m *ClubMutation) RemovedTaskTypeIDs() (ids []int) {
+	for id := range m.removedtask_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TaskTypeIDs returns the "task_type" edge IDs in the mutation.
+func (m *ClubMutation) TaskTypeIDs() (ids []int) {
+	for id := range m.task_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTaskType resets all changes to the "task_type" edge.
+func (m *ClubMutation) ResetTaskType() {
+	m.task_type = nil
+	m.clearedtask_type = false
+	m.removedtask_type = nil
+}
+
 // Where appends a list predicates to the ClubMutation builder.
 func (m *ClubMutation) Where(ps ...predicate.Club) {
 	m.predicates = append(m.predicates, ps...)
@@ -813,7 +872,7 @@ func (m *ClubMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ClubMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.leader != nil {
 		edges = append(edges, club.EdgeLeader)
 	}
@@ -825,6 +884,9 @@ func (m *ClubMutation) AddedEdges() []string {
 	}
 	if m.project_club != nil {
 		edges = append(edges, club.EdgeProjectClub)
+	}
+	if m.task_type != nil {
+		edges = append(edges, club.EdgeTaskType)
 	}
 	return edges
 }
@@ -855,13 +917,19 @@ func (m *ClubMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case club.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.task_type))
+		for id := range m.task_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ClubMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedclub_member != nil {
 		edges = append(edges, club.EdgeClubMember)
 	}
@@ -870,6 +938,9 @@ func (m *ClubMutation) RemovedEdges() []string {
 	}
 	if m.removedproject_club != nil {
 		edges = append(edges, club.EdgeProjectClub)
+	}
+	if m.removedtask_type != nil {
+		edges = append(edges, club.EdgeTaskType)
 	}
 	return edges
 }
@@ -896,13 +967,19 @@ func (m *ClubMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case club.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.removedtask_type))
+		for id := range m.removedtask_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ClubMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedleader {
 		edges = append(edges, club.EdgeLeader)
 	}
@@ -914,6 +991,9 @@ func (m *ClubMutation) ClearedEdges() []string {
 	}
 	if m.clearedproject_club {
 		edges = append(edges, club.EdgeProjectClub)
+	}
+	if m.clearedtask_type {
+		edges = append(edges, club.EdgeTaskType)
 	}
 	return edges
 }
@@ -930,6 +1010,8 @@ func (m *ClubMutation) EdgeCleared(name string) bool {
 		return m.clearedproject
 	case club.EdgeProjectClub:
 		return m.clearedproject_club
+	case club.EdgeTaskType:
+		return m.clearedtask_type
 	}
 	return false
 }
@@ -960,6 +1042,9 @@ func (m *ClubMutation) ResetEdge(name string) error {
 		return nil
 	case club.EdgeProjectClub:
 		m.ResetProjectClub()
+		return nil
+	case club.EdgeTaskType:
+		m.ResetTaskType()
 		return nil
 	}
 	return fmt.Errorf("unknown Club edge %s", name)
@@ -1417,24 +1502,27 @@ func (m *ClubMemberMutation) ResetEdge(name string) error {
 // CompanyMutation represents an operation that mutates the Company nodes in the graph.
 type CompanyMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	name            *string
-	business_number *string
-	address         *string
-	description     *string
-	profile_image   *string
-	hompage         *string
-	clearedFields   map[string]struct{}
-	user            *int
-	cleareduser     bool
-	project         map[int]struct{}
-	removedproject  map[int]struct{}
-	clearedproject  bool
-	done            bool
-	oldValue        func(context.Context) (*Company, error)
-	predicates      []predicate.Company
+	op               Op
+	typ              string
+	id               *int
+	name             *string
+	business_number  *string
+	address          *string
+	description      *string
+	profile_image    *string
+	hompage          *string
+	clearedFields    map[string]struct{}
+	user             *int
+	cleareduser      bool
+	project          map[int]struct{}
+	removedproject   map[int]struct{}
+	clearedproject   bool
+	task_type        map[int]struct{}
+	removedtask_type map[int]struct{}
+	clearedtask_type bool
+	done             bool
+	oldValue         func(context.Context) (*Company, error)
+	predicates       []predicate.Company
 }
 
 var _ ent.Mutation = (*CompanyMutation)(nil)
@@ -1883,6 +1971,60 @@ func (m *CompanyMutation) ResetProject() {
 	m.removedproject = nil
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by ids.
+func (m *CompanyMutation) AddTaskTypeIDs(ids ...int) {
+	if m.task_type == nil {
+		m.task_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.task_type[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTaskType clears the "task_type" edge to the TaskType entity.
+func (m *CompanyMutation) ClearTaskType() {
+	m.clearedtask_type = true
+}
+
+// TaskTypeCleared reports if the "task_type" edge to the TaskType entity was cleared.
+func (m *CompanyMutation) TaskTypeCleared() bool {
+	return m.clearedtask_type
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to the TaskType entity by IDs.
+func (m *CompanyMutation) RemoveTaskTypeIDs(ids ...int) {
+	if m.removedtask_type == nil {
+		m.removedtask_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.task_type, ids[i])
+		m.removedtask_type[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTaskType returns the removed IDs of the "task_type" edge to the TaskType entity.
+func (m *CompanyMutation) RemovedTaskTypeIDs() (ids []int) {
+	for id := range m.removedtask_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TaskTypeIDs returns the "task_type" edge IDs in the mutation.
+func (m *CompanyMutation) TaskTypeIDs() (ids []int) {
+	for id := range m.task_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTaskType resets all changes to the "task_type" edge.
+func (m *CompanyMutation) ResetTaskType() {
+	m.task_type = nil
+	m.clearedtask_type = false
+	m.removedtask_type = nil
+}
+
 // Where appends a list predicates to the CompanyMutation builder.
 func (m *CompanyMutation) Where(ps ...predicate.Company) {
 	m.predicates = append(m.predicates, ps...)
@@ -2113,12 +2255,15 @@ func (m *CompanyMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CompanyMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.user != nil {
 		edges = append(edges, company.EdgeUser)
 	}
 	if m.project != nil {
 		edges = append(edges, company.EdgeProject)
+	}
+	if m.task_type != nil {
+		edges = append(edges, company.EdgeTaskType)
 	}
 	return edges
 }
@@ -2137,15 +2282,24 @@ func (m *CompanyMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case company.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.task_type))
+		for id := range m.task_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CompanyMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedproject != nil {
 		edges = append(edges, company.EdgeProject)
+	}
+	if m.removedtask_type != nil {
+		edges = append(edges, company.EdgeTaskType)
 	}
 	return edges
 }
@@ -2160,18 +2314,27 @@ func (m *CompanyMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case company.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.removedtask_type))
+		for id := range m.removedtask_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CompanyMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.cleareduser {
 		edges = append(edges, company.EdgeUser)
 	}
 	if m.clearedproject {
 		edges = append(edges, company.EdgeProject)
+	}
+	if m.clearedtask_type {
+		edges = append(edges, company.EdgeTaskType)
 	}
 	return edges
 }
@@ -2184,6 +2347,8 @@ func (m *CompanyMutation) EdgeCleared(name string) bool {
 		return m.cleareduser
 	case company.EdgeProject:
 		return m.clearedproject
+	case company.EdgeTaskType:
+		return m.clearedtask_type
 	}
 	return false
 }
@@ -2209,6 +2374,9 @@ func (m *CompanyMutation) ResetEdge(name string) error {
 	case company.EdgeProject:
 		m.ResetProject()
 		return nil
+	case company.EdgeTaskType:
+		m.ResetTaskType()
+		return nil
 	}
 	return fmt.Errorf("unknown Company edge %s", name)
 }
@@ -2226,6 +2394,7 @@ type ProjectMutation struct {
 	applying_start_date *string
 	applying_end_date   *string
 	qualification       *string
+	profile_image       *string
 	created_at          *time.Time
 	sponsor_fee         *int
 	addsponsor_fee      *int
@@ -2240,6 +2409,9 @@ type ProjectMutation struct {
 	project_log         map[int]struct{}
 	removedproject_log  map[int]struct{}
 	clearedproject_log  bool
+	task_type           map[int]struct{}
+	removedtask_type    map[int]struct{}
+	clearedtask_type    bool
 	done                bool
 	oldValue            func(context.Context) (*Project, error)
 	predicates          []predicate.Project
@@ -2576,6 +2748,55 @@ func (m *ProjectMutation) ResetQualification() {
 	m.qualification = nil
 }
 
+// SetProfileImage sets the "profile_image" field.
+func (m *ProjectMutation) SetProfileImage(s string) {
+	m.profile_image = &s
+}
+
+// ProfileImage returns the value of the "profile_image" field in the mutation.
+func (m *ProjectMutation) ProfileImage() (r string, exists bool) {
+	v := m.profile_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfileImage returns the old "profile_image" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldProfileImage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProfileImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProfileImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfileImage: %w", err)
+	}
+	return oldValue.ProfileImage, nil
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (m *ProjectMutation) ClearProfileImage() {
+	m.profile_image = nil
+	m.clearedFields[project.FieldProfileImage] = struct{}{}
+}
+
+// ProfileImageCleared returns if the "profile_image" field was cleared in this mutation.
+func (m *ProjectMutation) ProfileImageCleared() bool {
+	_, ok := m.clearedFields[project.FieldProfileImage]
+	return ok
+}
+
+// ResetProfileImage resets all changes to the "profile_image" field.
+func (m *ProjectMutation) ResetProfileImage() {
+	m.profile_image = nil
+	delete(m.clearedFields, project.FieldProfileImage)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ProjectMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2854,6 +3075,60 @@ func (m *ProjectMutation) ResetProjectLog() {
 	m.removedproject_log = nil
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by ids.
+func (m *ProjectMutation) AddTaskTypeIDs(ids ...int) {
+	if m.task_type == nil {
+		m.task_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.task_type[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTaskType clears the "task_type" edge to the TaskType entity.
+func (m *ProjectMutation) ClearTaskType() {
+	m.clearedtask_type = true
+}
+
+// TaskTypeCleared reports if the "task_type" edge to the TaskType entity was cleared.
+func (m *ProjectMutation) TaskTypeCleared() bool {
+	return m.clearedtask_type
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to the TaskType entity by IDs.
+func (m *ProjectMutation) RemoveTaskTypeIDs(ids ...int) {
+	if m.removedtask_type == nil {
+		m.removedtask_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.task_type, ids[i])
+		m.removedtask_type[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTaskType returns the removed IDs of the "task_type" edge to the TaskType entity.
+func (m *ProjectMutation) RemovedTaskTypeIDs() (ids []int) {
+	for id := range m.removedtask_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TaskTypeIDs returns the "task_type" edge IDs in the mutation.
+func (m *ProjectMutation) TaskTypeIDs() (ids []int) {
+	for id := range m.task_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTaskType resets all changes to the "task_type" edge.
+func (m *ProjectMutation) ResetTaskType() {
+	m.task_type = nil
+	m.clearedtask_type = false
+	m.removedtask_type = nil
+}
+
 // Where appends a list predicates to the ProjectMutation builder.
 func (m *ProjectMutation) Where(ps ...predicate.Project) {
 	m.predicates = append(m.predicates, ps...)
@@ -2873,7 +3148,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.name != nil {
 		fields = append(fields, project.FieldName)
 	}
@@ -2894,6 +3169,9 @@ func (m *ProjectMutation) Fields() []string {
 	}
 	if m.qualification != nil {
 		fields = append(fields, project.FieldQualification)
+	}
+	if m.profile_image != nil {
+		fields = append(fields, project.FieldProfileImage)
 	}
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
@@ -2923,6 +3201,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.ApplyingEndDate()
 	case project.FieldQualification:
 		return m.Qualification()
+	case project.FieldProfileImage:
+		return m.ProfileImage()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
 	case project.FieldSponsorFee:
@@ -2950,6 +3230,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldApplyingEndDate(ctx)
 	case project.FieldQualification:
 		return m.OldQualification(ctx)
+	case project.FieldProfileImage:
+		return m.OldProfileImage(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case project.FieldSponsorFee:
@@ -3012,6 +3294,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetQualification(v)
 		return nil
+	case project.FieldProfileImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProfileImage(v)
+		return nil
 	case project.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3070,7 +3359,11 @@ func (m *ProjectMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProjectMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(project.FieldProfileImage) {
+		fields = append(fields, project.FieldProfileImage)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3083,6 +3376,11 @@ func (m *ProjectMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProjectMutation) ClearField(name string) error {
+	switch name {
+	case project.FieldProfileImage:
+		m.ClearProfileImage()
+		return nil
+	}
 	return fmt.Errorf("unknown Project nullable field %s", name)
 }
 
@@ -3111,6 +3409,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 	case project.FieldQualification:
 		m.ResetQualification()
 		return nil
+	case project.FieldProfileImage:
+		m.ResetProfileImage()
+		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
@@ -3123,7 +3424,7 @@ func (m *ProjectMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProjectMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.company != nil {
 		edges = append(edges, project.EdgeCompany)
 	}
@@ -3135,6 +3436,9 @@ func (m *ProjectMutation) AddedEdges() []string {
 	}
 	if m.project_log != nil {
 		edges = append(edges, project.EdgeProjectLog)
+	}
+	if m.task_type != nil {
+		edges = append(edges, project.EdgeTaskType)
 	}
 	return edges
 }
@@ -3163,18 +3467,27 @@ func (m *ProjectMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.task_type))
+		for id := range m.task_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProjectMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedproject_club != nil {
 		edges = append(edges, project.EdgeProjectClub)
 	}
 	if m.removedproject_log != nil {
 		edges = append(edges, project.EdgeProjectLog)
+	}
+	if m.removedtask_type != nil {
+		edges = append(edges, project.EdgeTaskType)
 	}
 	return edges
 }
@@ -3195,13 +3508,19 @@ func (m *ProjectMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case project.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.removedtask_type))
+		for id := range m.removedtask_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProjectMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedcompany {
 		edges = append(edges, project.EdgeCompany)
 	}
@@ -3213,6 +3532,9 @@ func (m *ProjectMutation) ClearedEdges() []string {
 	}
 	if m.clearedproject_log {
 		edges = append(edges, project.EdgeProjectLog)
+	}
+	if m.clearedtask_type {
+		edges = append(edges, project.EdgeTaskType)
 	}
 	return edges
 }
@@ -3229,6 +3551,8 @@ func (m *ProjectMutation) EdgeCleared(name string) bool {
 		return m.clearedproject_club
 	case project.EdgeProjectLog:
 		return m.clearedproject_log
+	case project.EdgeTaskType:
+		return m.clearedtask_type
 	}
 	return false
 }
@@ -3262,6 +3586,9 @@ func (m *ProjectMutation) ResetEdge(name string) error {
 		return nil
 	case project.EdgeProjectLog:
 		m.ResetProjectLog()
+		return nil
+	case project.EdgeTaskType:
+		m.ResetTaskType()
 		return nil
 	}
 	return fmt.Errorf("unknown Project edge %s", name)
@@ -5515,6 +5842,7 @@ type StudentMutation struct {
 	id                 *int
 	name               *string
 	university         *string
+	description        *string
 	profile_link       *string
 	profile_image      *string
 	clearedFields      map[string]struct{}
@@ -5526,6 +5854,9 @@ type StudentMutation struct {
 	club_member        map[int]struct{}
 	removedclub_member map[int]struct{}
 	clearedclub_member bool
+	task_type          map[int]struct{}
+	removedtask_type   map[int]struct{}
+	clearedtask_type   bool
 	done               bool
 	oldValue           func(context.Context) (*Student, error)
 	predicates         []predicate.Student
@@ -5686,6 +6017,55 @@ func (m *StudentMutation) OldUniversity(ctx context.Context) (v string, err erro
 // ResetUniversity resets all changes to the "university" field.
 func (m *StudentMutation) ResetUniversity() {
 	m.university = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *StudentMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *StudentMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Student entity.
+// If the Student object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StudentMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *StudentMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[student.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *StudentMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[student.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *StudentMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, student.FieldDescription)
 }
 
 // SetProfileLink sets the "profile_link" field.
@@ -5933,6 +6313,60 @@ func (m *StudentMutation) ResetClubMember() {
 	m.removedclub_member = nil
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by ids.
+func (m *StudentMutation) AddTaskTypeIDs(ids ...int) {
+	if m.task_type == nil {
+		m.task_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.task_type[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTaskType clears the "task_type" edge to the TaskType entity.
+func (m *StudentMutation) ClearTaskType() {
+	m.clearedtask_type = true
+}
+
+// TaskTypeCleared reports if the "task_type" edge to the TaskType entity was cleared.
+func (m *StudentMutation) TaskTypeCleared() bool {
+	return m.clearedtask_type
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to the TaskType entity by IDs.
+func (m *StudentMutation) RemoveTaskTypeIDs(ids ...int) {
+	if m.removedtask_type == nil {
+		m.removedtask_type = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.task_type, ids[i])
+		m.removedtask_type[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTaskType returns the removed IDs of the "task_type" edge to the TaskType entity.
+func (m *StudentMutation) RemovedTaskTypeIDs() (ids []int) {
+	for id := range m.removedtask_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TaskTypeIDs returns the "task_type" edge IDs in the mutation.
+func (m *StudentMutation) TaskTypeIDs() (ids []int) {
+	for id := range m.task_type {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTaskType resets all changes to the "task_type" edge.
+func (m *StudentMutation) ResetTaskType() {
+	m.task_type = nil
+	m.clearedtask_type = false
+	m.removedtask_type = nil
+}
+
 // Where appends a list predicates to the StudentMutation builder.
 func (m *StudentMutation) Where(ps ...predicate.Student) {
 	m.predicates = append(m.predicates, ps...)
@@ -5952,12 +6386,15 @@ func (m *StudentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StudentMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, student.FieldName)
 	}
 	if m.university != nil {
 		fields = append(fields, student.FieldUniversity)
+	}
+	if m.description != nil {
+		fields = append(fields, student.FieldDescription)
 	}
 	if m.profile_link != nil {
 		fields = append(fields, student.FieldProfileLink)
@@ -5977,6 +6414,8 @@ func (m *StudentMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case student.FieldUniversity:
 		return m.University()
+	case student.FieldDescription:
+		return m.Description()
 	case student.FieldProfileLink:
 		return m.ProfileLink()
 	case student.FieldProfileImage:
@@ -5994,6 +6433,8 @@ func (m *StudentMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldName(ctx)
 	case student.FieldUniversity:
 		return m.OldUniversity(ctx)
+	case student.FieldDescription:
+		return m.OldDescription(ctx)
 	case student.FieldProfileLink:
 		return m.OldProfileLink(ctx)
 	case student.FieldProfileImage:
@@ -6020,6 +6461,13 @@ func (m *StudentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUniversity(v)
+		return nil
+	case student.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
 		return nil
 	case student.FieldProfileLink:
 		v, ok := value.(string)
@@ -6065,6 +6513,9 @@ func (m *StudentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *StudentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(student.FieldDescription) {
+		fields = append(fields, student.FieldDescription)
+	}
 	if m.FieldCleared(student.FieldProfileLink) {
 		fields = append(fields, student.FieldProfileLink)
 	}
@@ -6085,6 +6536,9 @@ func (m *StudentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *StudentMutation) ClearField(name string) error {
 	switch name {
+	case student.FieldDescription:
+		m.ClearDescription()
+		return nil
 	case student.FieldProfileLink:
 		m.ClearProfileLink()
 		return nil
@@ -6105,6 +6559,9 @@ func (m *StudentMutation) ResetField(name string) error {
 	case student.FieldUniversity:
 		m.ResetUniversity()
 		return nil
+	case student.FieldDescription:
+		m.ResetDescription()
+		return nil
 	case student.FieldProfileLink:
 		m.ResetProfileLink()
 		return nil
@@ -6117,7 +6574,7 @@ func (m *StudentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *StudentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.user != nil {
 		edges = append(edges, student.EdgeUser)
 	}
@@ -6126,6 +6583,9 @@ func (m *StudentMutation) AddedEdges() []string {
 	}
 	if m.club_member != nil {
 		edges = append(edges, student.EdgeClubMember)
+	}
+	if m.task_type != nil {
+		edges = append(edges, student.EdgeTaskType)
 	}
 	return edges
 }
@@ -6150,18 +6610,27 @@ func (m *StudentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case student.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.task_type))
+		for id := range m.task_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *StudentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedclub != nil {
 		edges = append(edges, student.EdgeClub)
 	}
 	if m.removedclub_member != nil {
 		edges = append(edges, student.EdgeClubMember)
+	}
+	if m.removedtask_type != nil {
+		edges = append(edges, student.EdgeTaskType)
 	}
 	return edges
 }
@@ -6182,13 +6651,19 @@ func (m *StudentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case student.EdgeTaskType:
+		ids := make([]ent.Value, 0, len(m.removedtask_type))
+		for id := range m.removedtask_type {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *StudentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.cleareduser {
 		edges = append(edges, student.EdgeUser)
 	}
@@ -6197,6 +6672,9 @@ func (m *StudentMutation) ClearedEdges() []string {
 	}
 	if m.clearedclub_member {
 		edges = append(edges, student.EdgeClubMember)
+	}
+	if m.clearedtask_type {
+		edges = append(edges, student.EdgeTaskType)
 	}
 	return edges
 }
@@ -6211,6 +6689,8 @@ func (m *StudentMutation) EdgeCleared(name string) bool {
 		return m.clearedclub
 	case student.EdgeClubMember:
 		return m.clearedclub_member
+	case student.EdgeTaskType:
+		return m.clearedtask_type
 	}
 	return false
 }
@@ -6239,8 +6719,549 @@ func (m *StudentMutation) ResetEdge(name string) error {
 	case student.EdgeClubMember:
 		m.ResetClubMember()
 		return nil
+	case student.EdgeTaskType:
+		m.ResetTaskType()
+		return nil
 	}
 	return fmt.Errorf("unknown Student edge %s", name)
+}
+
+// TaskTypeMutation represents an operation that mutates the TaskType nodes in the graph.
+type TaskTypeMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *int
+	_type          *string
+	clearedFields  map[string]struct{}
+	student        *int
+	clearedstudent bool
+	club           *int
+	clearedclub    bool
+	company        *int
+	clearedcompany bool
+	project        *int
+	clearedproject bool
+	done           bool
+	oldValue       func(context.Context) (*TaskType, error)
+	predicates     []predicate.TaskType
+}
+
+var _ ent.Mutation = (*TaskTypeMutation)(nil)
+
+// tasktypeOption allows management of the mutation configuration using functional options.
+type tasktypeOption func(*TaskTypeMutation)
+
+// newTaskTypeMutation creates new mutation for the TaskType entity.
+func newTaskTypeMutation(c config, op Op, opts ...tasktypeOption) *TaskTypeMutation {
+	m := &TaskTypeMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTaskType,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTaskTypeID sets the ID field of the mutation.
+func withTaskTypeID(id int) tasktypeOption {
+	return func(m *TaskTypeMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TaskType
+		)
+		m.oldValue = func(ctx context.Context) (*TaskType, error) {
+			once.Do(func() {
+				if m.done {
+					err = fmt.Errorf("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TaskType.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTaskType sets the old TaskType of the mutation.
+func withTaskType(node *TaskType) tasktypeOption {
+	return func(m *TaskTypeMutation) {
+		m.oldValue = func(context.Context) (*TaskType, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TaskTypeMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TaskTypeMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, fmt.Errorf("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TaskTypeMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// SetType sets the "type" field.
+func (m *TaskTypeMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *TaskTypeMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the TaskType entity.
+// If the TaskType object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskTypeMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *TaskTypeMutation) ResetType() {
+	m._type = nil
+}
+
+// SetStudentID sets the "student" edge to the Student entity by id.
+func (m *TaskTypeMutation) SetStudentID(id int) {
+	m.student = &id
+}
+
+// ClearStudent clears the "student" edge to the Student entity.
+func (m *TaskTypeMutation) ClearStudent() {
+	m.clearedstudent = true
+}
+
+// StudentCleared reports if the "student" edge to the Student entity was cleared.
+func (m *TaskTypeMutation) StudentCleared() bool {
+	return m.clearedstudent
+}
+
+// StudentID returns the "student" edge ID in the mutation.
+func (m *TaskTypeMutation) StudentID() (id int, exists bool) {
+	if m.student != nil {
+		return *m.student, true
+	}
+	return
+}
+
+// StudentIDs returns the "student" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// StudentID instead. It exists only for internal usage by the builders.
+func (m *TaskTypeMutation) StudentIDs() (ids []int) {
+	if id := m.student; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetStudent resets all changes to the "student" edge.
+func (m *TaskTypeMutation) ResetStudent() {
+	m.student = nil
+	m.clearedstudent = false
+}
+
+// SetClubID sets the "club" edge to the Club entity by id.
+func (m *TaskTypeMutation) SetClubID(id int) {
+	m.club = &id
+}
+
+// ClearClub clears the "club" edge to the Club entity.
+func (m *TaskTypeMutation) ClearClub() {
+	m.clearedclub = true
+}
+
+// ClubCleared reports if the "club" edge to the Club entity was cleared.
+func (m *TaskTypeMutation) ClubCleared() bool {
+	return m.clearedclub
+}
+
+// ClubID returns the "club" edge ID in the mutation.
+func (m *TaskTypeMutation) ClubID() (id int, exists bool) {
+	if m.club != nil {
+		return *m.club, true
+	}
+	return
+}
+
+// ClubIDs returns the "club" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ClubID instead. It exists only for internal usage by the builders.
+func (m *TaskTypeMutation) ClubIDs() (ids []int) {
+	if id := m.club; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetClub resets all changes to the "club" edge.
+func (m *TaskTypeMutation) ResetClub() {
+	m.club = nil
+	m.clearedclub = false
+}
+
+// SetCompanyID sets the "company" edge to the Company entity by id.
+func (m *TaskTypeMutation) SetCompanyID(id int) {
+	m.company = &id
+}
+
+// ClearCompany clears the "company" edge to the Company entity.
+func (m *TaskTypeMutation) ClearCompany() {
+	m.clearedcompany = true
+}
+
+// CompanyCleared reports if the "company" edge to the Company entity was cleared.
+func (m *TaskTypeMutation) CompanyCleared() bool {
+	return m.clearedcompany
+}
+
+// CompanyID returns the "company" edge ID in the mutation.
+func (m *TaskTypeMutation) CompanyID() (id int, exists bool) {
+	if m.company != nil {
+		return *m.company, true
+	}
+	return
+}
+
+// CompanyIDs returns the "company" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// CompanyID instead. It exists only for internal usage by the builders.
+func (m *TaskTypeMutation) CompanyIDs() (ids []int) {
+	if id := m.company; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetCompany resets all changes to the "company" edge.
+func (m *TaskTypeMutation) ResetCompany() {
+	m.company = nil
+	m.clearedcompany = false
+}
+
+// SetProjectID sets the "project" edge to the Project entity by id.
+func (m *TaskTypeMutation) SetProjectID(id int) {
+	m.project = &id
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (m *TaskTypeMutation) ClearProject() {
+	m.clearedproject = true
+}
+
+// ProjectCleared reports if the "project" edge to the Project entity was cleared.
+func (m *TaskTypeMutation) ProjectCleared() bool {
+	return m.clearedproject
+}
+
+// ProjectID returns the "project" edge ID in the mutation.
+func (m *TaskTypeMutation) ProjectID() (id int, exists bool) {
+	if m.project != nil {
+		return *m.project, true
+	}
+	return
+}
+
+// ProjectIDs returns the "project" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ProjectID instead. It exists only for internal usage by the builders.
+func (m *TaskTypeMutation) ProjectIDs() (ids []int) {
+	if id := m.project; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetProject resets all changes to the "project" edge.
+func (m *TaskTypeMutation) ResetProject() {
+	m.project = nil
+	m.clearedproject = false
+}
+
+// Where appends a list predicates to the TaskTypeMutation builder.
+func (m *TaskTypeMutation) Where(ps ...predicate.TaskType) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *TaskTypeMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (TaskType).
+func (m *TaskTypeMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TaskTypeMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m._type != nil {
+		fields = append(fields, tasktype.FieldType)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TaskTypeMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case tasktype.FieldType:
+		return m.GetType()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TaskTypeMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case tasktype.FieldType:
+		return m.OldType(ctx)
+	}
+	return nil, fmt.Errorf("unknown TaskType field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskTypeMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case tasktype.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TaskType field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TaskTypeMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TaskTypeMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TaskTypeMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TaskType numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TaskTypeMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TaskTypeMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TaskTypeMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TaskType nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TaskTypeMutation) ResetField(name string) error {
+	switch name {
+	case tasktype.FieldType:
+		m.ResetType()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskType field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TaskTypeMutation) AddedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.student != nil {
+		edges = append(edges, tasktype.EdgeStudent)
+	}
+	if m.club != nil {
+		edges = append(edges, tasktype.EdgeClub)
+	}
+	if m.company != nil {
+		edges = append(edges, tasktype.EdgeCompany)
+	}
+	if m.project != nil {
+		edges = append(edges, tasktype.EdgeProject)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TaskTypeMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tasktype.EdgeStudent:
+		if id := m.student; id != nil {
+			return []ent.Value{*id}
+		}
+	case tasktype.EdgeClub:
+		if id := m.club; id != nil {
+			return []ent.Value{*id}
+		}
+	case tasktype.EdgeCompany:
+		if id := m.company; id != nil {
+			return []ent.Value{*id}
+		}
+	case tasktype.EdgeProject:
+		if id := m.project; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TaskTypeMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 4)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TaskTypeMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TaskTypeMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 4)
+	if m.clearedstudent {
+		edges = append(edges, tasktype.EdgeStudent)
+	}
+	if m.clearedclub {
+		edges = append(edges, tasktype.EdgeClub)
+	}
+	if m.clearedcompany {
+		edges = append(edges, tasktype.EdgeCompany)
+	}
+	if m.clearedproject {
+		edges = append(edges, tasktype.EdgeProject)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TaskTypeMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tasktype.EdgeStudent:
+		return m.clearedstudent
+	case tasktype.EdgeClub:
+		return m.clearedclub
+	case tasktype.EdgeCompany:
+		return m.clearedcompany
+	case tasktype.EdgeProject:
+		return m.clearedproject
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TaskTypeMutation) ClearEdge(name string) error {
+	switch name {
+	case tasktype.EdgeStudent:
+		m.ClearStudent()
+		return nil
+	case tasktype.EdgeClub:
+		m.ClearClub()
+		return nil
+	case tasktype.EdgeCompany:
+		m.ClearCompany()
+		return nil
+	case tasktype.EdgeProject:
+		m.ClearProject()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskType unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TaskTypeMutation) ResetEdge(name string) error {
+	switch name {
+	case tasktype.EdgeStudent:
+		m.ResetStudent()
+		return nil
+	case tasktype.EdgeClub:
+		m.ResetClub()
+		return nil
+	case tasktype.EdgeCompany:
+		m.ResetCompany()
+		return nil
+	case tasktype.EdgeProject:
+		m.ResetProject()
+		return nil
+	}
+	return fmt.Errorf("unknown TaskType edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

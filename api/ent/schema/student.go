@@ -17,6 +17,7 @@ func (Student) Fields() []ent.Field {
 		field.Int("id"),
 		field.String("name"),
 		field.String("university"),
+		field.String("description").Optional().Nillable(),
 		field.String("profile_link").Optional().Nillable(),
 		field.String("profile_image").Optional().Nillable(),
 	}
@@ -31,5 +32,6 @@ func (Student) Edges() []ent.Edge {
 			Unique(),
 		edge.To("club", Club.Type),
 		edge.To("club_member", ClubMember.Type),
+		edge.To("task_type", TaskType.Type),
 	}
 }

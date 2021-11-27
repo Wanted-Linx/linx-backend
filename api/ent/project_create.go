@@ -15,6 +15,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 )
 
 // ProjectCreate is the builder for creating a Project entity.
@@ -63,6 +64,20 @@ func (pc *ProjectCreate) SetApplyingEndDate(s string) *ProjectCreate {
 // SetQualification sets the "qualification" field.
 func (pc *ProjectCreate) SetQualification(s string) *ProjectCreate {
 	pc.mutation.SetQualification(s)
+	return pc
+}
+
+// SetProfileImage sets the "profile_image" field.
+func (pc *ProjectCreate) SetProfileImage(s string) *ProjectCreate {
+	pc.mutation.SetProfileImage(s)
+	return pc
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableProfileImage(s *string) *ProjectCreate {
+	if s != nil {
+		pc.SetProfileImage(*s)
+	}
 	return pc
 }
 
@@ -144,6 +159,21 @@ func (pc *ProjectCreate) AddProjectLog(p ...*ProjectLog) *ProjectCreate {
 		ids[i] = p[i].ID
 	}
 	return pc.AddProjectLogIDs(ids...)
+}
+
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (pc *ProjectCreate) AddTaskTypeIDs(ids ...int) *ProjectCreate {
+	pc.mutation.AddTaskTypeIDs(ids...)
+	return pc
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (pc *ProjectCreate) AddTaskType(t ...*TaskType) *ProjectCreate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pc.AddTaskTypeIDs(ids...)
 }
 
 // Mutation returns the ProjectMutation object of the builder.
@@ -338,6 +368,14 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		})
 		_node.Qualification = value
 	}
+	if value, ok := pc.mutation.ProfileImage(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+		_node.ProfileImage = &value
+	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -424,6 +462,25 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
 				},
 			},
 		}

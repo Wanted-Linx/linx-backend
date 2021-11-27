@@ -1,8 +1,13 @@
 package service
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -10,12 +15,15 @@ import (
 type projectService struct {
 	projectRepo     domain.ProjectRepository
 	projcetClubRepo domain.ProjectClubRepository
+	taskTypeRepo    domain.TaskTypeRepository
 }
 
-func NewProjectService(projectRepo domain.ProjectRepository, projcetClubRepo domain.ProjectClubRepository) domain.ProjectService {
+func NewProjectService(projectRepo domain.ProjectRepository,
+	projcetClubRepo domain.ProjectClubRepository, taskTypeRepo domain.TaskTypeRepository) domain.ProjectService {
 	return &projectService{
 		projectRepo:     projectRepo,
 		projcetClubRepo: projcetClubRepo,
+		taskTypeRepo:    taskTypeRepo,
 	}
 }
 
@@ -42,12 +50,27 @@ func (s *projectService) CreateProject(companyID int, reqProject *domain.Project
 
 	newProject, err := s.projectRepo.Save(project)
 	if err != nil {
-		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
-	// log.Println(newClub, clubLeaderID, newClub.Edges.Leader)
+	tasks := make([]*ent.TaskType, len(reqProject.TaskType))
+	for i := 0; i < len(reqProject.TaskType); i++ {
+		taskType := &ent.TaskType{
+			Type: reqProject.TaskType[i],
+			Edges: ent.TaskTypeEdges{
+				Project: &ent.Project{ID: newProject.ID},
+			},
+		}
+		task, err := s.projectRepo.SaveTasks(newProject, taskType)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
 
-	log.Info("프로젝트 생성 완료", newProject)
+		tasks[i] = task
+	}
+
+	newProject.Edges.TaskType = tasks
+	log.Info("프로젝트 생성 완료", newProject, tasks, newProject.Edges.TaskType)
 	return domain.ProjectToDto(newProject, nil), nil
 }
 
@@ -60,6 +83,13 @@ func (s *projectService) GetProjectByID(projectID int) (*domain.ProjectDto, erro
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
+	tasks, err := s.projectRepo.GetAllTasks(project.ID)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	project.Edges.TaskType = tasks
+	log.Println(project.Edges.TaskType, tasks)
 	log.Info("프로젝트 조회 완료", project, clubs)
 	return domain.ProjectToDto(project, clubs), nil
 }
@@ -73,6 +103,12 @@ func (s *projectService) GetAllProjects(limit, offset int) ([]*domain.ProjectDto
 	projectsDto := make([]*domain.ProjectDto, len(projects))
 
 	for idx, project := range projects {
+		tasks, err := s.projectRepo.GetAllTasks(project.ID)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+
+		project.Edges.TaskType = tasks
 		projectDto := domain.ProjectToDto(project, allClubs[idx])
 		projectsDto[idx] = projectDto
 	}
@@ -130,4 +166,52 @@ func (s *projectService) CreateProjectLogFeedback(companyID int, reqPlfeedback *
 
 	log.Info("피드백 작성 완료", projectLogFeedback)
 	return domain.ProjectLogFeedbackToDto(projectLogFeedback), nil
+}
+
+func (s *projectService) UploadProfileImage(projectID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	// Destination
+	dir := fmt.Sprintf("./projects/profile/%d/image", projectID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
+		if err != nil {
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
+		}
+	}
+
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(projectID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
+
+	project := &ent.Project{
+		ID:           projectID,
+		ProfileImage: &key,
+	}
+
+	pup, err := s.projectRepo.UploadProfileImage(project)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", pup)
+	return fileBytes, nil
+}
+
+func (s *projectService) GetProfileImage(projectID int) ([]byte, error) {
+	project, err := s.GetProjectByID(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if project.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
+	}
+
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./projects/profile/%d/image/%s", projectID, *project.ProfileImage))
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 조회 실패")
+	}
+
+	return fileBytes, nil
 }

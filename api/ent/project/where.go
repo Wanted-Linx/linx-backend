@@ -142,6 +142,13 @@ func Qualification(v string) predicate.Project {
 	})
 }
 
+// ProfileImage applies equality check predicate on the "profile_image" field. It's identical to ProfileImageEQ.
+func ProfileImage(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldProfileImage), v))
+	})
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
@@ -933,6 +940,131 @@ func QualificationContainsFold(v string) predicate.Project {
 	})
 }
 
+// ProfileImageEQ applies the EQ predicate on the "profile_image" field.
+func ProfileImageEQ(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageNEQ applies the NEQ predicate on the "profile_image" field.
+func ProfileImageNEQ(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageIn applies the In predicate on the "profile_image" field.
+func ProfileImageIn(vs ...string) predicate.Project {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Project(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldProfileImage), v...))
+	})
+}
+
+// ProfileImageNotIn applies the NotIn predicate on the "profile_image" field.
+func ProfileImageNotIn(vs ...string) predicate.Project {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Project(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldProfileImage), v...))
+	})
+}
+
+// ProfileImageGT applies the GT predicate on the "profile_image" field.
+func ProfileImageGT(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageGTE applies the GTE predicate on the "profile_image" field.
+func ProfileImageGTE(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageLT applies the LT predicate on the "profile_image" field.
+func ProfileImageLT(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageLTE applies the LTE predicate on the "profile_image" field.
+func ProfileImageLTE(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageContains applies the Contains predicate on the "profile_image" field.
+func ProfileImageContains(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageHasPrefix applies the HasPrefix predicate on the "profile_image" field.
+func ProfileImageHasPrefix(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageHasSuffix applies the HasSuffix predicate on the "profile_image" field.
+func ProfileImageHasSuffix(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageIsNil applies the IsNil predicate on the "profile_image" field.
+func ProfileImageIsNil() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProfileImage)))
+	})
+}
+
+// ProfileImageNotNil applies the NotNil predicate on the "profile_image" field.
+func ProfileImageNotNil() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProfileImage)))
+	})
+}
+
+// ProfileImageEqualFold applies the EqualFold predicate on the "profile_image" field.
+func ProfileImageEqualFold(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldProfileImage), v))
+	})
+}
+
+// ProfileImageContainsFold applies the ContainsFold predicate on the "profile_image" field.
+func ProfileImageContainsFold(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldProfileImage), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
@@ -1188,6 +1320,34 @@ func HasProjectLogWith(preds ...predicate.ProjectLog) predicate.Project {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ProjectLogInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, ProjectLogTable, ProjectLogColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTaskType applies the HasEdge predicate on the "task_type" edge.
+func HasTaskType() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TaskTypeTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TaskTypeTable, TaskTypeColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTaskTypeWith applies the HasEdge predicate on the "task_type" edge with a given conditions (other predicates).
+func HasTaskTypeWith(preds ...predicate.TaskType) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TaskTypeInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, TaskTypeTable, TaskTypeColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

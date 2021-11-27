@@ -20,6 +20,8 @@ type Student struct {
 	Name string `json:"name,omitempty"`
 	// University holds the value of the "university" field.
 	University string `json:"university,omitempty"`
+	// Description holds the value of the "description" field.
+	Description *string `json:"description,omitempty"`
 	// ProfileLink holds the value of the "profile_link" field.
 	ProfileLink *string `json:"profile_link,omitempty"`
 	// ProfileImage holds the value of the "profile_image" field.
@@ -38,9 +40,11 @@ type StudentEdges struct {
 	Club []*Club `json:"club,omitempty"`
 	// ClubMember holds the value of the club_member edge.
 	ClubMember []*ClubMember `json:"club_member,omitempty"`
+	// TaskType holds the value of the task_type edge.
+	TaskType []*TaskType `json:"task_type,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -75,6 +79,15 @@ func (e StudentEdges) ClubMemberOrErr() ([]*ClubMember, error) {
 	return nil, &NotLoadedError{edge: "club_member"}
 }
 
+// TaskTypeOrErr returns the TaskType value or an error if the edge
+// was not loaded in eager-loading.
+func (e StudentEdges) TaskTypeOrErr() ([]*TaskType, error) {
+	if e.loadedTypes[3] {
+		return e.TaskType, nil
+	}
+	return nil, &NotLoadedError{edge: "task_type"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Student) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -82,7 +95,7 @@ func (*Student) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case student.FieldID:
 			values[i] = new(sql.NullInt64)
-		case student.FieldName, student.FieldUniversity, student.FieldProfileLink, student.FieldProfileImage:
+		case student.FieldName, student.FieldUniversity, student.FieldDescription, student.FieldProfileLink, student.FieldProfileImage:
 			values[i] = new(sql.NullString)
 		case student.ForeignKeys[0]: // user_student
 			values[i] = new(sql.NullInt64)
@@ -118,6 +131,13 @@ func (s *Student) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field university", values[i])
 			} else if value.Valid {
 				s.University = value.String
+			}
+		case student.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				s.Description = new(string)
+				*s.Description = value.String
 			}
 		case student.FieldProfileLink:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -160,6 +180,11 @@ func (s *Student) QueryClubMember() *ClubMemberQuery {
 	return (&StudentClient{config: s.config}).QueryClubMember(s)
 }
 
+// QueryTaskType queries the "task_type" edge of the Student entity.
+func (s *Student) QueryTaskType() *TaskTypeQuery {
+	return (&StudentClient{config: s.config}).QueryTaskType(s)
+}
+
 // Update returns a builder for updating this Student.
 // Note that you need to call Student.Unwrap() before calling this method if this Student
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -187,6 +212,10 @@ func (s *Student) String() string {
 	builder.WriteString(s.Name)
 	builder.WriteString(", university=")
 	builder.WriteString(s.University)
+	if v := s.Description; v != nil {
+		builder.WriteString(", description=")
+		builder.WriteString(*v)
+	}
 	if v := s.ProfileLink; v != nil {
 		builder.WriteString(", profile_link=")
 		builder.WriteString(*v)

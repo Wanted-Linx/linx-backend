@@ -23,6 +23,7 @@ func (Project) Fields() []ent.Field {
 		field.String("applying_start_date"),
 		field.String("applying_end_date"),
 		field.String("qualification"),
+		field.String("profile_image").Optional().Nillable(),
 		field.Time("created_at").Default(func() time.Time {
 			return time.Now()
 		}),
@@ -43,5 +44,6 @@ func (Project) Edges() []ent.Edge {
 		// Club Required 뺌(프로젝트 최초 생성할 때는 없으니까...)
 		edge.To("project_club", ProjectClub.Type),
 		edge.To("project_log", ProjectLog.Type),
+		edge.To("task_type", TaskType.Type),
 	}
 }

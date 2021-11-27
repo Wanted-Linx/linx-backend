@@ -17,6 +17,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectclub"
 	"github.com/Wanted-Linx/linx-backend/api/ent/projectlog"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 )
 
 // ProjectUpdate is the builder for updating Project entities.
@@ -71,6 +72,26 @@ func (pu *ProjectUpdate) SetApplyingEndDate(s string) *ProjectUpdate {
 // SetQualification sets the "qualification" field.
 func (pu *ProjectUpdate) SetQualification(s string) *ProjectUpdate {
 	pu.mutation.SetQualification(s)
+	return pu
+}
+
+// SetProfileImage sets the "profile_image" field.
+func (pu *ProjectUpdate) SetProfileImage(s string) *ProjectUpdate {
+	pu.mutation.SetProfileImage(s)
+	return pu
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableProfileImage(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetProfileImage(*s)
+	}
+	return pu
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (pu *ProjectUpdate) ClearProfileImage() *ProjectUpdate {
+	pu.mutation.ClearProfileImage()
 	return pu
 }
 
@@ -161,6 +182,21 @@ func (pu *ProjectUpdate) AddProjectLog(p ...*ProjectLog) *ProjectUpdate {
 	return pu.AddProjectLogIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (pu *ProjectUpdate) AddTaskTypeIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.AddTaskTypeIDs(ids...)
+	return pu
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (pu *ProjectUpdate) AddTaskType(t ...*TaskType) *ProjectUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pu.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (pu *ProjectUpdate) Mutation() *ProjectMutation {
 	return pu.mutation
@@ -218,6 +254,27 @@ func (pu *ProjectUpdate) RemoveProjectLog(p ...*ProjectLog) *ProjectUpdate {
 		ids[i] = p[i].ID
 	}
 	return pu.RemoveProjectLogIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (pu *ProjectUpdate) ClearTaskType() *ProjectUpdate {
+	pu.mutation.ClearTaskType()
+	return pu
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (pu *ProjectUpdate) RemoveTaskTypeIDs(ids ...int) *ProjectUpdate {
+	pu.mutation.RemoveTaskTypeIDs(ids...)
+	return pu
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (pu *ProjectUpdate) RemoveTaskType(t ...*TaskType) *ProjectUpdate {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return pu.RemoveTaskTypeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -353,6 +410,19 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: project.FieldQualification,
+		})
+	}
+	if value, ok := pu.mutation.ProfileImage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+	}
+	if pu.mutation.ProfileImageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldProfileImage,
 		})
 	}
 	if value, ok := pu.mutation.CreatedAt(); ok {
@@ -554,6 +624,60 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if pu.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !pu.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{project.Label}
@@ -612,6 +736,26 @@ func (puo *ProjectUpdateOne) SetApplyingEndDate(s string) *ProjectUpdateOne {
 // SetQualification sets the "qualification" field.
 func (puo *ProjectUpdateOne) SetQualification(s string) *ProjectUpdateOne {
 	puo.mutation.SetQualification(s)
+	return puo
+}
+
+// SetProfileImage sets the "profile_image" field.
+func (puo *ProjectUpdateOne) SetProfileImage(s string) *ProjectUpdateOne {
+	puo.mutation.SetProfileImage(s)
+	return puo
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableProfileImage(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetProfileImage(*s)
+	}
+	return puo
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (puo *ProjectUpdateOne) ClearProfileImage() *ProjectUpdateOne {
+	puo.mutation.ClearProfileImage()
 	return puo
 }
 
@@ -702,6 +846,21 @@ func (puo *ProjectUpdateOne) AddProjectLog(p ...*ProjectLog) *ProjectUpdateOne {
 	return puo.AddProjectLogIDs(ids...)
 }
 
+// AddTaskTypeIDs adds the "task_type" edge to the TaskType entity by IDs.
+func (puo *ProjectUpdateOne) AddTaskTypeIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.AddTaskTypeIDs(ids...)
+	return puo
+}
+
+// AddTaskType adds the "task_type" edges to the TaskType entity.
+func (puo *ProjectUpdateOne) AddTaskType(t ...*TaskType) *ProjectUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return puo.AddTaskTypeIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (puo *ProjectUpdateOne) Mutation() *ProjectMutation {
 	return puo.mutation
@@ -759,6 +918,27 @@ func (puo *ProjectUpdateOne) RemoveProjectLog(p ...*ProjectLog) *ProjectUpdateOn
 		ids[i] = p[i].ID
 	}
 	return puo.RemoveProjectLogIDs(ids...)
+}
+
+// ClearTaskType clears all "task_type" edges to the TaskType entity.
+func (puo *ProjectUpdateOne) ClearTaskType() *ProjectUpdateOne {
+	puo.mutation.ClearTaskType()
+	return puo
+}
+
+// RemoveTaskTypeIDs removes the "task_type" edge to TaskType entities by IDs.
+func (puo *ProjectUpdateOne) RemoveTaskTypeIDs(ids ...int) *ProjectUpdateOne {
+	puo.mutation.RemoveTaskTypeIDs(ids...)
+	return puo
+}
+
+// RemoveTaskType removes "task_type" edges to TaskType entities.
+func (puo *ProjectUpdateOne) RemoveTaskType(t ...*TaskType) *ProjectUpdateOne {
+	ids := make([]int, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return puo.RemoveTaskTypeIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -918,6 +1098,19 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: project.FieldQualification,
+		})
+	}
+	if value, ok := puo.mutation.ProfileImage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+	}
+	if puo.mutation.ProfileImageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldProfileImage,
 		})
 	}
 	if value, ok := puo.mutation.CreatedAt(); ok {
@@ -1111,6 +1304,60 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: projectlog.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedTaskTypeIDs(); len(nodes) > 0 && !puo.mutation.TaskTypeCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.TaskTypeIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.TaskTypeTable,
+			Columns: []string{project.TaskTypeColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeInt,
+					Column: tasktype.FieldID,
 				},
 			},
 		}

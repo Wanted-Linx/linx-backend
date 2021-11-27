@@ -32,6 +32,8 @@ type Project struct {
 	ApplyingEndDate string `json:"applying_end_date,omitempty"`
 	// Qualification holds the value of the "qualification" field.
 	Qualification string `json:"qualification,omitempty"`
+	// ProfileImage holds the value of the "profile_image" field.
+	ProfileImage *string `json:"profile_image,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// SponsorFee holds the value of the "sponsor_fee" field.
@@ -53,9 +55,11 @@ type ProjectEdges struct {
 	ProjectClub []*ProjectClub `json:"project_club,omitempty"`
 	// ProjectLog holds the value of the project_log edge.
 	ProjectLog []*ProjectLog `json:"project_log,omitempty"`
+	// TaskType holds the value of the task_type edge.
+	TaskType []*TaskType `json:"task_type,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // CompanyOrErr returns the Company value or an error if the edge
@@ -104,6 +108,15 @@ func (e ProjectEdges) ProjectLogOrErr() ([]*ProjectLog, error) {
 	return nil, &NotLoadedError{edge: "project_log"}
 }
 
+// TaskTypeOrErr returns the TaskType value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) TaskTypeOrErr() ([]*TaskType, error) {
+	if e.loadedTypes[4] {
+		return e.TaskType, nil
+	}
+	return nil, &NotLoadedError{edge: "task_type"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Project) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
@@ -111,7 +124,7 @@ func (*Project) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case project.FieldID, project.FieldSponsorFee:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldContent, project.FieldStartDate, project.FieldEndDate, project.FieldApplyingStartDate, project.FieldApplyingEndDate, project.FieldQualification:
+		case project.FieldName, project.FieldContent, project.FieldStartDate, project.FieldEndDate, project.FieldApplyingStartDate, project.FieldApplyingEndDate, project.FieldQualification, project.FieldProfileImage:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -182,6 +195,13 @@ func (pr *Project) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				pr.Qualification = value.String
 			}
+		case project.FieldProfileImage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field profile_image", values[i])
+			} else if value.Valid {
+				pr.ProfileImage = new(string)
+				*pr.ProfileImage = value.String
+			}
 		case project.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -233,6 +253,11 @@ func (pr *Project) QueryProjectLog() *ProjectLogQuery {
 	return (&ProjectClient{config: pr.config}).QueryProjectLog(pr)
 }
 
+// QueryTaskType queries the "task_type" edge of the Project entity.
+func (pr *Project) QueryTaskType() *TaskTypeQuery {
+	return (&ProjectClient{config: pr.config}).QueryTaskType(pr)
+}
+
 // Update returns a builder for updating this Project.
 // Note that you need to call Project.Unwrap() before calling this method if this Project
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -270,6 +295,10 @@ func (pr *Project) String() string {
 	builder.WriteString(pr.ApplyingEndDate)
 	builder.WriteString(", qualification=")
 	builder.WriteString(pr.Qualification)
+	if v := pr.ProfileImage; v != nil {
+		builder.WriteString(", profile_image=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", sponsor_fee=")
