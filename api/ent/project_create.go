@@ -66,6 +66,20 @@ func (pc *ProjectCreate) SetQualification(s string) *ProjectCreate {
 	return pc
 }
 
+// SetProfileImage sets the "profile_image" field.
+func (pc *ProjectCreate) SetProfileImage(s string) *ProjectCreate {
+	pc.mutation.SetProfileImage(s)
+	return pc
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableProfileImage(s *string) *ProjectCreate {
+	if s != nil {
+		pc.SetProfileImage(*s)
+	}
+	return pc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (pc *ProjectCreate) SetCreatedAt(t time.Time) *ProjectCreate {
 	pc.mutation.SetCreatedAt(t)
@@ -337,6 +351,14 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Column: project.FieldQualification,
 		})
 		_node.Qualification = value
+	}
+	if value, ok := pc.mutation.ProfileImage(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+		_node.ProfileImage = &value
 	}
 	if value, ok := pc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

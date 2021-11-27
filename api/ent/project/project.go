@@ -25,6 +25,8 @@ const (
 	FieldApplyingEndDate = "applying_end_date"
 	// FieldQualification holds the string denoting the qualification field in the database.
 	FieldQualification = "qualification"
+	// FieldProfileImage holds the string denoting the profile_image field in the database.
+	FieldProfileImage = "profile_image"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldSponsorFee holds the string denoting the sponsor_fee field in the database.
@@ -79,6 +81,7 @@ var Columns = []string{
 	FieldApplyingStartDate,
 	FieldApplyingEndDate,
 	FieldQualification,
+	FieldProfileImage,
 	FieldCreatedAt,
 	FieldSponsorFee,
 }
