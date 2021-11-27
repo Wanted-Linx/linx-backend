@@ -9,6 +9,7 @@ services:
       - 9090:9090
     environment:
       LINX_CONFIG: $LINX_CONFIG
+    restart: always
     working_dir: /linx/api
     command: bash -c "./wait-for-it.sh postgres:5432 -t 15 -- ./linx-api"
 
