@@ -81,6 +81,7 @@ func (s *studentService) GetStudentByID(studentID int) (*domain.StudentDto, erro
 func (s *studentService) UpdateProfile(studentID int, reqStudent *domain.StudentProfileUpdate) (*domain.StudentDto, error) {
 	student := &ent.Student{
 		ID:          studentID,
+		Description: &reqStudent.Description,
 		ProfileLink: &reqStudent.ProfileLink,
 	}
 

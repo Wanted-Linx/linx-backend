@@ -5842,6 +5842,7 @@ type StudentMutation struct {
 	id                 *int
 	name               *string
 	university         *string
+	description        *string
 	profile_link       *string
 	profile_image      *string
 	clearedFields      map[string]struct{}
@@ -6016,6 +6017,55 @@ func (m *StudentMutation) OldUniversity(ctx context.Context) (v string, err erro
 // ResetUniversity resets all changes to the "university" field.
 func (m *StudentMutation) ResetUniversity() {
 	m.university = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *StudentMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *StudentMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Student entity.
+// If the Student object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *StudentMutation) OldDescription(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *StudentMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[student.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *StudentMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[student.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *StudentMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, student.FieldDescription)
 }
 
 // SetProfileLink sets the "profile_link" field.
@@ -6336,12 +6386,15 @@ func (m *StudentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *StudentMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, student.FieldName)
 	}
 	if m.university != nil {
 		fields = append(fields, student.FieldUniversity)
+	}
+	if m.description != nil {
+		fields = append(fields, student.FieldDescription)
 	}
 	if m.profile_link != nil {
 		fields = append(fields, student.FieldProfileLink)
@@ -6361,6 +6414,8 @@ func (m *StudentMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case student.FieldUniversity:
 		return m.University()
+	case student.FieldDescription:
+		return m.Description()
 	case student.FieldProfileLink:
 		return m.ProfileLink()
 	case student.FieldProfileImage:
@@ -6378,6 +6433,8 @@ func (m *StudentMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldName(ctx)
 	case student.FieldUniversity:
 		return m.OldUniversity(ctx)
+	case student.FieldDescription:
+		return m.OldDescription(ctx)
 	case student.FieldProfileLink:
 		return m.OldProfileLink(ctx)
 	case student.FieldProfileImage:
@@ -6404,6 +6461,13 @@ func (m *StudentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUniversity(v)
+		return nil
+	case student.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
 		return nil
 	case student.FieldProfileLink:
 		v, ok := value.(string)
@@ -6449,6 +6513,9 @@ func (m *StudentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *StudentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(student.FieldDescription) {
+		fields = append(fields, student.FieldDescription)
+	}
 	if m.FieldCleared(student.FieldProfileLink) {
 		fields = append(fields, student.FieldProfileLink)
 	}
@@ -6469,6 +6536,9 @@ func (m *StudentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *StudentMutation) ClearField(name string) error {
 	switch name {
+	case student.FieldDescription:
+		m.ClearDescription()
+		return nil
 	case student.FieldProfileLink:
 		m.ClearProfileLink()
 		return nil
@@ -6488,6 +6558,9 @@ func (m *StudentMutation) ResetField(name string) error {
 		return nil
 	case student.FieldUniversity:
 		m.ResetUniversity()
+		return nil
+	case student.FieldDescription:
+		m.ResetDescription()
 		return nil
 	case student.FieldProfileLink:
 		m.ResetProfileLink()

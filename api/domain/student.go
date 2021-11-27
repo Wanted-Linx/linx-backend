@@ -10,6 +10,7 @@ type StudentDto struct {
 	ID             int           `json:"id"`
 	Name           string        `json:"name"`
 	University     string        `json:"university"`
+	Description    *string       `json:"description"`
 	InterestedType []string      `json:"interested_type"`
 	ProfileLink    *string       `json:"profile_link"`
 	ProfileImage   *string       `json:"profile_image"`
@@ -22,6 +23,7 @@ type StudentDto struct {
 
 // Multipart form-data로 이미지랑 같이 받을까...?
 type StudentProfileUpdate struct {
+	Description    string   `json:"description"`
 	InterestedType []string `json:"interested_type"`
 	ProfileLink    string   `json:"profile_link"`
 }
@@ -62,6 +64,7 @@ func StudentToDto(src *ent.Student, srcJoinedClubs []*ent.Club) *StudentDto {
 		ID:           src.ID,
 		Name:         src.Name,
 		University:   src.University,
+		Description:  src.Description,
 		ProfileLink:  src.ProfileLink,
 		ProfileImage: src.ProfileImage,
 		Clubs:        joinedclubsDto,

@@ -50,7 +50,8 @@ func (r *studentRepository) GetByID(studentID int, reqStudent *ent.Student) (*en
 		return nil, err
 	}
 
-	clubs, err := s.QueryClubMember().QueryClub().WithLeader().All(context.Background())
+	clubs, err := s.QueryClubMember().QueryClub().
+		WithLeader().All(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -71,7 +72,9 @@ func (r *studentRepository) UploadProfileImage(reqStudent *ent.Student) (*ent.St
 
 func (r *studentRepository) UpdateProfile(reqStudent *ent.Student) (*ent.Student, error) {
 	s, err := r.db.Student.UpdateOneID(reqStudent.ID).
-		SetNillableProfileLink(reqStudent.ProfileLink).Save(context.Background())
+		SetNillableProfileLink(reqStudent.ProfileLink).
+		SetNillableDescription(reqStudent.Description).
+		Save(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -81,7 +84,8 @@ func (r *studentRepository) UpdateProfile(reqStudent *ent.Student) (*ent.Student
 		return nil, errors.WithStack(err)
 	}
 
-	clubs, err := s.QueryClubMember().QueryClub().WithLeader().All(context.Background())
+	clubs, err := s.QueryClubMember().QueryClub().
+		WithLeader().All(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

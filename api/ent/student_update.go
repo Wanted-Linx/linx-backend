@@ -43,6 +43,26 @@ func (su *StudentUpdate) SetUniversity(s string) *StudentUpdate {
 	return su
 }
 
+// SetDescription sets the "description" field.
+func (su *StudentUpdate) SetDescription(s string) *StudentUpdate {
+	su.mutation.SetDescription(s)
+	return su
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (su *StudentUpdate) SetNillableDescription(s *string) *StudentUpdate {
+	if s != nil {
+		su.SetDescription(*s)
+	}
+	return su
+}
+
+// ClearDescription clears the value of the "description" field.
+func (su *StudentUpdate) ClearDescription() *StudentUpdate {
+	su.mutation.ClearDescription()
+	return su
+}
+
 // SetProfileLink sets the "profile_link" field.
 func (su *StudentUpdate) SetProfileLink(s string) *StudentUpdate {
 	su.mutation.SetProfileLink(s)
@@ -313,6 +333,19 @@ func (su *StudentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: student.FieldUniversity,
 		})
 	}
+	if value, ok := su.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldDescription,
+		})
+	}
+	if su.mutation.DescriptionCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: student.FieldDescription,
+		})
+	}
 	if value, ok := su.mutation.ProfileLink(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -564,6 +597,26 @@ func (suo *StudentUpdateOne) SetName(s string) *StudentUpdateOne {
 // SetUniversity sets the "university" field.
 func (suo *StudentUpdateOne) SetUniversity(s string) *StudentUpdateOne {
 	suo.mutation.SetUniversity(s)
+	return suo
+}
+
+// SetDescription sets the "description" field.
+func (suo *StudentUpdateOne) SetDescription(s string) *StudentUpdateOne {
+	suo.mutation.SetDescription(s)
+	return suo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (suo *StudentUpdateOne) SetNillableDescription(s *string) *StudentUpdateOne {
+	if s != nil {
+		suo.SetDescription(*s)
+	}
+	return suo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (suo *StudentUpdateOne) ClearDescription() *StudentUpdateOne {
+	suo.mutation.ClearDescription()
 	return suo
 }
 
@@ -859,6 +912,19 @@ func (suo *StudentUpdateOne) sqlSave(ctx context.Context) (_node *Student, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: student.FieldUniversity,
+		})
+	}
+	if value, ok := suo.mutation.Description(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldDescription,
+		})
+	}
+	if suo.mutation.DescriptionCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: student.FieldDescription,
 		})
 	}
 	if value, ok := suo.mutation.ProfileLink(); ok {

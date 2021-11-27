@@ -35,6 +35,20 @@ func (sc *StudentCreate) SetUniversity(s string) *StudentCreate {
 	return sc
 }
 
+// SetDescription sets the "description" field.
+func (sc *StudentCreate) SetDescription(s string) *StudentCreate {
+	sc.mutation.SetDescription(s)
+	return sc
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (sc *StudentCreate) SetNillableDescription(s *string) *StudentCreate {
+	if s != nil {
+		sc.SetDescription(*s)
+	}
+	return sc
+}
+
 // SetProfileLink sets the "profile_link" field.
 func (sc *StudentCreate) SetProfileLink(s string) *StudentCreate {
 	sc.mutation.SetProfileLink(s)
@@ -252,6 +266,14 @@ func (sc *StudentCreate) createSpec() (*Student, *sqlgraph.CreateSpec) {
 			Column: student.FieldUniversity,
 		})
 		_node.University = value
+	}
+	if value, ok := sc.mutation.Description(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: student.FieldDescription,
+		})
+		_node.Description = &value
 	}
 	if value, ok := sc.mutation.ProfileLink(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
