@@ -7,6 +7,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 	"github.com/Wanted-Linx/linx-backend/api/ent/club"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/pkg/errors"
 )
 
@@ -42,7 +43,9 @@ func (r *clubRepository) Save(reqClub *ent.Club) (*ent.Club, error) {
 
 func (r *clubRepository) GetByID(clubID int) (*ent.Club, []*ent.Student, error) {
 	c, err := r.db.Club.Query().
-		Where(club.ID(clubID)).
+		Where(club.ID(clubID)).WithTaskType(func(query *ent.TaskTypeQuery) {
+		query.Select().All(context.Background())
+	}).
 		WithLeader().
 		Only(context.Background())
 	if err != nil {
@@ -74,7 +77,7 @@ func (r *clubRepository) GetByID(clubID int) (*ent.Club, []*ent.Student, error) 
 }
 
 func (r *clubRepository) GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Student, error) {
-	c, err := r.db.Club.Query().
+	c, err := r.db.Club.Query().WithTaskType().
 		Offset(offset).Limit(limit).
 		WithLeader().
 		All(context.Background())
@@ -111,4 +114,26 @@ func (r *clubRepository) UploadProfileImage(reqClub *ent.Club) (*ent.Club, error
 	}
 
 	return c, nil
+}
+
+func (r *clubRepository) GetAllTasks(clubID int) ([]*ent.TaskType, error) {
+	tasks, err := r.db.TaskType.Query().
+		Where(tasktype.HasClubWith(club.ID(clubID))).All(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return tasks, nil
+}
+
+func (r *clubRepository) SaveTasks(c *ent.Club, taskType *ent.TaskType) (*ent.TaskType, error) {
+	task, err := r.db.TaskType.Create().
+		SetType(taskType.Type).
+		SetClub(c).
+		Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return task, nil
 }

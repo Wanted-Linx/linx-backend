@@ -6,6 +6,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 	"github.com/Wanted-Linx/linx-backend/api/ent/company"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/pkg/errors"
 )
 
@@ -88,4 +89,26 @@ func (r *companyRepository) GetAll(limit, offset int) ([]*ent.Company, error) {
 	}
 
 	return c, nil
+}
+
+func (r *companyRepository) GetAllTasks(companyID int) ([]*ent.TaskType, error) {
+	tasks, err := r.db.TaskType.Query().
+		Where(tasktype.HasCompanyWith(company.ID(companyID))).All(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return tasks, nil
+}
+
+func (r *companyRepository) SaveTasks(c *ent.Company, taskType *ent.TaskType) (*ent.TaskType, error) {
+	task, err := r.db.TaskType.Create().
+		SetType(taskType.Type).
+		SetCompany(c).
+		Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return task, nil
 }

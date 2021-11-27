@@ -15,12 +15,16 @@ import (
 type clubService struct {
 	clubRepo       domain.ClubRepository
 	clubMemberRepo domain.ClubMemberRepository
+	taskTypeRepo   domain.TaskTypeRepository
 }
 
-func NewClubService(clubRepo domain.ClubRepository, clubMemberRepo domain.ClubMemberRepository) domain.ClubService {
+func NewClubService(clubRepo domain.ClubRepository,
+	clubMemberRepo domain.ClubMemberRepository,
+	taskTypeRepo domain.TaskTypeRepository) domain.ClubService {
 	return &clubService{
 		clubRepo:       clubRepo,
 		clubMemberRepo: clubMemberRepo,
+		taskTypeRepo:   taskTypeRepo,
 	}
 }
 
@@ -47,8 +51,24 @@ func (s *clubService) CreateClub(clubLeaderID int, reqClub *domain.ClubCreateReq
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
-	// club.QueryProjectClub().QueryProjects().All
-	log.Info("동아리 생성 완료", newClub)
+	tasks := make([]*ent.TaskType, len(reqClub.InterestedType))
+	for i := 0; i < len(reqClub.InterestedType); i++ {
+		interestedType := &ent.TaskType{
+			Type: reqClub.InterestedType[i],
+			Edges: ent.TaskTypeEdges{
+				Club: &ent.Club{ID: newClub.ID},
+			},
+		}
+		task, err := s.clubRepo.SaveTasks(newClub, interestedType)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+
+		tasks[i] = task
+	}
+
+	newClub.Edges.TaskType = tasks
+	log.Info("동아리 생성 완료", newClub, newClub.Edges.TaskType)
 	return domain.ClubToDto(newClub, nil), nil
 }
 
@@ -60,6 +80,12 @@ func (s *clubService) GetClubByID(clubID int) (*domain.ClubDto, error) {
 		}
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
+	tasks, err := s.clubRepo.GetAllTasks(club.ID)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	club.Edges.TaskType = tasks
 
 	log.Info("동아리 조회 완료", club, members)
 	return domain.ClubToDto(club, members), nil
@@ -74,6 +100,11 @@ func (s *clubService) GetAllClubs(limit, offset int) ([]*domain.ClubDto, error) 
 	clubsDto := make([]*domain.ClubDto, len(clubs))
 
 	for idx, club := range clubs {
+		tasks, err := s.clubRepo.GetAllTasks(club.ID)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+		club.Edges.TaskType = tasks
 		clubDto := domain.ClubToDto(club, allMembers[idx])
 		clubsDto[idx] = clubDto
 	}

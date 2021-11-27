@@ -15,12 +15,16 @@ import (
 type studentService struct {
 	studentRepo    domain.StudentRepository
 	clubMemberRepo domain.ClubMemberRepository
+	taskTypeRepo   domain.TaskTypeRepository
 }
 
-func NewStudentService(studentRepo domain.StudentRepository, clubMeberRepo domain.ClubMemberRepository) domain.StudentService {
+func NewStudentService(studentRepo domain.StudentRepository,
+	clubMeberRepo domain.ClubMemberRepository,
+	taskTypeRepo domain.TaskTypeRepository) domain.StudentService {
 	return &studentService{
 		studentRepo:    studentRepo,
 		clubMemberRepo: clubMeberRepo,
+		taskTypeRepo:   taskTypeRepo,
 	}
 }
 
@@ -39,6 +43,14 @@ func (s *studentService) Save(userID int, reqSignup *domain.SignUpRequest) (*dom
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
+	// 가입할 때는 따로 존재하지 않는다...
+	// tasks, err := s.studentRepo.GetAllTasks(newStudent.ID)
+	// if err != nil {
+	// 	return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	// }
+
+	// newStudent.Edges.TaskType = tasks
+
 	log.Info("회원가입(학생) 완료", newStudent)
 	return domain.StudentToDto(newStudent, nil), nil
 }
@@ -56,6 +68,12 @@ func (s *studentService) GetStudentByID(studentID int) (*domain.StudentDto, erro
 		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
 	}
 
+	tasks, err := s.studentRepo.GetAllTasks(getStudent.ID)
+	if err != nil {
+		return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	getStudent.Edges.TaskType = tasks
 	log.Info("해당하는 학생 조회 완료", getStudent)
 	return domain.StudentToDto(getStudent, nil), nil
 }
@@ -71,6 +89,20 @@ func (s *studentService) UpdateProfile(studentID int, reqStudent *domain.Student
 		return nil, errors.WithMessage(err, "알 수 없는 에러가 발생했습니다.")
 	}
 
+	tasks := make([]*ent.TaskType, len(reqStudent.InterestedType))
+	for i := 0; i < len(reqStudent.InterestedType); i++ {
+		interestedType := &ent.TaskType{
+			Type: reqStudent.InterestedType[i],
+		}
+
+		task, err := s.studentRepo.SaveTasks(updatedStudent, interestedType)
+		if err != nil {
+			return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
+		}
+		tasks[i] = task
+	}
+
+	updatedStudent.Edges.TaskType = tasks
 	// TODO: interested_type 추가하고 eager loading...
 	// InterestedType의 요청이 있다면
 	// if len(reqStudent.InterestedType) > 0 {

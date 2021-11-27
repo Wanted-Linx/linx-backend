@@ -8,6 +8,7 @@ import (
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 	"github.com/Wanted-Linx/linx-backend/api/ent/project"
+	"github.com/Wanted-Linx/linx-backend/api/ent/tasktype"
 	"github.com/pkg/errors"
 )
 
@@ -45,12 +46,17 @@ func (r *projectRepository) Save(reqProject *ent.Project) (*ent.Project, error) 
 
 func (r *projectRepository) GetByID(projectID int) (*ent.Project, []*ent.Club, error) {
 	p, err := r.db.Project.Query().
-		Where(project.ID(projectID)).WithCompany().
+		Where(project.ID(projectID)).WithCompany(func(query *ent.CompanyQuery) {
+		query.WithTaskType(func(query *ent.TaskTypeQuery) {
+			query.Select().All(context.Background())
+		})
+	}).
 		Only(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 
+	log.Println(p.Edges.Company.Edges.TaskType)
 	clubs, err := p.QueryProjectClub().QueryClub().
 		WithLeader().All(context.Background())
 	if err != nil {
@@ -70,7 +76,11 @@ func (r *projectRepository) GetByID(projectID int) (*ent.Project, []*ent.Club, e
 
 func (r *projectRepository) GetAll(limit, offset int) ([]*ent.Project, [][]*ent.Club, error) {
 	p, err := r.db.Project.Query().
-		Offset(offset).Limit(limit).WithCompany().
+		Offset(offset).Limit(limit).WithCompany(func(query *ent.CompanyQuery) {
+		query.WithTaskType(func(query *ent.TaskTypeQuery) {
+			query.Select().All(context.Background())
+		})
+	}).
 		All(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
@@ -147,4 +157,26 @@ func (r *projectRepository) UploadProfileImage(reqProject *ent.Project) (*ent.Pr
 	}
 
 	return p, nil
+}
+
+func (r *projectRepository) GetAllTasks(projectID int) ([]*ent.TaskType, error) {
+	tasks, err := r.db.TaskType.Query().
+		Where(tasktype.HasProjectWith(project.ID(projectID))).All(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return tasks, nil
+}
+
+func (r *projectRepository) SaveTasks(p *ent.Project, taskType *ent.TaskType) (*ent.TaskType, error) {
+	task, err := r.db.TaskType.Create().
+		SetType(taskType.Type).
+		SetProject(p).
+		Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return task, nil
 }

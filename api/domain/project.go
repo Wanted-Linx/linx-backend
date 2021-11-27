@@ -95,10 +95,18 @@ type ProjectRepository interface {
 	GetByID(projectID int) (*ent.Project, []*ent.Club, error)
 	GetAll(limit, offset int) ([]*ent.Project, [][]*ent.Club, error)
 	UploadProfileImage(reqProject *ent.Project) (*ent.Project, error)
+	GetAllTasks(projectID int) ([]*ent.TaskType, error)
+	SaveTasks(p *ent.Project, taskType *ent.TaskType) (*ent.TaskType, error)
 }
 
 func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
 	log.Println(src.Edges.ProjectLog)
+	log.Println(src.Edges.TaskType)
+	taskTypes := make([]string, len(src.Edges.TaskType))
+	for i := 0; i < len(src.Edges.TaskType); i++ {
+		taskTypes[i] = src.Edges.TaskType[i].Type
+	}
+
 	return &ProjectDto{
 		ID:                src.ID,
 		Name:              src.Name,
@@ -111,7 +119,7 @@ func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
 		SponsorFee:        src.SponsorFee,
 		ProfileImage:      src.ProfileImage,
 		Company:           CompanyToDto(src.Edges.Company),
-		TaskType:          []string{"개발, 디자인"},
+		TaskType:          taskTypes,
 		ProjectLogs:       ProjectLogsToDto(src.Edges.ProjectLog),
 		ProjectClubs:      ProjectClubsToDto(srcProjectClub),
 		CreatedAt:         src.CreatedAt,
