@@ -1,8 +1,13 @@
 package service
 
 import (
+	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -130,4 +135,52 @@ func (s *projectService) CreateProjectLogFeedback(companyID int, reqPlfeedback *
 
 	log.Info("피드백 작성 완료", projectLogFeedback)
 	return domain.ProjectLogFeedbackToDto(projectLogFeedback), nil
+}
+
+func (s *projectService) UploadProfileImage(projectID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	// Destination
+	dir := fmt.Sprintf("./projects/profile/%d/image", projectID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
+		if err != nil {
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
+		}
+	}
+
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(projectID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
+
+	project := &ent.Project{
+		ID:           projectID,
+		ProfileImage: &key,
+	}
+
+	pup, err := s.projectRepo.UploadProfileImage(project)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", pup)
+	return fileBytes, nil
+}
+
+func (s *projectService) GetProfileImage(projectID int) ([]byte, error) {
+	project, err := s.GetProjectByID(projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	if project.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
+	}
+
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./projects/profile/%d/image/%s", projectID, *project.ProfileImage))
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 조회 실패")
+	}
+
+	return fileBytes, nil
 }

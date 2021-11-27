@@ -102,3 +102,13 @@ func (r *clubRepository) GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Studen
 
 	return c, allMembers, nil
 }
+
+func (r *clubRepository) UploadProfileImage(reqClub *ent.Club) (*ent.Club, error) {
+	c, err := r.db.Club.UpdateOneID(reqClub.ID).
+		SetNillableProfileImage(reqClub.ProfileImage).Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return c, nil
+}

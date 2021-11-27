@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"mime/multipart"
-
 	"github.com/Wanted-Linx/linx-backend/api/ent"
 )
 
@@ -16,9 +14,9 @@ type StudentDto struct {
 	Clubs          []*JoinedClub `json:"clubs"`
 }
 
-type StudentProfileImageDto struct {
-	Image []byte `json:"image"`
-}
+// type StudentProfileImageDto struct {
+// 	Image []byte `json:"image"`
+// }
 
 // Multipart form-data로 이미지랑 같이 받을까...?
 type StudentProfileUpdate struct {
@@ -26,15 +24,15 @@ type StudentProfileUpdate struct {
 	ProfileLink    string   `json:"profile_link"`
 }
 
-type StudentProfileImage struct {
-	Image []*multipart.FileHeader `json:"image"`
-}
+// type StudentProfileImage struct {
+// 	Image []*multipart.FileHeader `json:"image"`
+// }
 
 type StudentService interface {
 	Save(userID int, reqSignup *SignUpRequest) (*StudentDto, error)
 	GetStudentByID(studentID int) (*StudentDto, error)
 	UpdateProfile(studentID int, reqStudent *StudentProfileUpdate) (*StudentDto, error)
-	UploadProfileImage(studentID int, reqImage *StudentProfileImage) ([]byte, error)
+	UploadProfileImage(studentID int, reqImage *ProfileImageRequest) ([]byte, error)
 	GetProfileImage(studentID int) ([]byte, error)
 }
 

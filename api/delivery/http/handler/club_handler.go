@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
@@ -80,4 +81,45 @@ func (h *ClubHandler) GetAllClubs(c echo.Context) error {
 	}
 
 	return c.JSON(200, clubs)
+}
+
+func (h *ClubHandler) UploadProfileImage(c echo.Context) error {
+	clubID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	reqImage := &domain.ProfileImageRequest{
+		Image: form.File["image"],
+	}
+
+	if err := c.Bind(&reqImage); err != nil {
+		return errors.Wrap(err, "잘못된 json body 입니다.")
+	}
+
+	fileBytes, err := h.clubService.UploadProfileImage(clubID, reqImage)
+	if err != nil {
+		return err
+	}
+
+	return c.Blob(200, http.DetectContentType(fileBytes), fileBytes)
+}
+
+func (h *ClubHandler) GetProfileImage(c echo.Context) error {
+	clubID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	fileBytes, err := h.clubService.GetProfileImage(clubID)
+	if err != nil {
+		return err
+	}
+
+	return c.Blob(200, http.DetectContentType(fileBytes), fileBytes)
 }

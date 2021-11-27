@@ -54,6 +54,8 @@ func clubRouter(clubHandler *handler.ClubHandler) {
 	group.POST("", clubHandler.CreateClub)
 	group.GET("", clubHandler.GetAllClubs)
 	group.GET("/:club_id", clubHandler.GetClubByID)
+	group.POST("/profile/images", clubHandler.UploadProfileImage)
+	group.GET("/profile/images", clubHandler.GetProfileImage)
 }
 
 func clubMemberRouter(clubMemberHandler *handler.ClubMemberHandler) {
@@ -69,6 +71,8 @@ func projectRouter(projectHandler *handler.ProjectHandler) {
 	group.GET("/:project_id", projectHandler.GetProjectByID)
 	group.POST("/logs", projectHandler.CreateProjectLog)
 	group.POST("/feedbacks", projectHandler.CreateProjectLogFeedback)
+	group.POST("/profile/images", projectHandler.UploadProfileImage)
+	group.GET("/profile/images", projectHandler.GetProfileImage)
 }
 
 // TODO: 그냥 projectRouter에 합쳐도 됨

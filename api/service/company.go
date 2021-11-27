@@ -1,14 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
@@ -87,68 +82,32 @@ func (s *companyService) UpdateProfile(companyID int, reqCompany *domain.Company
 
 	return domain.CompanyToDto(updatedCompany), nil
 }
-func (s *companyService) UploadProfileImage(companyID int, reqImage *domain.CompanyProfileImage) ([]byte, error) {
-	var fileBytes []byte
-
-	// TODO: profile upload 함수 공통이므로 따로 빼기...
-	for _, imageFile := range reqImage.Image {
-		// Source
-		src, err := imageFile.Open()
+func (s *companyService) UploadProfileImage(companyID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	dir := fmt.Sprintf("./companies/profile/%d/image", companyID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
 		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
 		}
-		defer src.Close()
-
-		fileBytes, err = ioutil.ReadAll(src)
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		// Destination
-		dir := fmt.Sprintf("./companies/profile/%d/image", companyID)
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			os.MkdirAll(dir, 0700) // Create your file
-		}
-
-		// image 저장 위치 uuid 값을 key로...
-		key := uuid.New().String()
-		dst, err := os.Create(filepath.Join(dir, filepath.Base(key)))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-		defer dst.Close()
-
-		img, fileType, err := image.Decode(bytes.NewReader(fileBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		switch fileType {
-		case "jpeg":
-			log.Println(fileType)
-			err = jpeg.Encode(dst, img, nil)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		default:
-			err = png.Encode(dst, img)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		}
-
-		company := &ent.Company{
-			ID:           companyID,
-			ProfileImage: &key,
-		}
-
-		c, err := s.companyRepo.UploadProfileImage(company)
-		if err != nil {
-			return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
-		}
-
-		log.Info("프로필 이미지 업로드 성공", c)
 	}
+
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(companyID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
+
+	company := &ent.Company{
+		ID:           companyID,
+		ProfileImage: &key,
+	}
+
+	c, err := s.companyRepo.UploadProfileImage(company)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", c)
 
 	return fileBytes, nil
 }
@@ -157,6 +116,10 @@ func (s *companyService) GetProfileImage(companyID int) ([]byte, error) {
 	company, err := s.GetCompanyByID(companyID)
 	if err != nil {
 		return nil, err
+	}
+
+	if company.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
 	}
 
 	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./companies/profile/%d/image/%s", companyID, *company.ProfileImage))
