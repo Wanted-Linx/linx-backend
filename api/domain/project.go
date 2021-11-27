@@ -14,11 +14,12 @@ type ProjectDto struct {
 	StartDate         string           `json:"start_date"`
 	EndDate           string           `json:"end_date"`
 	ApplyingStartDate string           `json:"applying_start_date"`
-	AppylingEndDate   string           `json:"appyling_end_date"`
+	ApplyingEndDate   string           `json:"applying_end_date"`
 	Qualification     string           `json:"qualification"`
 	SponsorFee        int              `json:"sponsor_fee"`
+	ProfileImage      *string          `json:"profile_image"`
+	Company           *CompanyDto      `json:"company"` // 프로젝트 만든 기업
 	TaskType          []string         `json:"task_type"`
-	Company           *CompanyDto      `json:"company"`     // 프로젝트 만든 기업
 	ProjectClubs      []*ProjectClub   `json:"clubs"`       // 프로젝트 참가 신청한 동아리 목록(따로 조회?)
 	ProjectLogs       []*ProjectLogDto `json:"project_log"` // 이 프로젝트에 참가한 모든 동아리의 로그 목록들
 	CreatedAt         time.Time        `json:"created_at"`
@@ -83,6 +84,8 @@ type ProjectService interface {
 	CreateProjectLogFeedback(companyID int, reqPlfeedback *ProjectLogFeedbackRequest) (*ProjectLogFeedbackDto, error)
 	GetProjectByID(projectID int) (*ProjectDto, error)
 	GetAllProjects(limit, offset int) ([]*ProjectDto, error)
+	UploadProfileImage(projectID int, reqImage *ProfileImageRequest) ([]byte, error)
+	GetProfileImage(projectID int) ([]byte, error)
 }
 
 type ProjectRepository interface {
@@ -91,6 +94,7 @@ type ProjectRepository interface {
 	SaveProjectLogFeedback(reqPfeedback *ent.ProjectLogFeedback) (*ent.ProjectLogFeedback, error)
 	GetByID(projectID int) (*ent.Project, []*ent.Club, error)
 	GetAll(limit, offset int) ([]*ent.Project, [][]*ent.Club, error)
+	UploadProfileImage(reqProject *ent.Project) (*ent.Project, error)
 }
 
 func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
@@ -102,11 +106,12 @@ func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
 		StartDate:         src.StartDate,
 		EndDate:           src.EndDate,
 		ApplyingStartDate: src.ApplyingStartDate,
-		AppylingEndDate:   src.ApplyingEndDate,
+		ApplyingEndDate:   src.ApplyingEndDate,
 		Qualification:     src.Qualification,
 		SponsorFee:        src.SponsorFee,
-		TaskType:          []string{"개발, 디자인"},
+		ProfileImage:      src.ProfileImage,
 		Company:           CompanyToDto(src.Edges.Company),
+		TaskType:          []string{"개발, 디자인"},
 		ProjectLogs:       ProjectLogsToDto(src.Edges.ProjectLog),
 		ProjectClubs:      ProjectClubsToDto(srcProjectClub),
 		CreatedAt:         src.CreatedAt,

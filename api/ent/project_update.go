@@ -74,6 +74,26 @@ func (pu *ProjectUpdate) SetQualification(s string) *ProjectUpdate {
 	return pu
 }
 
+// SetProfileImage sets the "profile_image" field.
+func (pu *ProjectUpdate) SetProfileImage(s string) *ProjectUpdate {
+	pu.mutation.SetProfileImage(s)
+	return pu
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableProfileImage(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetProfileImage(*s)
+	}
+	return pu
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (pu *ProjectUpdate) ClearProfileImage() *ProjectUpdate {
+	pu.mutation.ClearProfileImage()
+	return pu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (pu *ProjectUpdate) SetCreatedAt(t time.Time) *ProjectUpdate {
 	pu.mutation.SetCreatedAt(t)
@@ -355,6 +375,19 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: project.FieldQualification,
 		})
 	}
+	if value, ok := pu.mutation.ProfileImage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+	}
+	if pu.mutation.ProfileImageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldProfileImage,
+		})
+	}
 	if value, ok := pu.mutation.CreatedAt(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -612,6 +645,26 @@ func (puo *ProjectUpdateOne) SetApplyingEndDate(s string) *ProjectUpdateOne {
 // SetQualification sets the "qualification" field.
 func (puo *ProjectUpdateOne) SetQualification(s string) *ProjectUpdateOne {
 	puo.mutation.SetQualification(s)
+	return puo
+}
+
+// SetProfileImage sets the "profile_image" field.
+func (puo *ProjectUpdateOne) SetProfileImage(s string) *ProjectUpdateOne {
+	puo.mutation.SetProfileImage(s)
+	return puo
+}
+
+// SetNillableProfileImage sets the "profile_image" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableProfileImage(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetProfileImage(*s)
+	}
+	return puo
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (puo *ProjectUpdateOne) ClearProfileImage() *ProjectUpdateOne {
+	puo.mutation.ClearProfileImage()
 	return puo
 }
 
@@ -918,6 +971,19 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: project.FieldQualification,
+		})
+	}
+	if value, ok := puo.mutation.ProfileImage(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldProfileImage,
+		})
+	}
+	if puo.mutation.ProfileImageCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldProfileImage,
 		})
 	}
 	if value, ok := puo.mutation.CreatedAt(); ok {

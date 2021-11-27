@@ -138,3 +138,13 @@ func (r *projectRepository) SaveProjectLogFeedback(reqPfeedback *ent.ProjectLogF
 
 	return plf, nil
 }
+
+func (r *projectRepository) UploadProfileImage(reqProject *ent.Project) (*ent.Project, error) {
+	p, err := r.db.Project.UpdateOneID(reqProject.ID).
+		SetNillableProfileImage(reqProject.ProfileImage).Save(context.Background())
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return p, nil
+}

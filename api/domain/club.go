@@ -34,12 +34,15 @@ type ClubService interface {
 	CreateClub(studentID int, reqClub *ClubCreateRequest) (*ClubDto, error)
 	GetClubByID(clubID int) (*ClubDto, error)
 	GetAllClubs(limit, offset int) ([]*ClubDto, error)
+	UploadProfileImage(clubID int, reqImage *ProfileImageRequest) ([]byte, error)
+	GetProfileImage(clubID int) ([]byte, error)
 }
 
 type ClubRepository interface {
 	Save(reqClub *ent.Club) (*ent.Club, error)
 	GetByID(clubID int) (*ent.Club, []*ent.Student, error)
 	GetAll(limit, offset int) ([]*ent.Club, [][]*ent.Student, error)
+	UploadProfileImage(reqClub *ent.Club) (*ent.Club, error)
 }
 
 func ClubToDto(srcClub *ent.Club, srcClubMembers []*ent.Student) *ClubDto {
@@ -60,5 +63,3 @@ func ClubToDto(srcClub *ent.Club, srcClubMembers []*ent.Student) *ClubDto {
 		ClubProjects: clubProjectsDto,
 	}
 }
-
-//club.QueryClubMember().QueryStudent().All()

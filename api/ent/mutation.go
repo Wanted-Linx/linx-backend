@@ -2226,6 +2226,7 @@ type ProjectMutation struct {
 	applying_start_date *string
 	applying_end_date   *string
 	qualification       *string
+	profile_image       *string
 	created_at          *time.Time
 	sponsor_fee         *int
 	addsponsor_fee      *int
@@ -2576,6 +2577,55 @@ func (m *ProjectMutation) ResetQualification() {
 	m.qualification = nil
 }
 
+// SetProfileImage sets the "profile_image" field.
+func (m *ProjectMutation) SetProfileImage(s string) {
+	m.profile_image = &s
+}
+
+// ProfileImage returns the value of the "profile_image" field in the mutation.
+func (m *ProjectMutation) ProfileImage() (r string, exists bool) {
+	v := m.profile_image
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProfileImage returns the old "profile_image" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldProfileImage(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldProfileImage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldProfileImage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProfileImage: %w", err)
+	}
+	return oldValue.ProfileImage, nil
+}
+
+// ClearProfileImage clears the value of the "profile_image" field.
+func (m *ProjectMutation) ClearProfileImage() {
+	m.profile_image = nil
+	m.clearedFields[project.FieldProfileImage] = struct{}{}
+}
+
+// ProfileImageCleared returns if the "profile_image" field was cleared in this mutation.
+func (m *ProjectMutation) ProfileImageCleared() bool {
+	_, ok := m.clearedFields[project.FieldProfileImage]
+	return ok
+}
+
+// ResetProfileImage resets all changes to the "profile_image" field.
+func (m *ProjectMutation) ResetProfileImage() {
+	m.profile_image = nil
+	delete(m.clearedFields, project.FieldProfileImage)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *ProjectMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -2873,7 +2923,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 10)
 	if m.name != nil {
 		fields = append(fields, project.FieldName)
 	}
@@ -2894,6 +2944,9 @@ func (m *ProjectMutation) Fields() []string {
 	}
 	if m.qualification != nil {
 		fields = append(fields, project.FieldQualification)
+	}
+	if m.profile_image != nil {
+		fields = append(fields, project.FieldProfileImage)
 	}
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
@@ -2923,6 +2976,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.ApplyingEndDate()
 	case project.FieldQualification:
 		return m.Qualification()
+	case project.FieldProfileImage:
+		return m.ProfileImage()
 	case project.FieldCreatedAt:
 		return m.CreatedAt()
 	case project.FieldSponsorFee:
@@ -2950,6 +3005,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldApplyingEndDate(ctx)
 	case project.FieldQualification:
 		return m.OldQualification(ctx)
+	case project.FieldProfileImage:
+		return m.OldProfileImage(ctx)
 	case project.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case project.FieldSponsorFee:
@@ -3012,6 +3069,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetQualification(v)
 		return nil
+	case project.FieldProfileImage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProfileImage(v)
+		return nil
 	case project.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -3070,7 +3134,11 @@ func (m *ProjectMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ProjectMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(project.FieldProfileImage) {
+		fields = append(fields, project.FieldProfileImage)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3083,6 +3151,11 @@ func (m *ProjectMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ProjectMutation) ClearField(name string) error {
+	switch name {
+	case project.FieldProfileImage:
+		m.ClearProfileImage()
+		return nil
+	}
 	return fmt.Errorf("unknown Project nullable field %s", name)
 }
 
@@ -3110,6 +3183,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldQualification:
 		m.ResetQualification()
+		return nil
+	case project.FieldProfileImage:
+		m.ResetProfileImage()
 		return nil
 	case project.FieldCreatedAt:
 		m.ResetCreatedAt()

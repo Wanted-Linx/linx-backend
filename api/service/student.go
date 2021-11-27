@@ -1,14 +1,9 @@
 package service
 
 import (
-	"bytes"
 	"fmt"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
@@ -82,96 +77,50 @@ func (s *studentService) UpdateProfile(studentID int, reqStudent *domain.Student
 	// 	// s.studentRepo.SaveInterestedType(interestedType *ent.StudentInterestedType)
 	// }
 
-	// TODO: repository layer에 getClubs로 따로 빼기
-	// clubs, err := updatedStudent.QueryClubMember().QueryClub().All(context.Background())
-	// if err != nil {
-	// 	return nil, errors.WithMessage(err, "알 수 없는 오류가 발생했습니다.")
-	// }
-
 	return domain.StudentToDto(updatedStudent, nil), nil
 }
 
-func (s *studentService) UploadProfileImage(studentID int, reqImage *domain.StudentProfileImage) ([]byte, error) {
-	var fileBytes []byte
-	for _, imageFile := range reqImage.Image {
-		// Source
-		src, err := imageFile.Open()
+func (s *studentService) UploadProfileImage(studentID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	// Destination
+	dir := fmt.Sprintf("./students/profile/%d/image", studentID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
 		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
 		}
-		defer src.Close()
-
-		fileBytes, err = ioutil.ReadAll(src)
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		// Destination
-		dir := fmt.Sprintf("./students/profile/%d/image", studentID)
-		if _, err := os.Stat(dir); os.IsNotExist(err) {
-			os.MkdirAll(dir, 0700) // Create your file
-		}
-
-		key := uuid.New().String()
-		dst, err := os.Create(filepath.Join(dir, filepath.Base(key)))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-		defer dst.Close()
-
-		img, fileType, err := image.Decode(bytes.NewReader(fileBytes))
-		if err != nil {
-			return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		}
-
-		switch fileType {
-		case "jpeg":
-			log.Println(fileType)
-			err = jpeg.Encode(dst, img, nil)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		default:
-			err = png.Encode(dst, img)
-			if err != nil {
-				return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-			}
-		}
-
-		student := &ent.Student{
-			ID:           studentID,
-			ProfileImage: &key,
-		}
-		s, err := s.studentRepo.UploadProfileImage(student)
-		if err != nil {
-			return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
-		}
-
-		log.Info("프로필 이미지 업로드 성공", s)
-
-		// // Copy
-		// if _, err = io.Copy(dst, src); err != nil {
-		// 	return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
-		// }
-
-		// body := bytes.NewReader(fileBytes)
 	}
 
-	// TODO: db에 profile iamge 주소 저장
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(studentID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
 
+	student := &ent.Student{
+		ID:           studentID,
+		ProfileImage: &key,
+	}
+
+	ups, err := s.studentRepo.UploadProfileImage(student)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", ups)
 	return fileBytes, nil
 }
 
 func (s *studentService) GetProfileImage(studentID int) ([]byte, error) {
-	// TODO: key is image path from db
-	// key := "sample_images_09.jpg"
-
-	getStudent, err := s.GetStudentByID(studentID)
+	student, err := s.GetStudentByID(studentID)
 	if err != nil {
 		return nil, err
 	}
 
-	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./students/profile/%d/image/%s", studentID, *getStudent.ProfileImage))
+	if student.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
+	}
+
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./students/profile/%d/image/%s", studentID, *student.ProfileImage))
 	if err != nil {
 		return nil, errors.Wrap(err, "프로필 이미지 조회 실패")
 	}

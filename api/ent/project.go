@@ -32,6 +32,8 @@ type Project struct {
 	ApplyingEndDate string `json:"applying_end_date,omitempty"`
 	// Qualification holds the value of the "qualification" field.
 	Qualification string `json:"qualification,omitempty"`
+	// ProfileImage holds the value of the "profile_image" field.
+	ProfileImage *string `json:"profile_image,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// SponsorFee holds the value of the "sponsor_fee" field.
@@ -111,7 +113,7 @@ func (*Project) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case project.FieldID, project.FieldSponsorFee:
 			values[i] = new(sql.NullInt64)
-		case project.FieldName, project.FieldContent, project.FieldStartDate, project.FieldEndDate, project.FieldApplyingStartDate, project.FieldApplyingEndDate, project.FieldQualification:
+		case project.FieldName, project.FieldContent, project.FieldStartDate, project.FieldEndDate, project.FieldApplyingStartDate, project.FieldApplyingEndDate, project.FieldQualification, project.FieldProfileImage:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -181,6 +183,13 @@ func (pr *Project) assignValues(columns []string, values []interface{}) error {
 				return fmt.Errorf("unexpected type %T for field qualification", values[i])
 			} else if value.Valid {
 				pr.Qualification = value.String
+			}
+		case project.FieldProfileImage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field profile_image", values[i])
+			} else if value.Valid {
+				pr.ProfileImage = new(string)
+				*pr.ProfileImage = value.String
 			}
 		case project.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -270,6 +279,10 @@ func (pr *Project) String() string {
 	builder.WriteString(pr.ApplyingEndDate)
 	builder.WriteString(", qualification=")
 	builder.WriteString(pr.Qualification)
+	if v := pr.ProfileImage; v != nil {
+		builder.WriteString(", profile_image=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", created_at=")
 	builder.WriteString(pr.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", sponsor_fee=")

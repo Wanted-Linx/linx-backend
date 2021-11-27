@@ -2,9 +2,12 @@ package service
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
 	"github.com/Wanted-Linx/linx-backend/api/ent"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,17 +25,11 @@ func NewClubService(clubRepo domain.ClubRepository, clubMemberRepo domain.ClubMe
 }
 
 func (s *clubService) CreateClub(clubLeaderID int, reqClub *domain.ClubCreateRequest) (*domain.ClubDto, error) {
-
-	// TODO: profile image 먼저 upload 후 저장된 path 값을 ProfileImage에 집어넣는다.
-	// 우선은 default로 '/profile/club/clubLeaderID/
-	profile_key := fmt.Sprintf("/profile/club/%d", clubLeaderID)
-
 	club := &ent.Club{
 		Name:         reqClub.Name,
 		Organization: reqClub.Organization,
 		Description:  reqClub.Description,
 		ProfileLink:  &reqClub.ProfileLink,
-		ProfileImage: &profile_key,
 		Edges: ent.ClubEdges{
 			Leader: &ent.Student{ID: clubLeaderID},
 		},
@@ -82,4 +79,52 @@ func (s *clubService) GetAllClubs(limit, offset int) ([]*domain.ClubDto, error) 
 	}
 
 	return clubsDto, nil
+}
+
+func (s *clubService) UploadProfileImage(clubID int, reqImage *domain.ProfileImageRequest) ([]byte, error) {
+	// Destination
+	dir := fmt.Sprintf("./clubs/profile/%d/image", clubID)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err := os.MkdirAll(dir, 0700) // Create your file
+		if err != nil {
+			return nil, errors.Wrap(err, "이미지 저장용 디렉토리 생성 실패")
+		}
+	}
+
+	key := uuid.New().String()
+	fileBytes, err := UploadImage(clubID, dir, key, reqImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 업로드 실패")
+	}
+
+	club := &ent.Club{
+		ID:           clubID,
+		ProfileImage: &key,
+	}
+
+	cup, err := s.clubRepo.UploadProfileImage(club)
+	if err != nil {
+		return nil, errors.WithMessage(err, "프로필 이미지 업로드 실패")
+	}
+
+	log.Info("프로필 이미지 업로드 성공", cup)
+	return fileBytes, nil
+}
+
+func (s *clubService) GetProfileImage(clubID int) ([]byte, error) {
+	club, err := s.GetClubByID(clubID)
+	if err != nil {
+		return nil, err
+	}
+
+	if club.ProfileImage == nil {
+		return nil, errors.New("프로필 이미지가 존재하지 않습니다.")
+	}
+
+	fileBytes, err := ioutil.ReadFile(fmt.Sprintf("./clubs/profile/%d/image/%s", clubID, *club.ProfileImage))
+	if err != nil {
+		return nil, errors.Wrap(err, "프로필 이미지 조회 실패")
+	}
+
+	return fileBytes, nil
 }

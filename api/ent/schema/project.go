@@ -23,6 +23,7 @@ func (Project) Fields() []ent.Field {
 		field.String("applying_start_date"),
 		field.String("applying_end_date"),
 		field.String("qualification"),
+		field.String("profile_image").Optional().Nillable(),
 		field.Time("created_at").Default(func() time.Time {
 			return time.Now()
 		}),

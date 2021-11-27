@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/http"
 	"strconv"
 
 	"github.com/Wanted-Linx/linx-backend/api/domain"
@@ -124,4 +125,45 @@ func (h *ProjectHandler) CreateProjectLogFeedback(c echo.Context) error {
 	}
 
 	return c.JSON(200, pl)
+}
+
+func (h *ProjectHandler) UploadProfileImage(c echo.Context) error {
+	projectID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	reqImage := &domain.ProfileImageRequest{
+		Image: form.File["image"],
+	}
+
+	if err := c.Bind(&reqImage); err != nil {
+		return errors.Wrap(err, "잘못된 json body 입니다.")
+	}
+
+	fileBytes, err := h.projectService.UploadProfileImage(projectID, reqImage)
+	if err != nil {
+		return err
+	}
+
+	return c.Blob(200, http.DetectContentType(fileBytes), fileBytes)
+}
+
+func (h *ProjectHandler) GetProfileImage(c echo.Context) error {
+	projectID, err := util.GetRequestUserID(c)
+	if err != nil {
+		return errors.Wrap(err, "알 수 없는 오류가 발생했습니다.")
+	}
+
+	fileBytes, err := h.projectService.GetProfileImage(projectID)
+	if err != nil {
+		return err
+	}
+
+	return c.Blob(200, http.DetectContentType(fileBytes), fileBytes)
 }

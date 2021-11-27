@@ -108,6 +108,7 @@ var (
 		{Name: "applying_start_date", Type: field.TypeString},
 		{Name: "applying_end_date", Type: field.TypeString},
 		{Name: "qualification", Type: field.TypeString},
+		{Name: "profile_image", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "sponsor_fee", Type: field.TypeInt},
 		{Name: "club_project", Type: field.TypeInt, Nullable: true},
@@ -121,13 +122,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "projects_clubs_project",
-				Columns:    []*schema.Column{ProjectsColumns[10]},
+				Columns:    []*schema.Column{ProjectsColumns[11]},
 				RefColumns: []*schema.Column{ClubsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "projects_companies_project",
-				Columns:    []*schema.Column{ProjectsColumns[11]},
+				Columns:    []*schema.Column{ProjectsColumns[12]},
 				RefColumns: []*schema.Column{CompaniesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
