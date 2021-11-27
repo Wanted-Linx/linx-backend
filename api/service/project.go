@@ -35,6 +35,7 @@ func (s *projectService) CreateProject(companyID int, reqProject *domain.Project
 
 	project := &ent.Project{
 		Name:              reqProject.Name,
+		TaskExperience:    reqProject.TaskExperience,
 		Content:           reqProject.Content,
 		StartDate:         reqProject.StartDate,
 		EndDate:           reqProject.EndDate,

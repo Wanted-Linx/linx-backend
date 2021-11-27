@@ -75,6 +75,26 @@ func (pu *ProjectUpdate) SetQualification(s string) *ProjectUpdate {
 	return pu
 }
 
+// SetTaskExperience sets the "task_experience" field.
+func (pu *ProjectUpdate) SetTaskExperience(s string) *ProjectUpdate {
+	pu.mutation.SetTaskExperience(s)
+	return pu
+}
+
+// SetNillableTaskExperience sets the "task_experience" field if the given value is not nil.
+func (pu *ProjectUpdate) SetNillableTaskExperience(s *string) *ProjectUpdate {
+	if s != nil {
+		pu.SetTaskExperience(*s)
+	}
+	return pu
+}
+
+// ClearTaskExperience clears the value of the "task_experience" field.
+func (pu *ProjectUpdate) ClearTaskExperience() *ProjectUpdate {
+	pu.mutation.ClearTaskExperience()
+	return pu
+}
+
 // SetProfileImage sets the "profile_image" field.
 func (pu *ProjectUpdate) SetProfileImage(s string) *ProjectUpdate {
 	pu.mutation.SetProfileImage(s)
@@ -412,6 +432,19 @@ func (pu *ProjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: project.FieldQualification,
 		})
 	}
+	if value, ok := pu.mutation.TaskExperience(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldTaskExperience,
+		})
+	}
+	if pu.mutation.TaskExperienceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldTaskExperience,
+		})
+	}
 	if value, ok := pu.mutation.ProfileImage(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -736,6 +769,26 @@ func (puo *ProjectUpdateOne) SetApplyingEndDate(s string) *ProjectUpdateOne {
 // SetQualification sets the "qualification" field.
 func (puo *ProjectUpdateOne) SetQualification(s string) *ProjectUpdateOne {
 	puo.mutation.SetQualification(s)
+	return puo
+}
+
+// SetTaskExperience sets the "task_experience" field.
+func (puo *ProjectUpdateOne) SetTaskExperience(s string) *ProjectUpdateOne {
+	puo.mutation.SetTaskExperience(s)
+	return puo
+}
+
+// SetNillableTaskExperience sets the "task_experience" field if the given value is not nil.
+func (puo *ProjectUpdateOne) SetNillableTaskExperience(s *string) *ProjectUpdateOne {
+	if s != nil {
+		puo.SetTaskExperience(*s)
+	}
+	return puo
+}
+
+// ClearTaskExperience clears the value of the "task_experience" field.
+func (puo *ProjectUpdateOne) ClearTaskExperience() *ProjectUpdateOne {
+	puo.mutation.ClearTaskExperience()
 	return puo
 }
 
@@ -1098,6 +1151,19 @@ func (puo *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err e
 			Type:   field.TypeString,
 			Value:  value,
 			Column: project.FieldQualification,
+		})
+	}
+	if value, ok := puo.mutation.TaskExperience(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldTaskExperience,
+		})
+	}
+	if puo.mutation.TaskExperienceCleared() {
+		_spec.Fields.Clear = append(_spec.Fields.Clear, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Column: project.FieldTaskExperience,
 		})
 	}
 	if value, ok := puo.mutation.ProfileImage(); ok {

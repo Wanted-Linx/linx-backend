@@ -23,7 +23,7 @@ func init() {
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
 	// projectDescCreatedAt is the schema descriptor for created_at field.
-	projectDescCreatedAt := projectFields[8].Descriptor()
+	projectDescCreatedAt := projectFields[9].Descriptor()
 	// project.DefaultCreatedAt holds the default value on creation for the created_at field.
 	project.DefaultCreatedAt = projectDescCreatedAt.Default.(func() time.Time)
 }

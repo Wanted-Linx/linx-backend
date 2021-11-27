@@ -67,6 +67,20 @@ func (pc *ProjectCreate) SetQualification(s string) *ProjectCreate {
 	return pc
 }
 
+// SetTaskExperience sets the "task_experience" field.
+func (pc *ProjectCreate) SetTaskExperience(s string) *ProjectCreate {
+	pc.mutation.SetTaskExperience(s)
+	return pc
+}
+
+// SetNillableTaskExperience sets the "task_experience" field if the given value is not nil.
+func (pc *ProjectCreate) SetNillableTaskExperience(s *string) *ProjectCreate {
+	if s != nil {
+		pc.SetTaskExperience(*s)
+	}
+	return pc
+}
+
 // SetProfileImage sets the "profile_image" field.
 func (pc *ProjectCreate) SetProfileImage(s string) *ProjectCreate {
 	pc.mutation.SetProfileImage(s)
@@ -367,6 +381,14 @@ func (pc *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 			Column: project.FieldQualification,
 		})
 		_node.Qualification = value
+	}
+	if value, ok := pc.mutation.TaskExperience(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: project.FieldTaskExperience,
+		})
+		_node.TaskExperience = value
 	}
 	if value, ok := pc.mutation.ProfileImage(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{

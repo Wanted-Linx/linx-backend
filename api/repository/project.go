@@ -23,6 +23,7 @@ func NewProjectRepository(db *ent.Client) domain.ProjectRepository {
 func (r *projectRepository) Save(reqProject *ent.Project) (*ent.Project, error) {
 	p, err := r.db.Project.Create().
 		SetName(reqProject.Name).
+		SetNillableTaskExperience(&reqProject.TaskExperience).
 		SetContent(reqProject.Content).
 		SetStartDate(reqProject.StartDate).
 		SetEndDate(reqProject.EndDate).
@@ -36,7 +37,7 @@ func (r *projectRepository) Save(reqProject *ent.Project) (*ent.Project, error) 
 		return nil, errors.WithStack(err)
 	}
 
-	company, err := p.QueryCompany().First(context.Background())
+	company, err := p.QueryCompany().WithTaskType().First(context.Background())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -50,8 +51,7 @@ func (r *projectRepository) GetByID(projectID int) (*ent.Project, []*ent.Club, e
 		query.WithTaskType(func(query *ent.TaskTypeQuery) {
 			query.Select().All(context.Background())
 		})
-	}).
-		Only(context.Background())
+	}).Only(context.Background())
 	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}

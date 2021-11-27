@@ -2394,6 +2394,7 @@ type ProjectMutation struct {
 	applying_start_date *string
 	applying_end_date   *string
 	qualification       *string
+	task_experience     *string
 	profile_image       *string
 	created_at          *time.Time
 	sponsor_fee         *int
@@ -2746,6 +2747,55 @@ func (m *ProjectMutation) OldQualification(ctx context.Context) (v string, err e
 // ResetQualification resets all changes to the "qualification" field.
 func (m *ProjectMutation) ResetQualification() {
 	m.qualification = nil
+}
+
+// SetTaskExperience sets the "task_experience" field.
+func (m *ProjectMutation) SetTaskExperience(s string) {
+	m.task_experience = &s
+}
+
+// TaskExperience returns the value of the "task_experience" field in the mutation.
+func (m *ProjectMutation) TaskExperience() (r string, exists bool) {
+	v := m.task_experience
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTaskExperience returns the old "task_experience" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldTaskExperience(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, fmt.Errorf("OldTaskExperience is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, fmt.Errorf("OldTaskExperience requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTaskExperience: %w", err)
+	}
+	return oldValue.TaskExperience, nil
+}
+
+// ClearTaskExperience clears the value of the "task_experience" field.
+func (m *ProjectMutation) ClearTaskExperience() {
+	m.task_experience = nil
+	m.clearedFields[project.FieldTaskExperience] = struct{}{}
+}
+
+// TaskExperienceCleared returns if the "task_experience" field was cleared in this mutation.
+func (m *ProjectMutation) TaskExperienceCleared() bool {
+	_, ok := m.clearedFields[project.FieldTaskExperience]
+	return ok
+}
+
+// ResetTaskExperience resets all changes to the "task_experience" field.
+func (m *ProjectMutation) ResetTaskExperience() {
+	m.task_experience = nil
+	delete(m.clearedFields, project.FieldTaskExperience)
 }
 
 // SetProfileImage sets the "profile_image" field.
@@ -3148,7 +3198,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.name != nil {
 		fields = append(fields, project.FieldName)
 	}
@@ -3169,6 +3219,9 @@ func (m *ProjectMutation) Fields() []string {
 	}
 	if m.qualification != nil {
 		fields = append(fields, project.FieldQualification)
+	}
+	if m.task_experience != nil {
+		fields = append(fields, project.FieldTaskExperience)
 	}
 	if m.profile_image != nil {
 		fields = append(fields, project.FieldProfileImage)
@@ -3201,6 +3254,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.ApplyingEndDate()
 	case project.FieldQualification:
 		return m.Qualification()
+	case project.FieldTaskExperience:
+		return m.TaskExperience()
 	case project.FieldProfileImage:
 		return m.ProfileImage()
 	case project.FieldCreatedAt:
@@ -3230,6 +3285,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldApplyingEndDate(ctx)
 	case project.FieldQualification:
 		return m.OldQualification(ctx)
+	case project.FieldTaskExperience:
+		return m.OldTaskExperience(ctx)
 	case project.FieldProfileImage:
 		return m.OldProfileImage(ctx)
 	case project.FieldCreatedAt:
@@ -3293,6 +3350,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetQualification(v)
+		return nil
+	case project.FieldTaskExperience:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTaskExperience(v)
 		return nil
 	case project.FieldProfileImage:
 		v, ok := value.(string)
@@ -3360,6 +3424,9 @@ func (m *ProjectMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ProjectMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(project.FieldTaskExperience) {
+		fields = append(fields, project.FieldTaskExperience)
+	}
 	if m.FieldCleared(project.FieldProfileImage) {
 		fields = append(fields, project.FieldProfileImage)
 	}
@@ -3377,6 +3444,9 @@ func (m *ProjectMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ProjectMutation) ClearField(name string) error {
 	switch name {
+	case project.FieldTaskExperience:
+		m.ClearTaskExperience()
+		return nil
 	case project.FieldProfileImage:
 		m.ClearProfileImage()
 		return nil
@@ -3408,6 +3478,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldQualification:
 		m.ResetQualification()
+		return nil
+	case project.FieldTaskExperience:
+		m.ResetTaskExperience()
 		return nil
 	case project.FieldProfileImage:
 		m.ResetProfileImage()

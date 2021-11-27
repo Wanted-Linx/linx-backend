@@ -142,6 +142,13 @@ func Qualification(v string) predicate.Project {
 	})
 }
 
+// TaskExperience applies equality check predicate on the "task_experience" field. It's identical to TaskExperienceEQ.
+func TaskExperience(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTaskExperience), v))
+	})
+}
+
 // ProfileImage applies equality check predicate on the "profile_image" field. It's identical to ProfileImageEQ.
 func ProfileImage(v string) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
@@ -937,6 +944,131 @@ func QualificationEqualFold(v string) predicate.Project {
 func QualificationContainsFold(v string) predicate.Project {
 	return predicate.Project(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldQualification), v))
+	})
+}
+
+// TaskExperienceEQ applies the EQ predicate on the "task_experience" field.
+func TaskExperienceEQ(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceNEQ applies the NEQ predicate on the "task_experience" field.
+func TaskExperienceNEQ(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceIn applies the In predicate on the "task_experience" field.
+func TaskExperienceIn(vs ...string) predicate.Project {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Project(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldTaskExperience), v...))
+	})
+}
+
+// TaskExperienceNotIn applies the NotIn predicate on the "task_experience" field.
+func TaskExperienceNotIn(vs ...string) predicate.Project {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Project(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldTaskExperience), v...))
+	})
+}
+
+// TaskExperienceGT applies the GT predicate on the "task_experience" field.
+func TaskExperienceGT(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceGTE applies the GTE predicate on the "task_experience" field.
+func TaskExperienceGTE(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceLT applies the LT predicate on the "task_experience" field.
+func TaskExperienceLT(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceLTE applies the LTE predicate on the "task_experience" field.
+func TaskExperienceLTE(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceContains applies the Contains predicate on the "task_experience" field.
+func TaskExperienceContains(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceHasPrefix applies the HasPrefix predicate on the "task_experience" field.
+func TaskExperienceHasPrefix(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceHasSuffix applies the HasSuffix predicate on the "task_experience" field.
+func TaskExperienceHasSuffix(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceIsNil applies the IsNil predicate on the "task_experience" field.
+func TaskExperienceIsNil() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldTaskExperience)))
+	})
+}
+
+// TaskExperienceNotNil applies the NotNil predicate on the "task_experience" field.
+func TaskExperienceNotNil() predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldTaskExperience)))
+	})
+}
+
+// TaskExperienceEqualFold applies the EqualFold predicate on the "task_experience" field.
+func TaskExperienceEqualFold(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldTaskExperience), v))
+	})
+}
+
+// TaskExperienceContainsFold applies the ContainsFold predicate on the "task_experience" field.
+func TaskExperienceContainsFold(v string) predicate.Project {
+	return predicate.Project(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldTaskExperience), v))
 	})
 }
 

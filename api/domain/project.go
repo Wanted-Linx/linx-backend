@@ -9,17 +9,18 @@ import (
 
 type ProjectDto struct {
 	ID                int              `json:"id"`
+	TaskType          []string         `json:"task_type"`
 	Name              string           `json:"name"`
-	Content           string           `json:"content"`
-	StartDate         string           `json:"start_date"`
-	EndDate           string           `json:"end_date"`
 	ApplyingStartDate string           `json:"applying_start_date"`
 	ApplyingEndDate   string           `json:"applying_end_date"`
-	Qualification     string           `json:"qualification"`
 	SponsorFee        int              `json:"sponsor_fee"`
+	StartDate         string           `json:"start_date"`
+	EndDate           string           `json:"end_date"`
+	TaskExperience    string           `json:"task_experience"`
+	Qualification     string           `json:"qualification"`
+	Content           string           `json:"content"`
 	ProfileImage      *string          `json:"profile_image"`
-	Company           *CompanyDto      `json:"company"` // 프로젝트 만든 기업
-	TaskType          []string         `json:"task_type"`
+	Company           *CompanyDto      `json:"company"`     // 프로젝트 만든 기업
 	ProjectClubs      []*ProjectClub   `json:"clubs"`       // 프로젝트 참가 신청한 동아리 목록(따로 조회?)
 	ProjectLogs       []*ProjectLogDto `json:"project_log"` // 이 프로젝트에 참가한 모든 동아리의 로그 목록들
 	CreatedAt         time.Time        `json:"created_at"`
@@ -51,12 +52,13 @@ type ProjectLogFeedbackDto struct {
 
 type ProjectCreateRequest struct {
 	Name              string   `json:"name"`
+	ApplyingStartDate string   `json:"applying_start_date"`
+	AppylingEndDate   string   `json:"applying_end_date"`
+	TaskExperience    string   `json:"task_experience"`
+	Qualification     string   `json:"qualification"`
 	Content           string   `json:"content"`
 	StartDate         string   `json:"start_date"`
 	EndDate           string   `json:"end_date"`
-	ApplyingStartDate string   `json:"applying_start_date"`
-	AppylingEndDate   string   `json:"applying_end_date"`
-	Qualification     string   `json:"qualification"`
 	SponsorFee        int      `json:"sponsor_fee"`
 	TaskType          []string `json:"task_type"`
 }
@@ -111,6 +113,7 @@ func ProjectToDto(src *ent.Project, srcProjectClub []*ent.Club) *ProjectDto {
 		ID:                src.ID,
 		Name:              src.Name,
 		Content:           src.Content,
+		TaskExperience:    src.TaskExperience,
 		StartDate:         src.StartDate,
 		EndDate:           src.EndDate,
 		ApplyingStartDate: src.ApplyingStartDate,
